@@ -1,0 +1,51 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/msys64/${DEVKITARM}/arm-none-eabi/include",
+                "C:/msys64/${DEVKITARM}/lib/gcc/arm-none-eabi/*/include",
+                "C:/msys64/${DEVKITARM}/../calico/include",
+                "C:/msys64/${DEVKITARM}/../libnds/include"
+                
+            ],
+            "defines": [
+                "__NDS__",
+                "ARM9",
+                "_GNU_SOURCE",
+                "__MISC_VISIBLE"
+            ],
+            "compilerPath": "C:/msys64/${DEVKITARM}/bin/arm-none-eabi-gcc.exe",
+            "windowsSdkVersion": "10.0.26100.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${DEVKITARM}/arm-none-eabi/include",
+                "${DEVKITARM}/lib/gcc/arm-none-eabi/*/include",
+                "${DEVKITARM}/../calico/include",
+                "${DEVKITARM}/../libnds/include"
+                
+            ],
+            "defines": [
+                "__NDS__",
+                "ARM9",
+                "_GNU_SOURCE",
+                "__MISC_VISIBLE"
+            ],
+            "compilerPath": "${DEVKITARM}/bin/arm-none-eabi-gcc.exe",
+            "windowsSdkVersion": "10.0.26100.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}

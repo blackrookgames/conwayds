@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+		    "name": "App",
+		    "path": "./app"
+		},
+		{
+		    "name": "Misc",
+		    "path": "./misc"
+		},
+		{
+		    "name": "Tool",
+		    "path": "./tool"
+		},
+	],
+	"settings": {
+		"explorer.fileNesting.enabled": true,
+		"workbench.iconTheme": null,
+		"C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+		"makefile.makefilePath": "${workspaceFolder}/Makefile",
+		"makefile.loggingLevel": "Debug",
+	}
+}
