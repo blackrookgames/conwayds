@@ -1,6 +1,8 @@
 __all__ = [\
     'CLIParse',]
 
+import inspect as _inspect
+
 from typing import\
     Any as _Any
 
@@ -23,6 +25,7 @@ class CLIParse:
             Parse handler definition
         """
         self.__parse = parsedef.parse
+        self.__arg = parsedef.arg
 
     #endregion
 
@@ -39,8 +42,14 @@ class CLIParse:
             bool: Whether or not the input was successfully parsed\n
             Any: Parsed value
         """
-        if self.__parse is None:
+        if self.__parse is not None:
+            _sig = _inspect.signature(self.__parse)
+            _cnt = len(_sig.parameters.items())
+            # (str)
+            if _cnt == 1: return self.__parse(input)
+            # (str, tuple)
+            else: return self.__parse(input, tuple() if (self.__arg is None) else self.__arg)
+        else:
             return True, input
-        return self.__parse(input)
 
     #endregion

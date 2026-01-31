@@ -1,28 +1,138 @@
 __all__ = [\
-    'LifeUtil',]
+    'LifeCLI',\
+    'LifeCLIFormat',]
 
+from enum import\
+    auto as _auto,\
+    Enum as _Enum
 from io import\
     StringIO as _StringIO
 from sys import\
     stderr as _stderr
+from typing import\
+    cast as _cast
 
-from ..mod_CLIParseUtil import\
-    CLIParseUtil as _CLIParseUtil
-from .mod_IOUtil import\
-    IOUtil as _IOUtil
-from .mod_StringReader\
-    import StringReader as _StringReader
-from ...helper.mod_StrUtil import\
-    StrUtil as _StrUtil
 from ...life.mod_LifePattern import\
     LifePattern as _LifePattern
 from ...life.mod_LifePatternRule import\
     LifePatternRule as _LifePatternRule
+from ...life.mod_LifePatternUtil import\
+    LifePatternUtil as _LifePatternUtil
+from ..mod_CLIParseUtil import\
+    CLIParseUtil as _CLIParseUtil
+from .mod_ImgCLI import\
+    ImgCLI as _ImgCLI
+from .mod_StringReader import\
+    StringReader as _StringReader
+from .mod_StrCLI import\
+    StrCLI as _StrCLI
 
-class LifeUtil:
+class LifeCLIFormat(_Enum):
+    """
+    Represents a format for storing pattern data
+    """
+
+    RLE = _auto()
+    """
+    Pattern data is stored as run-length encoded data
+    """
+
+    TXT = _auto()
+    """
+    Pattern data is stored in plain text\n
+    NOTE: Rule configurations cannot be stored in this format
+    """
+
+    IMG = _auto()
+    """
+    Pattern data is stored as an image\n
+    NOTE: Rule configurations cannot be stored in this format
+    """
+
+
+class LifeCLI:
     """
     Utility for Life-related operations
     """
+
+    #region pattern
+
+    @classmethod
+    def pattern_load(cls, path:str, format:None|LifeCLIFormat|str = None):
+        """
+        Attrmpts to load a LifePattern from a file
+        
+        :param path:
+            Path of input file
+        :param format:
+            Data format (use None to auto-detect)
+        :return:
+            Loaded LifePattern (or None if an error occurred)
+        """
+        # Get format
+        if format is not None:
+            if isinstance(format, str):
+                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, ))
+                if not _result: return None
+                format = _cast(LifeCLIFormat, format)
+        else:
+            if _ImgCLI.checkext(path):
+                format = LifeCLIFormat.IMG
+            elif path.endswith(".rle"):
+                format = LifeCLIFormat.RLE
+            else:
+                format = LifeCLIFormat.TXT
+        # Load
+        match format:
+            case LifeCLIFormat.RLE:
+                return cls.pattern_load_rle(path)
+            case LifeCLIFormat.TXT:
+                return cls.pattern_load_txt(path)
+            case LifeCLIFormat.IMG:
+                _img = _ImgCLI.load(path)
+                if _img is None: return None
+                return _LifePatternUtil.from_img(_img)
+            case _: return None # Should never happen
+
+    @classmethod
+    def pattern_save(cls, pattern:_LifePattern, path:str, format:None|LifeCLIFormat|str = None):
+        """
+        Attrmpts to save a LifePattern to a file
+        
+        :param pattern:
+            Pattern to save
+        :param path:
+            Path of output file
+        :param format:
+            Data format (use None to auto-detect)
+        :return:
+            Whether or not successful
+        """
+        # Get format
+        if format is not None:
+            if isinstance(format, str):
+                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, ))
+                if not _result: return False
+                format = _cast(LifeCLIFormat, format)
+        else:
+            if _ImgCLI.checkext(path):
+                format = LifeCLIFormat.IMG
+            elif path.endswith(".rle"):
+                format = LifeCLIFormat.RLE
+            else:
+                format = LifeCLIFormat.TXT
+        # Load
+        match format:
+            case LifeCLIFormat.RLE:
+                return cls.pattern_save_rle(pattern, path)
+            case LifeCLIFormat.TXT:
+                return cls.pattern_save_txt(pattern, path)
+            case LifeCLIFormat.IMG:
+                _img = _LifePatternUtil.to_img(pattern)
+                return _ImgCLI.save(_img, path)
+            case _: return False # Should never happen
+
+    #endregion
 
     #region pattern txt
 
@@ -39,7 +149,7 @@ class LifeUtil:
         def _iscomment(_chr):
             return _chr == '#' or _chr == '!'
         # Load string
-        string = _IOUtil.str_load(path)
+        string = _StrCLI.load(path)
         if string is None: return None
         # Parse
         w = 0
@@ -115,7 +225,7 @@ class LifeUtil:
                 for x in range(pattern.width):
                     strio.write('O' if pattern[x, y] else '.')
                 strio.write('\n')
-            return _IOUtil.str_save(strio.getvalue(), path)
+            return _StrCLI.save(strio.getvalue(), path)
 
     #endregion
 
@@ -373,7 +483,7 @@ class LifeUtil:
             # Success!!!
             return True
         # Load string
-        string = _IOUtil.str_load(path)
+        string = _StrCLI.load(path)
         if string is None: return None
         # Begin parsing
         reader = _StringReader(string)
@@ -492,6 +602,6 @@ class LifeUtil:
                     strio.write("$")
             strio.write("!\n")
             # Save
-            return _IOUtil.str_save(strio.getvalue(), path)
+            return _StrCLI.save(strio.getvalue(), path)
 
     #endregion

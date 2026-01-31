@@ -1,9 +1,8 @@
 __all__ = [\
     'CLIParseDef',]
 
-from typing import\
-    Any as _Any,\
-    Callable as _Callable
+from .mod_CLIParseCall import\
+    CLIParseCall as _CLIParseCall
 
 class CLIParseDef:
     """
@@ -13,24 +12,35 @@ class CLIParseDef:
     #region init
 
     def __init__(self,\
-            parse:None|_Callable[[str], tuple[bool, _Any]]):
+            parse:None|_CLIParseCall,\
+            arg:None|tuple):
         """
         Initializer for CLIParseDef
         
         :param parse:
             Function to use for parsing command-line input
+        :param arg:
+            Additional argument for parse call
         """
         self.__parse = parse
+        self.__arg = arg
 
     #endregion
 
     #region properties
 
     @property
-    def parse(self) -> None|_Callable[[str], tuple[bool, _Any]]:
+    def parse(self) -> None|_CLIParseCall:
         """
         Function to use for parsing command-line input
         """
         return self.__parse
+
+    @property
+    def arg(self) -> None|tuple:
+        """
+        Additional argument for parse call
+        """
+        return self.__arg
 
     #endregion

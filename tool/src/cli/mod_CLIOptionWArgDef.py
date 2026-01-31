@@ -7,6 +7,8 @@ from typing import\
 
 from .mod_CLIOptionDef import\
     CLIOptionDef as _CLIOptionDef
+from .mod_CLIParseCall import\
+    CLIParseCall as _CLIParseCall
 from .mod_CLIParseDef import\
     CLIParseDef as _CLIParseDef
 
@@ -22,7 +24,8 @@ class CLIOptionWArgDef(_CLIOptionDef, _CLIParseDef):
             short:None|str = None,\
             desc:None|str = None,\
             default:None|_Any = None,\
-            parse:None|_Callable[[str], tuple[bool, _Any]] = None):
+            parse:None|_CLIParseCall = None,\
+            arg:None|tuple = None):
         """
         Initializer for CLIOptionWArgDef
         
@@ -36,8 +39,10 @@ class CLIOptionWArgDef(_CLIOptionDef, _CLIParseDef):
             Default value if the user does not specify the optional parameter
         :param parse:
             Function to use for parsing command-line input
+        :param arg:
+            Additional argument for parse call
         """
         _CLIOptionDef.__init__(self, name, short, desc, default)
-        _CLIParseDef.__init__(self, parse)
+        _CLIParseDef.__init__(self, parse, arg)
 
     #endregion

@@ -17,6 +17,9 @@ __all__ = [\
     'I64_MIN',\
     'I64_MAX',]
 
+from enum\
+    import Enum as _Enum
+
 from .mod_ParseUtilResult import\
     ParseUtilResult as _ParseUtilResult
 
@@ -264,4 +267,32 @@ class ParseUtil:
         # Success!!!
         return _ParseUtilResult[float].passs(value)
     
+    #endregion
+
+    #region enum
+
+    @classmethod
+    def to_enum(cls,\
+            input:str,\
+            type:type[_Enum],\
+            ignorecase:bool = False):
+        """
+        Attempts to parse input as an Enum
+        
+        :param input: Input
+        :param type: Enum type
+        :param ignorecase: Whether or not to ignore case differences
+        :return: Parse result
+        """
+        if ignorecase:
+            input = input.lower()
+            for _value in type:
+                if input != _value.name.lower():
+                    continue
+                return _ParseUtilResult.passs(_value)
+            return _ParseUtilResult[type].fail()
+        else:
+            try: return _ParseUtilResult.passs(type[input])
+            except: return _ParseUtilResult[type].fail()
+
     #endregion

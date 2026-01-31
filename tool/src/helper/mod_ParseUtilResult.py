@@ -74,6 +74,16 @@ class ParseUtilResult(_Generic[T]):
 
     #endregion
 
+    #region operators
+
+    def __repr__(self):
+        return f"ParseUtilResult[{T}]({self.__status}, {self.__value})"
+    
+    def __str__(self):
+        return f"{self.__status} {self.__value}"
+
+    #endregion
+
     #region properties
 
     @property

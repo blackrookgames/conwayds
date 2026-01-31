@@ -1,8 +1,21 @@
 import sys
 
-import src.cli
+from enum import\
+    auto as _auto,\
+    Enum as _Enum
 
-class cmd_test(src.cli.CLICommand):
+import src.cli as _cli
+
+class DayOfWeek(_Enum):
+    SUNDAY = _auto()
+    MONDAY = _auto()
+    TUESDAY = _auto()
+    WEDNESDAY = _auto()
+    THURSDAY = _auto()
+    FRIDAY = _auto()
+    SATURDAY = _auto()
+
+class cmd_test(_cli.CLICommand):
 
     @property
     def _desc(self) -> None|str:
@@ -10,71 +23,78 @@ class cmd_test(src.cli.CLICommand):
 
     #region required
 
-    __string = src.cli.CLIRequiredDef(\
+    __string = _cli.CLIRequiredDef(\
         name = "string",\
         desc = "String")
-    __number = src.cli.CLIRequiredDef(\
+    __number = _cli.CLIRequiredDef(\
         name = "number",\
         desc = "Number",\
-        parse = src.cli.CLIParseUtil.to_int)
+        parse = _cli.CLIParseUtil.to_int)
 
     #endregion
 
     #region optional
 
-    __u8 = src.cli.CLIOptionWArgDef(\
+    __day = _cli.CLIOptionWArgDef(\
+        name = "day",\
+        short = 'd',\
+        desc = "Day of the week",\
+        parse = _cli.CLIParseUtil.to_enum,\
+        arg = (DayOfWeek, True, ),\
+        default = None)
+    __u8 = _cli.CLIOptionWArgDef(\
         name = "u8",\
         short = 'B',\
         desc = "8-bit unsigned integer",\
-        parse = src.cli.CLIParseUtil.to_uint8,\
+        parse = _cli.CLIParseUtil.to_uint8,\
         default = 0)
-    __i8 = src.cli.CLIOptionWArgDef(\
+    __i8 = _cli.CLIOptionWArgDef(\
         name = "i8",\
         short = 'b',\
         desc = "8-bit signed integer",\
-        parse = src.cli.CLIParseUtil.to_int8,\
+        parse = _cli.CLIParseUtil.to_int8,\
         default = 0)
-    __u16 = src.cli.CLIOptionWArgDef(\
+    __u16 = _cli.CLIOptionWArgDef(\
         name = "u16",\
         short = 'S',\
         desc = "16-bit unsigned integer",\
-        parse = src.cli.CLIParseUtil.to_uint16,\
+        parse = _cli.CLIParseUtil.to_uint16,\
         default = 0)
-    __i16 = src.cli.CLIOptionWArgDef(\
+    __i16 = _cli.CLIOptionWArgDef(\
         name = "i16",\
         short = 's',\
         desc = "16-bit signed integer",\
-        parse = src.cli.CLIParseUtil.to_int16,\
+        parse = _cli.CLIParseUtil.to_int16,\
         default = 0)
-    __u32 = src.cli.CLIOptionWArgDef(\
+    __u32 = _cli.CLIOptionWArgDef(\
         name = "u32",\
         short = 'I',\
         desc = "32-bit unsigned integer",\
-        parse = src.cli.CLIParseUtil.to_uint32,\
+        parse = _cli.CLIParseUtil.to_uint32,\
         default = 0)
-    __i32 = src.cli.CLIOptionWArgDef(\
+    __i32 = _cli.CLIOptionWArgDef(\
         name = "i32",\
         short = 'i',\
         desc = "32-bit signed integer",\
-        parse = src.cli.CLIParseUtil.to_int32,\
+        parse = _cli.CLIParseUtil.to_int32,\
         default = 0)
-    __u64 = src.cli.CLIOptionWArgDef(\
+    __u64 = _cli.CLIOptionWArgDef(\
         name = "u64",\
         short = 'L',\
         desc = "64-bit unsigned integer",\
-        parse = src.cli.CLIParseUtil.to_uint64,\
+        parse = _cli.CLIParseUtil.to_uint64,\
         default = 0)
-    __i64 = src.cli.CLIOptionWArgDef(\
+    __i64 = _cli.CLIOptionWArgDef(\
         name = "i64",\
         short = 'l',\
         desc = "64-bit signed integer",\
-        parse = src.cli.CLIParseUtil.to_int64,\
+        parse = _cli.CLIParseUtil.to_int64,\
         default = 0)
-    __f = src.cli.CLIOptionWArgDef(\
+    __f = _cli.CLIOptionWArgDef(\
         name = "float",\
         short = 'f',\
         desc = "Floating-point decimal",\
-        parse = src.cli.CLIParseUtil.to_float,\
+        parse = _cli.CLIParseUtil.to_float,\
         default = 0)
 
     #endregion
@@ -82,6 +102,7 @@ class cmd_test(src.cli.CLICommand):
     #region methods
 
     def _main(self):
+        print(f"day   {self.day}")
         print(f"string   {self.string}")
         print(f"number   {self.number}")
         print(f"u8       {self.u8}")
@@ -93,6 +114,7 @@ class cmd_test(src.cli.CLICommand):
         print(f"u64      {self.u64}")
         print(f"i64      {self.i64}")
         print(f"float    {self.float}")
+
         return 0
 
     #endregion

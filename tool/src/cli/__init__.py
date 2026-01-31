@@ -11,6 +11,7 @@ from .mod_CLIParamCollection import *
 from .mod_CLIParamCollectionParamDict import *
 from .mod_CLIParamDef import *
 from .mod_CLIParse import *
+from .mod_CLIParseCall import *
 from .mod_CLIParseDef import *
 from .mod_CLIParseUtil import *
 from .mod_CLIRequired import *

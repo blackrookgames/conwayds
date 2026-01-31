@@ -1,5 +1,5 @@
 __all__ = [\
-    'IOUtil',]
+    'DataCLI',]
 
 from sys import\
     stderr as _stderr
@@ -7,9 +7,9 @@ from sys import\
 from ...data.mod_DataBuffer import\
     DataBuffer as _DataBuffer
 
-class IOUtil:
+class DataCLI:
     """
-    Utility for I/O-related operations
+    CLI-utility for data operations
     """
 
     #region buffer
@@ -52,47 +52,6 @@ class IOUtil:
         try: 
             with open(path, 'wb') as output:
                 output.write(bytes(buffer))
-            return True
-        except Exception as e:
-            print(f"ERROR: {e}", file = _stderr)
-            return False
-
-    #endregion
-
-    #region str
-
-    @classmethod
-    def str_load(cls, path:str):
-        """
-        Attempts to create a string by loading from a file
-        
-        :param path:
-            Path of input file
-        :return:
-            Created string (or None if load failed)
-        """
-        try:
-            with open(path, 'rt') as input:
-                return input.read()
-        except Exception as e:
-            print(f"ERROR: {e}", file = _stderr)
-            return None
-
-    @classmethod
-    def str_save(cls, string:str, path:str):
-        """
-        Attempts to save a string to a file
-        
-        :param string:
-            String to save
-        :param path:
-            Path of output file
-        :return:
-            Whether or not successful
-        """
-        try: 
-            with open(path, 'wt') as output:
-                output.write(string)
             return True
         except Exception as e:
             print(f"ERROR: {e}", file = _stderr)

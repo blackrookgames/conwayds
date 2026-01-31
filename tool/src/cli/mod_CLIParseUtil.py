@@ -1,6 +1,8 @@
 __all__ = [\
     'CLIParseUtil',]
 
+from enum\
+    import Enum as _Enum
 from sys import\
     stderr as _stderr
 
@@ -184,5 +186,32 @@ class CLIParseUtil:
             _ParseUtil.to_float,\
             "floating-point decimal",\
             input)
+    
+    #endregion
+    
+    #region enum
+
+    @classmethod
+    def to_enum(cls,\
+            input:str,\
+            arg:tuple[type[_Enum]]|tuple[type[_Enum], bool]):
+        """
+        Attempts to parse input as a floating-point decimal
+        
+        :param input: Input
+        :param arg: Enum type and/or whether or not to ignore case
+        :return:
+            Parse result
+        """
+        # Parse
+        if len(arg) == 2:
+            result = _ParseUtil.to_enum(input, arg[0], ignorecase = arg[1])
+        else:
+            result = _ParseUtil.to_enum(input, arg[0])
+        # Result
+        if result.status == _ParseUtilStatus.PASS:
+            return True, result.value
+        print(f"{input} is not a valid {arg[0].__name__}.", file = _stderr)
+        return False, None
     
     #endregion

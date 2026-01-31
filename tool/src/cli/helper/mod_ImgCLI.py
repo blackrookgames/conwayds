@@ -1,5 +1,5 @@
 __all__ = [\
-    'ImgUtil',]
+    'ImgCLI',]
 
 from PIL import\
     Image as _Image
@@ -11,9 +11,9 @@ from ...img.mod_Img import\
 from ...img.mod_ImgColor import\
     ImgColor as _ImgColor
 
-class ImgUtil:
+class ImgCLI:
     """
-    Utility for image operations
+    CLI-utility for image operations
     """
 
     #region checkext
