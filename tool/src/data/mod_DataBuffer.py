@@ -65,7 +65,7 @@ class DataBuffer:
         if _index < 0 or _index >= len(self.__data):
             raise IndexError(f"index is out of range")
         return _index
-
+    
     #endregion
 
     #region methods
