@@ -31,10 +31,17 @@ class cmd_palette(abs_cpp):
     #region methods
 
     def _main(self):
-        palette = cast(None|img.Img, cli.helper.DSCLI.palette_load_img(self.input))
+        self_input = cast(str, self.input) # type: ignore
+        self_output = cast(str, self.output) # type: ignore
+        self_itype = cast(None|cli.helper.DSCLIFormat, self.itype) # type: ignore
+        self_otype = cast(None|cli.helper.DSCLIFormat, self.otype) # type: ignore
+        # Input
+        palette = cli.helper.DSCLI.palette_load_img(self_input)
         if palette is None: return 1
-        result = cli.helper.DSCLI.palette_save_img(palette, self.output)
+        # Output
+        result = cli.helper.DSCLI.palette_save_img(palette, self_output)
         if not result: return 1
+        # Success!!!
         return 0
 
     #endregion

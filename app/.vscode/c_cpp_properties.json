@@ -39,7 +39,7 @@
                 "_GNU_SOURCE",
                 "__MISC_VISIBLE"
             ],
-            "compilerPath": "${DEVKITARM}/bin/arm-none-eabi-gcc.exe",
+            "compilerPath": "${DEVKITARM}/bin/arm-none-eabi-gcc",
             "windowsSdkVersion": "10.0.26100.0",
             "cStandard": "c17",
             "cppStandard": "c++17",

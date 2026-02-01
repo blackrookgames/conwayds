@@ -41,7 +41,7 @@ class LifePattern:
     def __len__(self):
         return len(self.__data)
     
-    def __getitem__(self, key) -> _np.bool:
+    def __getitem__(self, key) -> bool:
         try:
             index = self.__getindex(key)
             return self.__data[index]
