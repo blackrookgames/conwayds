@@ -1,44 +1,12 @@
 __all__ = [\
-    'ParseUtil',\
-    'U8_MIN',\
-    'U8_MAX',\
-    'I8_MIN',\
-    'I8_MAX',\
-    'U16_MIN',\
-    'U16_MAX',\
-    'I16_MIN',\
-    'I16_MAX',\
-    'U32_MIN',\
-    'U32_MAX',\
-    'I32_MIN',\
-    'I32_MAX',\
-    'U64_MIN',\
-    'U64_MAX',\
-    'I64_MIN',\
-    'I64_MAX',]
+    'ParseUtil',]
 
 from enum\
     import Enum as _Enum
 
+from .mod_const import *
 from .mod_ParseUtilResult import\
     ParseUtilResult as _ParseUtilResult
-
-U8_MIN = 0
-U8_MAX = 0xFF
-I8_MIN = -0x80
-I8_MAX = 0x7F
-U16_MIN = 0
-U16_MAX = 0xFFFF
-I16_MIN = -0x8000
-I16_MAX = 0x7FFF
-U32_MIN = 0
-U32_MAX = 0xFFFFFFFF
-I32_MIN = -0x80000000
-I32_MAX = 0x7FFFFFFF
-U64_MIN = 0
-U64_MAX = 0xFFFFFFFFFFFFFFFF
-I64_MIN = -0x8000000000000000
-I64_MAX = 0x7FFFFFFFFFFFFFFF
 
 class ParseUtil:
     """

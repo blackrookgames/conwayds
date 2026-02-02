@@ -13,6 +13,10 @@ class abs_cpp(cli.CLICommand):
     #region helper methods
 
     @classmethod
+    def __error_cppinput(cls):
+        return "ERROR: Cannot accept C++ source code as input."
+    
+    @classmethod
     def __itype_parse(cls,\
             input:str,\
             arg:tuple[type[_Enum], bool, _Enum]):
@@ -21,7 +25,7 @@ class abs_cpp(cli.CLICommand):
         if not _s: return False, None
         # Make sure C++ is not specified
         if _r == arg[2]:
-            print("ERROR: Cannot accept C++ source code as input.", file = sys.stderr)
+            print(cls.__error_cppinput(), file = sys.stderr)
             return False, None
         # Success!!!
         return True, _r
@@ -123,5 +127,13 @@ class abs_cpp(cli.CLICommand):
             parse = cli.CLIParseUtil.to_enum,\
             arg = (formats, ignorecase),\
             default = None)
+
+    @classmethod
+    def _cppinput(cls,\
+            path:str):
+        if path.endswith(".cpp"):
+            print(cls.__error_cppinput(), file = sys.stderr)
+            return True
+        return False
 
     #endregion

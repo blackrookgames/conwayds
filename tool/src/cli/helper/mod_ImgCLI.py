@@ -51,7 +51,7 @@ class ImgCLI:
                 if input.mode == 'P':
                     # Get palette
                     palette = input.getpalette()
-                    if len(palette) == 0: palette = None
+                    if palette is not None and len(palette) == 0: palette = None
                     # Loop thru pixels
                     for y in range(raw_h):
                         for x in range(raw_w):
@@ -72,7 +72,7 @@ class ImgCLI:
                                 r = (0 if len(raw_pixel) == 0 else raw_pixel[0])
                                 g = (0 if len(raw_pixel) <= 1 else raw_pixel[1])
                                 b = (0 if len(raw_pixel) <= 2 else raw_pixel[2])
-                                a = (0 if len(raw_pixel) <= 3 else raw_pixel[3])
+                                a = (255 if len(raw_pixel) <= 3 else raw_pixel[3])
                                 img[x, y] = _ImgColor(r = r, g = g, b = b, a = a)
             return img
         except Exception as e:

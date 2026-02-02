@@ -71,7 +71,7 @@ class LifeCLI:
         # Get format
         if format is not None:
             if isinstance(format, str):
-                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, ))
+                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, )) # type: ignore
                 if not _result: return None
                 format = _cast(LifeCLIFormat, format)
         else:
@@ -108,7 +108,7 @@ class LifeCLI:
         # Get format
         if format is not None:
             if isinstance(format, str):
-                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, ))
+                _result, format = _CLIParseUtil.to_enum(format, (LifeCLIFormat, True, )) # type: ignore
                 if not _result: return False
                 format = _cast(LifeCLIFormat, format)
         else:

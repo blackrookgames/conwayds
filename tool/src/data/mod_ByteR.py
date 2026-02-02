@@ -1,6 +1,7 @@
 __all__ = [\
     'ByteR']
 
+from ..helper.mod_const import *
 from ..helper.mod_ErrorUtil import\
     ErrorUtil as _ErrorUtil
 
@@ -48,6 +49,8 @@ class ByteR:
     #endregion
 
     #region methods
+
+    #region uint8
     
     @classmethod
     def read_uint8(cls, array:bytearray, index:int):
@@ -63,6 +66,10 @@ class ByteR:
             raise IndexError("index is out of range.")
         return array[index]
     
+    #endregion
+
+    #region int8
+
     @classmethod
     def read_int8(cls, array:bytearray, index:int):
         """
@@ -75,12 +82,16 @@ class ByteR:
         """
         if index < 0 or index >= len(array):
             raise IndexError("index is out of range.")
-        return cls.__read_neg(array[index], 0x80)
+        return cls.__read_neg(array[index], I8_NEG)
     
+    #endregion
+
+    #region uint16
+
     @classmethod
     def read_uint16(cls, array:bytearray, start:int, big:bool):
         """
-        Reads a little-endian 16-bit unsigned integer from a byte array
+        Reads a 16-bit unsigned integer from a byte array
 
         :param array: Byte array
         :param start: Starting index
@@ -101,7 +112,7 @@ class ByteR:
         :return: Read value
         :raise IndexError: start is out of range
         """
-        return cls.__read_l(array, start, 2)
+        return cls.__read_l(array, start, U16_SIZE)
     
     @classmethod
     def read_uint16_b(cls, array:bytearray, start:int):
@@ -113,6 +124,218 @@ class ByteR:
         :return: Read value
         :raise IndexError: start is out of range
         """
-        return cls.__read_b(array, start, 2)
+        return cls.__read_b(array, start, U16_SIZE)
+
+    #endregion
+
+    #region int16
+
+    @classmethod
+    def read_int16(cls, array:bytearray, start:int, big:bool):
+        """
+        Reads a 16-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :param big: Whether or not data is stored in big-endian
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        if big: return cls.read_int16_b(array, start)
+        return cls.read_int16_l(array, start)
+    
+    @classmethod
+    def read_int16_l(cls, array:bytearray, start:int):
+        """
+        Reads a little-endian 16-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_l(array, start, I16_SIZE), I16_NEG)
+    
+    @classmethod
+    def read_int16_b(cls, array:bytearray, start:int):
+        """
+        Reads a big-endian 16-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_b(array, start, I16_SIZE), I16_NEG)
+
+    #endregion
+
+    #region uint32
+
+    @classmethod
+    def read_uint32(cls, array:bytearray, start:int, big:bool):
+        """
+        Reads a 32-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :param big: Whether or not data is stored in big-endian
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        if big: return cls.read_uint32_b(array, start)
+        return cls.read_uint32_l(array, start)
+    
+    @classmethod
+    def read_uint32_l(cls, array:bytearray, start:int):
+        """
+        Reads a little-endian 32-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_l(array, start, U32_SIZE)
+    
+    @classmethod
+    def read_uint32_b(cls, array:bytearray, start:int):
+        """
+        Reads a big-endian 32-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_b(array, start, U32_SIZE)
+
+    #endregion
+
+    #region int32
+
+    @classmethod
+    def read_int32(cls, array:bytearray, start:int, big:bool):
+        """
+        Reads a 32-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :param big: Whether or not data is stored in big-endian
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        if big: return cls.read_int32_b(array, start)
+        return cls.read_int32_l(array, start)
+    
+    @classmethod
+    def read_int32_l(cls, array:bytearray, start:int):
+        """
+        Reads a little-endian 32-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_l(array, start, I32_SIZE), I32_NEG)
+    
+    @classmethod
+    def read_int32_b(cls, array:bytearray, start:int):
+        """
+        Reads a big-endian 32-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_b(array, start, I32_SIZE), I32_NEG)
+
+    #endregion
+
+    #region uint64
+
+    @classmethod
+    def read_uint64(cls, array:bytearray, start:int, big:bool):
+        """
+        Reads a 64-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :param big: Whether or not data is stored in big-endian
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        if big: return cls.read_uint64_b(array, start)
+        return cls.read_uint64_l(array, start)
+    
+    @classmethod
+    def read_uint64_l(cls, array:bytearray, start:int):
+        """
+        Reads a little-endian 64-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_l(array, start, U64_SIZE)
+    
+    @classmethod
+    def read_uint64_b(cls, array:bytearray, start:int):
+        """
+        Reads a big-endian 64-bit unsigned integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_b(array, start, U64_SIZE)
+
+    #endregion
+
+    #region int64
+
+    @classmethod
+    def read_int64(cls, array:bytearray, start:int, big:bool):
+        """
+        Reads a 64-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :param big: Whether or not data is stored in big-endian
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        if big: return cls.read_int64_b(array, start)
+        return cls.read_int64_l(array, start)
+    
+    @classmethod
+    def read_int64_l(cls, array:bytearray, start:int):
+        """
+        Reads a little-endian 64-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_l(array, start, I64_SIZE), I64_NEG)
+    
+    @classmethod
+    def read_int64_b(cls, array:bytearray, start:int):
+        """
+        Reads a big-endian 64-bit signed integer from a byte array
+
+        :param array: Byte array
+        :param start: Starting index
+        :return: Read value
+        :raise IndexError: start is out of range
+        """
+        return cls.__read_neg(cls.__read_b(array, start, I64_SIZE), I64_NEG)
+
+    #endregion
 
     #endregion

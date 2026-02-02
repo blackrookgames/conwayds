@@ -1,3 +1,5 @@
+from .mod_ByteR import *
+from .mod_ByteW import *
 from .mod_DataBuffer import *
 from .mod_DataError import *
 from .mod_SerialError import *

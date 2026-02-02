@@ -57,4 +57,22 @@ class DataCLI:
             print(f"ERROR: {e}", file = _stderr)
             return False
 
+    @classmethod
+    def buffer_cpp(cls, buffer:_DataBuffer, path_cpp:str, path_hdr:None|str = None):
+        """
+        Attempts to export a DataBuffer to a C++ source
+        
+        :param buffer:
+            DataBuffer to save
+        :param path_cpp:
+            Path of C++ file
+        :param path_hdr:
+            Path of C++ header file
+        :return:
+            Whether or not successful
+        """
+        # TODO: Add code
+        print("TODO: Add code")
+        return False
+
     #endregion
