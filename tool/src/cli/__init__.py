@@ -1,4 +1,3 @@
-from .helper import *
 from .mod_CLICommand import *
 from .mod_CLIOption import *
 from .mod_CLIOptionDef import *

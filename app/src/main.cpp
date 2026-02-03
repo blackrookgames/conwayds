@@ -1,6 +1,7 @@
 #include <nds.h>
-
 #include <stdio.h>
+
+#include "DataPalette.h"
 
 static const u16 testSet[] = 
 {
@@ -9,11 +10,6 @@ static const u16 testSet[] =
 static const u16 testMap[] =
 {
 	0x0000, 0x0000, 0x0000, 0x0000, 
-};
-static const u16 testPal[] =
-{
-	0x0000, 0x7FFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x001F, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 };
 
 int main(void)
@@ -35,8 +31,8 @@ int main(void)
 	DC_FlushRange(testMap, sizeof(testMap));
 	dmaCopy(testMap, bgMap, sizeof(testMap));
 
-	DC_FlushRange(testPal, sizeof(testPal));
-	dmaCopy(testPal, BG_PALETTE, sizeof(testPal));
+	DC_FlushRange(DataPalette::data, DataPalette::size);
+	dmaCopy(DataPalette::data, BG_PALETTE, DataPalette::size);
 
 	while(pmMainLoop())
 	{

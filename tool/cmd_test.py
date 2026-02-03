@@ -102,18 +102,18 @@ class cmd_test(_cli.CLICommand):
     #region methods
 
     def _main(self):
-        print(f"day   {self.day}")
-        print(f"string   {self.string}")
-        print(f"number   {self.number}")
-        print(f"u8       {self.u8}")
-        print(f"i8       {self.i8}")
-        print(f"u16      {self.u16}")
-        print(f"i16      {self.i16}")
-        print(f"u32      {self.u32}")
-        print(f"i32      {self.i32}")
-        print(f"u64      {self.u64}")
-        print(f"i64      {self.i64}")
-        print(f"float    {self.float}")
+        print(f"day   {self.day}") # type: ignore
+        print(f"string   {self.string}") # type: ignore
+        print(f"number   {self.number}") # type: ignore
+        print(f"u8       {self.u8}") # type: ignore
+        print(f"i8       {self.i8}") # type: ignore
+        print(f"u16      {self.u16}") # type: ignore
+        print(f"i16      {self.i16}") # type: ignore
+        print(f"u32      {self.u32}") # type: ignore
+        print(f"i32      {self.i32}") # type: ignore
+        print(f"u64      {self.u64}") # type: ignore
+        print(f"i64      {self.i64}") # type: ignore
+        print(f"float    {self.float}") # type: ignore
 
         return 0
 

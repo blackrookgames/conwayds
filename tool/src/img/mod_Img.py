@@ -123,7 +123,7 @@ class Img:
             height:int,\
             preserve:bool = False):
         """
-        Docstring for resize
+        Resizes the image
         
         :param width:
             Image width

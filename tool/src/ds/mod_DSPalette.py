@@ -29,9 +29,6 @@ class DSPalette:
 
     #region operators
 
-    def __repr__(self):
-        return f"SPalette(({self.__r}, {self.__g}, {self.__b}, {self.__a}))"
-    
     def __len__(self):
         return len(self.__array)
 

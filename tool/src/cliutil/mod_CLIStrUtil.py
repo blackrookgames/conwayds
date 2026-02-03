@@ -1,10 +1,10 @@
 __all__ = [\
-    'StrCLI',]
+    'CLIStrUtil',]
 
-from sys import\
-    stderr as _stderr
+from .mod_CLICommandError import\
+    CLICommandError as _CLICommandError
 
-class StrCLI:
+class CLIStrUtil:
     """
     CLI-utility for string-related operations
     """
@@ -12,40 +12,42 @@ class StrCLI:
     #region str
 
     @classmethod
-    def load(cls, path:str):
+    def str_from_file(cls, path:str):
         """
-        Attempts to create a string by loading from a file
+        Creates a string by loading from a file
         
         :param path:
             Path of input file
         :return:
-            Created string (or None if load failed)
+            Created string
+        :raise CLICommandError:
+            An error occurred
         """
         try:
             with open(path, 'rt') as input:
                 return input.read()
         except Exception as e:
-            print(f"ERROR: {e}", file = _stderr)
-            return None
+            error = _CLICommandError(e)
+        raise error
 
     @classmethod
-    def save(cls, string:str, path:str):
+    def str_to_file(cls, string:str, path:str):
         """
-        Attempts to save a string to a file
+        Saves a string to a file
         
         :param string:
             String to save
         :param path:
             Path of output file
-        :return:
-            Whether or not successful
+        :raise CLICommandError:
+            An error occurred
         """
         try: 
             with open(path, 'wt') as output:
                 output.write(string)
-            return True
+            return
         except Exception as e:
-            print(f"ERROR: {e}", file = _stderr)
-            return False
+            error = _CLICommandError(e)
+        raise error
 
     #endregion
