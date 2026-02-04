@@ -6,25 +6,99 @@ import numpy as _np
 from typing import\
     cast as _cast
 
+from ..helper.mod_ErrorUtil import\
+    ErrorUtil as _ErrorUtil
 from .mod_ImgColor import\
     ImgColor as _ImgColor
 
 class ImgPalette:
     """
-    Represents an image
+    Represents a color palette
     """
 
     #region init
 
-    def __init__(self,\
-            size:int):
+    def __init__(self, size:int = 256):
         """
         Initializer for ImgPalette
         
         :param size:
-            Number of colors
+            Number of colors in palette
         :raise ValueError:
-            size is less than zero
+            size is less than 0 or greater than 256
+        """
+        try:
+            self.format(size = size)
+            return
+        except ValueError as _e:
+            e = _e
+        raise e
+
+    #endregion
+
+    #region operator
+    
+    def __len__(self):
+        return len(self.__colors)
+    
+    def __getitem__(self, index):
+        try:
+            _index = self.__index(index)
+            return _cast(_ImgColor, self.__colors[_index])
+        except TypeError as _e:
+            e = _e
+        except ValueError as _e:
+            e = _e
+        raise e
+    
+    def __setitem__(self, index, value):
+        try:
+            _index = self.__index(index)
+            if not isinstance(value, _ImgColor):
+                raise TypeError("Value must be an ImgColor.")
+            self.__colors[_index] = value
+            return
+        except TypeError as _e:
+            e = _e
+        except ValueError as _e:
+            e = _e
+        raise e
+    
+    def __iter__(self):
+        _len = len(self.__colors)
+        _i = 0
+        while _i < _len:
+            yield _cast(_ImgColor, self.__colors[_i])
+            _i += 1
+
+    #endregion
+
+    #region helper methods
+
+    def __setsize(self, size:int):
+        if size < 0 or size > 256:
+            raise ValueError("size must be >= 0 and <= 256.")
+        self.__colors = _np.full(size, _ImgColor(), dtype = object)
+    
+    def __index(self, index):
+        _index = _ErrorUtil.valid_int(index)
+        if _index < 0 or _index >= len(self.__colors):
+            raise ValueError("index is out of range.")
+        return _index
+
+    #endregion
+
+    #region methods
+
+    def format(self, size:int = 256):
+        """
+        Formats the palette\n
+        NOTE: All existing data will be lost
+        
+        :param size:
+            Number of colors in palette
+        :raise ValueError:
+            size is less than 0 or greater than 256
         """
         try:
             self.__setsize(size)
@@ -33,72 +107,20 @@ class ImgPalette:
             e = _e
         raise e
 
-    #endregion
-
-    #region operators
-
-    def __len__(self):
-        return len(self.__colors)
-    
-    def __getitem__(self, index):
-        if not isinstance(index, int):
-            raise TypeError(f"{type(index)} is not supported as an index.")
-        if index < 0 or index >= len(self.__colors):
-            raise ValueError("index is out of range.")
-        return _cast(_ImgColor, self.__colors[index])
-    
-    def __setitem__(self, index, value):
-        if not isinstance(index, int):
-            raise TypeError(f"{type(index)} is not supported as an index.")
-        if not isinstance(value, _ImgColor):
-            raise TypeError(f"{type(value)} is not supported as a value.")
-        if index < 0 or index >= len(self.__colors):
-            raise ValueError("index is out of range.")
-        self.__colors[index] = value
-
-    def __iter__(self):
-        l = len(self.__colors)
-        i = 0
-        while i < l:
-            yield _cast(_ImgColor, self.__colors[i])
-            i += 1
-
-    #endregion
-
-    #region helper methods
-
-    def __setsize(self,\
-            size:int):
-        if size < 0:
-            raise ValueError("size must be greater than or equal to zero.")
-        self.__colors = _np.full(size, _ImgColor(), dtype = object)
-
-    #endregion
-
-    #region methods
-
-    def resize(self,\
-            size:int,\
-            preserve:bool = False):
+    def resize(self, size:int):
         """
-        Resizes the image
+        Resizes the palette
         
         :param size:
-            Number of colors
-        :param preserve:
-            Whether or not to preserve existing colors
+            Number of colors in palette
         :raise ValueError:
-            size is less than zero
+            size is less than 0 or greater than 256
         """
         try:
             prev_colors = self.__colors
-            # Set size
             self.__setsize(size)
-            # Preserve (if requested)
-            if preserve:
-                for i in range(min(len(self.__colors), len(prev_colors))):
-                    self.__colors[i] = prev_colors[i]
-            # Success!!!
+            for _i in range(min(len(self.__colors), len(prev_colors))):
+                self.__colors[_i] = prev_colors[_i]
             return
         except ValueError as _e:
             e = _e

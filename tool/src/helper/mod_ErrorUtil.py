@@ -7,7 +7,8 @@ class ErrorUtil:
 
     #region valid_int
 
-    def valid_int(value, param:None|str = None):
+    @classmethod
+    def valid_int(cls, value, param:None|str = None):
         """
         Validates an input value as an integer
 
@@ -30,7 +31,8 @@ class ErrorUtil:
 
     #region valid_float
 
-    def valid_float(value, param:None|str = None):
+    @classmethod
+    def valid_float(cls, value, param:None|str = None):
         """
         Validates an input value as a floating-point number
 
@@ -53,7 +55,8 @@ class ErrorUtil:
 
     #region valid_bool
 
-    def valid_bool(value, param:None|str = None):
+    @classmethod
+    def valid_bool(cls, value, param:None|str = None):
         """
         Validates an input value as a boolean value
 
@@ -76,7 +79,8 @@ class ErrorUtil:
 
     #region valid_str
 
-    def valid_str(value, param:None|str = None):
+    @classmethod
+    def valid_str(cls, value, param:None|str = None):
         """
         Validates an input value as a string
 

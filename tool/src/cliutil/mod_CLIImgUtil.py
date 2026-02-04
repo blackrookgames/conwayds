@@ -1,6 +1,8 @@
 __all__ = [\
     'CLIImgUtil',]
 
+import numpy as _np
+
 from PIL import\
     Image as _Image
 from typing import\
@@ -32,6 +34,12 @@ class CLIImgUtil:
         a = (255 if len(color) <= 3 else color[3])
         return _ImgColor(r = r, g = g, b = b, a = a)
     
+    @classmethod
+    def __pixel2tuple(cls, color:_ImgColor, noalpha:bool = False):
+        if noalpha:
+            return (color.r, color.g, color.b)
+        return (color.r, color.g, color.b, color.a)
+
     @classmethod
     def __palettecolor(cls, palette:list[int], start:int):
         return _ImgColor(\
@@ -143,37 +151,58 @@ class CLIImgUtil:
                 raw_w, raw_h = input.size
                 width = max(1, raw_w)
                 height = max(1, raw_h)
-                if input.mode == 'P':
-                    palette = input.getpalette()
-                    if palette is not None and len(palette) > 0:
-                        palettesize = len(palette) // 3
+                if input.mode == 'P' or input.mode == 'PA':
+                    alpha = input.mode == 'PA'
+                    # Get palette info
+                    inpal = input.getpalette()
+                    if inpal is not None:
+                        palsize = len(inpal) // (4 if alpha else 3)
                     else:
-                        palette = None
-                        palettesize = 0
+                        palsize = 0
                     # Create image
-                    image = _ImgImage(width = width, height = height, palettesize = palettesize)
+                    image = _ImgImage(\
+                        width = width,\
+                        height = height,\
+                        palsize = palsize,\
+                        alpha = alpha)
                     # Populate palette
-                    if palette is not None:
-                        image_palette = _cast(_ImgPalette, image.palette)
+                    if inpal is not None:
+                        palette = _cast(_ImgPalette, image.palette)
                         offset = 0
-                        for i in range(_cast(int, palettesize)):
-                            image_palette[i] = cls.__palettecolor(palette, offset)
-                            offset += 3
+                        for i in range(_cast(int, palsize)):
+                            if alpha:
+                                palette[i] = _ImgColor(\
+                                    r = inpal[offset],\
+                                    g = inpal[offset + 1],\
+                                    b = inpal[offset + 2],\
+                                    a = inpal[offset + 3])
+                                offset += 4
+                            else:
+                                palette[i] = _ImgColor(\
+                                    r = inpal[offset],\
+                                    g = inpal[offset + 1],\
+                                    b = inpal[offset + 2])
+                                offset += 3
                     # Loop thru pixels
                     for y in range(raw_h):
                         for x in range(raw_w):
                             raw_pixel = input.getpixel((x, y))
                             if isinstance(raw_pixel, int):
                                 image[x, y] = raw_pixel
-                else:
+                elif input.mode == 'RGB' or input.mode == 'RGBA':
                     # Create image
-                    image = _ImgImage(width = width, height = height)
+                    image = _ImgImage(\
+                        width = width,\
+                        height = height,\
+                        alpha = input.mode == 'RGBA')
                     # Loop thru pixels
                     for y in range(raw_h):
                         for x in range(raw_w):
                             raw_pixel = input.getpixel((x, y))
                             if isinstance(raw_pixel, tuple):
                                 image[x, y] = cls.__tuple2pixel(raw_pixel)
+                else:
+                    raise _CLICommandError(f"{input.mode} images are not supported.")
             return image
         except Exception as e:
             error = _CLICommandError(e)
@@ -189,16 +218,55 @@ class CLIImgUtil:
             ImgImage to save
         :param path:
             Path of output file
+        :param noalpha:
+            Whether or not to exclude alpha data in output
         :raise CLICommandError:
             An error occurred
         """
-        output = _Image.new('RGBA', (image.width, image.height))
-        for y in range(image.height):
-            for x in range(image.width):
-                color = image.getpixel(x, y)
-                if color is None:
-                    color = _ImgColor(a = 0)
-                output.putpixel((x, y), (color.r, color.g, color.b, color.a))
+        # Create output
+        imagesize = (image.width, image.height)
+        if image.haspalette:
+            _palette = _cast(_ImgPalette, image.palette)
+            # Initialize image and palette
+            if image.alpha:
+                # Create image
+                output = _Image.new('PA', imagesize)
+                # Create palette
+                _outpal:list[int] = []
+                for _color in _palette:
+                    _outpal.append(_color.r)
+                    _outpal.append(_color.g)
+                    _outpal.append(_color.b)
+                    _outpal.append(_color.a)
+                output.putpalette(_outpal, rawmode = 'RGBA')
+            else:
+                # Create image
+                output = _Image.new('P', imagesize)
+                # Create palette
+                _outpal:list[int] = []
+                for _color in _palette:
+                    _outpal.append(_color.r)
+                    _outpal.append(_color.g)
+                    _outpal.append(_color.b)
+                output.putpalette(_outpal, rawmode = 'RGB')
+            # Set pixels
+            for _y in range(image.height):
+                for _x in range(image.width):
+                    _raw = _cast(_np.uint8, image[_x, _y])
+                    output.putpixel((_x, _y), int(_raw))
+        else:
+            output = _Image.new(\
+                'RGBA' if image.alpha else 'RGB',\
+                imagesize)
+            for _y in range(image.height):
+                for _x in range(image.width):
+                    _raw = _cast(_ImgColor, image[_x, _y])
+                    if image.alpha:
+                        _color = (_raw.r, _raw.g, _raw.b, _raw.a)
+                    else:
+                        _color = (_raw.r, _raw.g, _raw.b)
+                    output.putpixel((_x, _y), _color)
+        # Save output
         try:
             output.save(path)
             return

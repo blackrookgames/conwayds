@@ -44,6 +44,7 @@ class cmd_palette(cli.CLICommand):
             self_palette = cast(None|str, self.palette) # type: ignore
             # Input
             ima = cliutil.CLIImgUtil.image_from_file(self_input)
+            ima.resize(ima.width, ima.width)
             # Palette
             if ima.haspalette and self_palette is not None:
                 pal = cliutil.CLIImgUtil.image_from_file(self_palette)
