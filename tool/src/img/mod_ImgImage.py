@@ -6,10 +6,10 @@ import numpy as _np
 from typing import\
     cast as _cast
 
-from ..helper.mod_ErrorUtil import\
-    ErrorUtil as _ErrorUtil
-from .mod_ImgColor import\
-    ImgColor as _ImgColor
+from .mod_ImgImagePPixels import\
+    ImgImagePPixels as _ImgImagePPixels
+from .mod_ImgImageRGBAPixels import\
+    ImgImageRGBAPixels as _ImgImageRGBAPixels
 from .mod_ImgPalette import\
     ImgPalette as _ImgPalette
 
@@ -55,16 +55,12 @@ class ImgImage:
         return len(self.__pixels)
     
     def __iter__(self):
-        _len = len(self.__pixels)
-        _i = 0
-        while _i < _len:
-            yield _cast(_ImgColor|_np.uint8, self.__pixels[_i])
-            _i += 1
+        for _pixel in self.__pixels:
+            yield _pixel
     
     def __getitem__(self, key):
         try:
-            _index = self.__getindex(key)
-            return _cast(_ImgColor|_np.uint8, self.__pixels[_index])
+            return self.__pixels[key]
         except TypeError as _e:
             e = _e
         except ValueError as _e:
@@ -73,20 +69,7 @@ class ImgImage:
     
     def __setitem__(self, key, value):
         try:
-            # Get index
-            _index = self.__getindex(key)
-            # Ensure value is valid
-            if self.__haspalette:
-                try: value = _np.uint8(value)
-                except: raise TypeError(\
-                    "Paletted image requires the pixel value to be an 8-bit unsigned integer.")
-            else:
-                if not isinstance(value, _ImgColor):
-                    raise TypeError(\
-                        "Non-paletted image requires the pixel value to be an ImgColor.")
-            # Set value
-            self.__pixels[_index] = value # type: ignore
-            # Success!!!
+            self.__pixels[key] = value
             return
         except TypeError as _e:
             e = _e
@@ -111,6 +94,13 @@ class ImgImage:
         Image height
         """
         return self.__height
+    
+    @property
+    def pixels(self):
+        """
+        Pixel data
+        """
+        return self.__pixels
     
     @property
     def palette(self):
@@ -174,28 +164,11 @@ class ImgImage:
         # height
         self.__height = height
         # pixels
-        size = self.__width * self.__height
         if self.__haspalette:
-            self.__pixels = _np.zeros(size, dtype = _np.uint8)
+            self.__pixels = _ImgImagePPixels(self.__width, self.__height)
         else:
-            self.__pixels = _np.full(size, _ImgColor(), dtype = object)
+            self.__pixels = _ImgImageRGBAPixels(self.__width, self.__height)
     
-    def __getindex(self, key):
-        if not isinstance(key, tuple):
-            index = _ErrorUtil.valid_int(key)
-            if index < 0 or index >= len(self.__pixels):
-                raise ValueError("Index is out of range.")
-            return index
-        if not len(key) == 2:
-            raise ValueError("Tuple must contain exactly 2 integers.")
-        x = _ErrorUtil.valid_int(key[0])
-        y = _ErrorUtil.valid_int(key[1])
-        if x < 0 or x >= self.__width:
-            raise ValueError("X-coordinate is out of range.")
-        if y < 0 or y >= self.__height:
-            raise ValueError("Y-coordinate is out of range.")
-        return x + y * self.__width
-
     #endregion
 
     #region methods
@@ -286,17 +259,23 @@ class ImgImage:
             or\n
             y is out of range
         """
-        if x < 0 or x >= self.__width:
-            raise ValueError("x is out of range.")
-        if y < 0 or y >= self.__height:
-            raise ValueError("y is out of range.")
-        xy = x + y * self.__width
-        if self.__haspalette:
-            index = _cast(_np.uint8, self.__pixels[xy])
-            palette = _cast(_ImgPalette, self.__palette)
-            if index >= len(palette):
-                return None
-            return palette[index]
-        return _cast(_ImgColor, self.__pixels[xy])
+        try:
+            if self.__haspalette:
+                pixels = _cast(_ImgImagePPixels, self.__pixels)
+                palette = _cast(_ImgPalette, self.__palette)
+                index = pixels[x, y]
+                if index >= len(palette):
+                    return None
+                return palette[index]
+            else:
+                pixels = _cast(_ImgImageRGBAPixels, self.__pixels)
+                return pixels[x, y]
+        except ValueError:
+            if x < 0 or x >= self.__width:
+                e = ValueError("x is out of range.")
+            elif y < 0 or y >= self.__height:
+                e = ValueError("y is out of range.")
+            else: raise
+        raise e
         
     #endregion

@@ -1,5 +1,6 @@
 __all__ = [\
-    'ImgPalette',]
+    'ImgPalette',\
+    'IMGPALETTE_MAX',]
 
 import numpy as _np
 
@@ -11,6 +12,11 @@ from ..helper.mod_ErrorUtil import\
 from .mod_ImgColor import\
     ImgColor as _ImgColor
 
+IMGPALETTE_MAX = 256
+"""
+Maximum palette size
+"""
+
 class ImgPalette:
     """
     Represents a color palette
@@ -18,14 +24,14 @@ class ImgPalette:
 
     #region init
 
-    def __init__(self, size:int = 256):
+    def __init__(self, size:int = IMGPALETTE_MAX):
         """
         Initializer for ImgPalette
         
         :param size:
             Number of colors in palette
         :raise ValueError:
-            size is less than 0 or greater than 256
+            size is less than 0 or greater than IMGPALETTE_MAX
         """
         try:
             self.format(size = size)
@@ -76,8 +82,8 @@ class ImgPalette:
     #region helper methods
 
     def __setsize(self, size:int):
-        if size < 0 or size > 256:
-            raise ValueError("size must be >= 0 and <= 256.")
+        if size < 0 or size > IMGPALETTE_MAX:
+            raise ValueError("size must be >= 0 and <= IMGPALETTE_MAX.")
         self.__colors = _np.full(size, _ImgColor(), dtype = object)
     
     def __index(self, index):
@@ -90,7 +96,7 @@ class ImgPalette:
 
     #region methods
 
-    def format(self, size:int = 256):
+    def format(self, size:int = IMGPALETTE_MAX):
         """
         Formats the palette\n
         NOTE: All existing data will be lost
@@ -98,7 +104,7 @@ class ImgPalette:
         :param size:
             Number of colors in palette
         :raise ValueError:
-            size is less than 0 or greater than 256
+            size is less than 0 or greater than IMGPALETTE_MAX
         """
         try:
             self.__setsize(size)
@@ -114,7 +120,7 @@ class ImgPalette:
         :param size:
             Number of colors in palette
         :raise ValueError:
-            size is less than 0 or greater than 256
+            size is less than 0 or greater than IMGPALETTE_MAX
         """
         try:
             prev_colors = self.__colors

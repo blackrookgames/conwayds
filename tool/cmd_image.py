@@ -8,11 +8,11 @@ import src.cli as cli
 import src.cliutil as cliutil
 import src.img as img
 
-class cmd_palette(cli.CLICommand):
+class cmd_image(cli.CLICommand):
 
     @property
     def _desc(self) -> None|str:
-        return "Converts a palette."
+        return "Converts an image."
 
     #region required
 
@@ -44,7 +44,6 @@ class cmd_palette(cli.CLICommand):
             self_palette = cast(None|str, self.palette) # type: ignore
             # Input
             ima = cliutil.CLIImgUtil.image_from_file(self_input)
-            ima.resize(ima.width, ima.width)
             # Palette
             if ima.haspalette and self_palette is not None:
                 pal = cliutil.CLIImgUtil.image_from_file(self_palette)
@@ -64,4 +63,4 @@ class cmd_palette(cli.CLICommand):
 
     #endregion
 
-sys.exit(cmd_palette().execute(sys.argv))
+sys.exit(cmd_image().execute(sys.argv))
