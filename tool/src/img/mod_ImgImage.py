@@ -270,7 +270,7 @@ class ImgImage:
             else:
                 pixels = _cast(_ImgImageRGBAPixels, self.__pixels)
                 return pixels[x, y]
-        except ValueError:
+        except IndexError:
             if x < 0 or x >= self.__width:
                 e = ValueError("x is out of range.")
             elif y < 0 or y >= self.__height:

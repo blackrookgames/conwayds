@@ -12,7 +12,7 @@ class cmd_imgpalette(cli.CLICommand):
 
     @property
     def _desc(self) -> None|str:
-        return "Creates a palette out of an image."
+        return "Creates a rendering of an image palette."
 
     #region required
 

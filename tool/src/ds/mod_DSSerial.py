@@ -1,6 +1,8 @@
 __all__ = [\
     'DSSerial',]
 
+import numpy as _np
+
 from .mod_DSColor import\
     DSColor as _DSColor
 from .mod_DSColorUtil import\

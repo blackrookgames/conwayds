@@ -53,7 +53,7 @@ class ImgPalette:
             return _cast(_ImgColor, self.__colors[_index])
         except TypeError as _e:
             e = _e
-        except ValueError as _e:
+        except IndexError as _e:
             e = _e
         raise e
     
@@ -66,7 +66,7 @@ class ImgPalette:
             return
         except TypeError as _e:
             e = _e
-        except ValueError as _e:
+        except IndexError as _e:
             e = _e
         raise e
     
@@ -89,7 +89,7 @@ class ImgPalette:
     def __index(self, index):
         _index = _ErrorUtil.valid_int(index)
         if _index < 0 or _index >= len(self.__colors):
-            raise ValueError("index is out of range.")
+            raise IndexError("Index is out of range.")
         return _index
 
     #endregion

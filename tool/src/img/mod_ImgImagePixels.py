@@ -57,7 +57,7 @@ class ImgImagePixels(_Generic[T]):
             return self._getpixel(_index)
         except TypeError as _e:
             e = _e
-        except ValueError as _e:
+        except IndexError as _e:
             e = _e
         raise e
     
@@ -69,7 +69,7 @@ class ImgImagePixels(_Generic[T]):
             return
         except TypeError as _e:
             e = _e
-        except ValueError as _e:
+        except IndexError as _e:
             e = _e
         raise e
     
@@ -106,16 +106,16 @@ class ImgImagePixels(_Generic[T]):
         if not isinstance(key, tuple):
             index = _ErrorUtil.valid_int(key)
             if index < 0 or index >= self.__size:
-                raise ValueError("Index is out of range.")
+                raise IndexError("Index is out of range.")
             return index
         if not len(key) == 2:
-            raise ValueError("Tuple must contain exactly 2 integers.")
+            raise IndexError("Tuple must contain exactly 2 integers.")
         x = _ErrorUtil.valid_int(key[0])
         y = _ErrorUtil.valid_int(key[1])
         if x < 0 or x >= self.__width:
-            raise ValueError("X-coordinate is out of range.")
+            raise IndexError("X-coordinate is out of range.")
         if y < 0 or y >= self.__height:
-            raise ValueError("Y-coordinate is out of range.")
+            raise IndexError("Y-coordinate is out of range.")
         return x + y * self.__width
 
     def _validatepixel(self, value) -> T:
@@ -123,7 +123,7 @@ class ImgImagePixels(_Generic[T]):
         :raise TypeError:
             value is not of a valid type
         """
-        raise NotImplementedError("_getpixel has not yet been implemented.")
+        raise NotImplementedError("_validatepixel has not yet been implemented.")
 
     def _getpixel(self, index:int) -> T:
         """
