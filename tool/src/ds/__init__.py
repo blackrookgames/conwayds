@@ -2,10 +2,10 @@ from .mod_DSColor import *
 from .mod_DSColorUtil import *
 from .mod_DSPalette import *
 from .mod_DSSerial import *
+from .mod_DSTile import *
 from .mod_DSTile4 import *
 from .mod_DSTile8 import *
-from .mod_DSTile import *
+from .mod_DSTileset import *
 from .mod_DSTileset4 import *
 from .mod_DSTileset8 import *
-from .mod_DSTileset import *
 from .mod_DSUtil import *

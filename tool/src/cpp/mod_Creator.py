@@ -3,8 +3,8 @@ all = [\
 
 from io import\
     StringIO as _StringIO 
-from pathlib import\
-    Path as _Path
+from typing import\
+    cast as _cast
 
 from ..cliutil.mod_CLICommandError import\
     CLICommandError as _CLICommandError
@@ -12,7 +12,12 @@ from ..cliutil.mod_CLIStrUtil import\
     CLIStrUtil as _CLIStrUtil
 from ..data.mod_StringReader import\
     StringReader as _StringReader
-from .mod__Block import _Block
+from ..data.mod_Text import\
+    Text as _Text
+from ..data.mod_TextChar import\
+    TextChar as _TextChar
+from ..data.mod_TextReader import\
+    TextReader as _TextReader
 
 class Creator:
     """
@@ -21,68 +26,47 @@ class Creator:
 
     #region init
 
-    def __init__(self, blocks:list[_Block], dpath):
+    def __init__(self, reader:_TextReader, dpath):
         """
         Do NOT create a Creator instance directly. Instead, call Creator.run().
         """
-        # These variable may also be accessed by other classes in the cpp module
-        self.__blocks = blocks
+        self.__reader = reader
         self.__dpath = dpath
 
     #endregion
 
     #region properties
 
+    @property
+    def reader(self):
+        """
+        Reader
+        """
+        return self.__reader
     
+    @property
+    def dpath(self):
+        """
+        Path of working directory
+        """
+        return self.__dpath
 
     #endregion
 
-    #region helper methods
+    #region "helper" methods
 
-    @classmethod
-    def __readblocks(cls, path:str):
-        try:
-            # Open file
-            rawtext = _CLIStrUtil.str_from_file(path)
-            blocks:list[_Block] = []
-            with _StringIO() as _blockio:
-                _f_row = 1
-                _f_col = 1
-                _c_row = 1
-                _c_col = 1
-                _esc = False
-                for _chr in rawtext:
-                    _new = False
-                    if _esc:
-                        if _chr != '\n':
-                            _blockio.write('\\')
-                        _blockio.write(_chr)
-                        _esc = False
-                    else:
-                        if _chr == '\n':
-                            blocks.append(_Block(_f_row, _f_col, _blockio.getvalue()))
-                            _new = True
-                            _blockio.seek(0)
-                            _blockio.truncate(0)
-                        elif _chr == '\\':
-                            _esc = True
-                        else:
-                            _blockio.write(_chr)
-                    # Update row and column
-                    if _chr == '\n':
-                        _c_row += 1
-                        _c_col = 1
-                    else:
-                        _c_col += 1
-                    if _new:
-                        _f_row = _c_row
-                        _f_col = _c_col
-                blocks.append(_Block(_f_row, _f_col, _blockio.getvalue()))
-            # Success!!!
-            return blocks
-        except _CLICommandError as _e:
-            e = _e
-        raise e
+    def readblock(self):
+        """
+        Reads a "block" of text
+        """
+        _line = self.reader.read_line()
+        if len(_line) > 0:
+            _last = _line[len(_line) - 1]
+            while _last == '\\':
+                self.reader.next()
+                _line = _cast(_Text, _line.sub(end = -1) + _TextChar(0x20, _last.row, _last.col) + self.reader.read_line())
+                _last = _line[len(_line) - 1]
+        return _line
 
     #endregion
 
@@ -101,10 +85,17 @@ class Creator:
             An error occurred
         """
         try:
-            # Read file
-            blocks = cls.__readblocks(fpath)
             # Create instance
-            creator = Creator(blocks, dpath)
+            rawtext = _CLIStrUtil.str_from_file(fpath)
+            creator = Creator(_TextReader(_Text(rawtext)), dpath)
+            # Parse TODO: Rewrite
+            while True:
+                # Skip whitespace
+                creator.reader.skip_white()
+                if creator.reader.eof: break
+                # Parse line
+                _line = creator.readblock()
+                print(f"({_line[0].row}, {_line[0].col}) {_line}")
             # Success!!!
             return
         except _CLICommandError as _e:

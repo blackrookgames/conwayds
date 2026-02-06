@@ -5,3 +5,6 @@ from .mod_DataError import *
 from .mod_SerialError import *
 from .mod_SerialParse import *
 from .mod_StringReader import *
+from .mod_Text import *
+from .mod_TextChar import *
+from .mod_TextReader import *
