@@ -19,5 +19,8 @@
 		"C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 		"makefile.makefilePath": "${workspaceFolder}/Makefile",
 		"makefile.loggingLevel": "Debug",
+		"files.associations": {
+			".config": "plaintext"
+		}
 	}
 }

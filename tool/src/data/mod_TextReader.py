@@ -38,6 +38,7 @@ class TextReader:
         """
         return self.__text
     
+    @property
     def cursor(self):
         """
         Position of the cursor
@@ -171,8 +172,9 @@ class TextReader:
                 row = _char.row
                 col = _char.col + 1
             else:
-                row = self.__chr.row
-                col = self.__chr.col
+                _char = self.__text[pos]
+                row = _char.row
+                col = _char.col + 1
             # ERROR
             strio.write("ERROR: ")
             # Line

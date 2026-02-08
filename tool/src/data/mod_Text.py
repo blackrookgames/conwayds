@@ -137,10 +137,25 @@ class Text:
             return src.__chars
         # Check if source is a list
         if isinstance(src, list):
-            chars = _np.empty(len(src), dtype = object)
-            for _i in range(len(src)):
-                _chr = src[_i]
-                chars[_i] = _chr if isinstance(_chr, _TextChar) else 0
+            # Determine length
+            length = 0
+            for _item in src:
+                if isinstance(_item, _TextChar):
+                    length += 1
+                elif isinstance(_item, Text):
+                    length += len(_item.__chars)
+            # Create array
+            chars = _np.empty(length, dtype = object)
+            # Add characters
+            _i = 0
+            for _item in src:
+                if isinstance(_item, _TextChar):
+                    chars[_i] = _item
+                    _i += 1
+                elif isinstance(_item, Text):
+                    for _c in _item.__chars:
+                        chars[_i] = _c
+                        _i += 1
             return chars
         # Check if source is a non-tuple
         if not isinstance(src, tuple):
