@@ -1,8 +1,11 @@
-all = [\
-    'Creator',]
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from io import\
-    StringIO as _StringIO 
+all = [\
+    '_Creator',]
+
+from pathlib import\
+    Path as _Path
 from typing import\
     cast as _cast
 
@@ -19,19 +22,28 @@ from ..data.mod_TextChar import\
 from ..data.mod_TextReader import\
     TextReader as _TextReader
 
-class Creator:
+from .mod__CmdFuncError import _CmdFuncError
+
+
+if TYPE_CHECKING:
+    from .mod__call import _CmdCall, _CmdDef, _FuncCall, _FuncDef
+
+class _Creator:
     """
     Represents a "creator" of C++ source code
     """
 
     #region init
 
-    def __init__(self, reader:_TextReader, dpath):
+    def __init__(self, reader:_TextReader, dpath:_Path, cmds:dict[str, _CmdDef], funcs:dict[str, _FuncDef]):
         """
-        Do NOT create a Creator instance directly. Instead, call Creator.run().
+        Do NOT create a _Creator instance directly. Instead, call _Creator.run().
         """
         self.__reader = reader
-        self.__dpath = dpath
+        self.__dpath = dpath.resolve()
+        self.__cmds = cmds
+        self.__funcs = funcs
+        self.__vars:dict[str, object] = {}
 
     #endregion
 
@@ -49,12 +61,6 @@ class Creator:
         ord('$'): ord('$'),
         ord('#'): ord('#'),
     }
-
-    __ONELINERS = [
-        ("@print", 1),
-        ("@var", 2),
-        ("@line", 1),
-    ]
 
     #endregion
 
@@ -83,22 +89,34 @@ class Creator:
         for c in t: l.append(c)
 
     def __parse_cmd(self, argv:list[_Text]):
-        # TODO: Rewrite
-        for arg in argv:
-            print(f"\"{arg}\"", end = ' ')
-        print()
+        if len(argv) == 0:
+            raise _CmdFuncError("Command name expected")
+        # Get name
+        name = str(argv[0])
+        if not (name in self.__cmds):
+            raise _CmdFuncError(f"Unknown command: {name}")
+        # Call function
+        self.__cmds[name].call(self, argv)
 
     def __parse_func(self, argv:list[_Text]):
-        # TODO: Rewrite
-        a = []
-        for arg in argv:
-            a.append(arg)
-            a.append(_TextChar(0x20, 0, 0))
-        return _Text(a)
+        if len(argv) == 0:
+            raise _CmdFuncError("Function name expected")
+        # Get name
+        name = str(argv[0])
+        if not (name in self.__funcs):
+            raise _CmdFuncError(f"Unknown function: {name}")
+        # Call function
+        return self.__funcs[name].call(self, argv)
 
-    def __get_var(self, name:_Text):
-        # TODO: Rewrite
-        return name
+    def __get_var(self, rawname:_Text):
+        """
+        Assume:
+        - len(name) > 0
+        """
+        value = self.get_var(rawname)
+        if not isinstance(value, _Text):
+            raise _CmdFuncError(f"{rawname} is not a string variable.")
+        return value
 
     def __read_esc(self):
         """
@@ -250,37 +268,41 @@ class Creator:
         # Goto next character
         opos = self.__reader.cursor
         self.__reader.next()
-        # Variable?
-        if self.__reader.chr.ord == 0x7B:
-            self.__reader.next()
-            varname = self.__read_varname()
-            if varname is None:
-                raise _CLICommandError(self.__reader.error(\
-                    "Missing closing bracket",\
-                    pos = opos))
-            self.__addtextchars(arg, self.__get_var(varname))
-            return
-        # Function?
-        if self.__reader.chr.ord == 0x28:
-            self.__reader.next()
-            funcargs = self.__read_cmdorfunc(True)
-            if funcargs is None:
-                raise _CLICommandError(self.__reader.error(\
-                    "Missing closing parenthesis",\
-                    pos = opos))
-            self.__addtextchars(arg, self.__parse_func(funcargs))
-            return
-        # Invalid
-        raise _CLICommandError(self.__reader.error(\
-            "Expected ( or {",\
-            pos = opos))
+        try:
+            # Variable?
+            if self.__reader.chr.ord == 0x7B:
+                self.__reader.next()
+                varname = self.__read_varname()
+                if varname is None:
+                    raise _CLICommandError(self.__reader.error(\
+                        "Missing closing bracket",\
+                        pos = opos))
+                self.__addtextchars(arg, self.__get_var(varname))
+                return
+            # Function?
+            if self.__reader.chr.ord == 0x28:
+                self.__reader.next()
+                funcargs = self.__read_cmdorfunc(True)
+                if funcargs is None:
+                    raise _CLICommandError(self.__reader.error(\
+                        "Missing closing parenthesis",\
+                        pos = opos))
+                self.__addtextchars(arg, self.__parse_func(funcargs))
+                return
+            # Invalid
+            raise _CLICommandError(self.__reader.error(\
+                "Expected ( or {",\
+                pos = opos))
+        except _CmdFuncError as _e:
+            e = _CLICommandError(self.__reader.error(_e, pos = opos))
+        raise e
     
     def __read_cmdorfunc(self, readfunc:bool):
         # Compute end character
         endchr = 0x29 if readfunc else -1
         # Read arguments
         argv:list[_Text] = []
-        argmin = None # This is the minimum before reading the rest as one argument
+        minargs = None # This is the minimum before reading the rest as one argument
         while (not self.reader.eol) and self.reader.chr.ord != endchr:
             # Whitespace?
             if self.reader.chr.iswhite():
@@ -324,12 +346,11 @@ class Creator:
             if not readfunc:
                 # Get minimum arguments
                 if len(argv) == 1:
-                    for ol_name, ol_min in self.__ONELINERS:
-                        if arg == ol_name:
-                            argmin = ol_min
-                            break
+                    _arg = str(arg)
+                    if _arg in self.__cmds:
+                        minargs = self.__cmds[_arg].minargs
                 # If minimum is met, read the rest as one argument
-                if argmin is not None and len(argv) == argmin:
+                if minargs is not None and len(argv) == minargs:
                     self.reader.next()
                     argv.append(self.__read_toline())
                     break
@@ -358,10 +379,10 @@ class Creator:
         
     #endregion
 
-    #region methods
+    #region run method
 
     @classmethod
-    def run(cls, fpath:str, dpath:str):
+    def run(cls, fpath:str, dpath:str, cmds:dict[str, _CmdDef], funcs:dict[str, _FuncDef]):
         """
         Creates C++ sources.
 
@@ -369,24 +390,83 @@ class Creator:
             Path of configuration file
         :param dpath:
             Path of working directory
+        :param cmds:
+            Dictionary of commands
+        :param funcs:
+            Dictionary of functions
         :raise CLICommandError:
             An error occurred
         """
         try:
             # Create instance
             rawtext = _CLIStrUtil.str_from_file(fpath)
-            creator = Creator(_TextReader(_Text(rawtext)), dpath)
+            creator = _Creator(_TextReader(_Text(rawtext)), _Path(dpath), cmds, funcs)
             # Parse
             while not creator.reader.eof:
+                start = creator.reader.cursor
                 # Read command
                 argv = _cast(list[_Text], creator.__read_cmdorfunc(False))
                 if len(argv) == 0:
                     continue
-                creator.__parse_cmd(argv)
+                # Execute command
+                try:
+                    creator.__parse_cmd(argv)
+                    continue
+                except _CmdFuncError as _e:
+                    e = _CLICommandError(creator.__reader.error(_e, pos = start))
+                raise e
             # Success!!!
             return
         except _CLICommandError as _e:
             e = _e
         raise e
+
+    #endregion
+
+    #region methods
+
+    def set_var(self, name, value:object):
+        """
+        Sets the value of the variable with the specified name. If the variable does not 
+        exist, it will be created.
+        
+        :param name:
+            Variable name
+        :param value:
+            Value of variable
+        """
+        self.__vars[str(name)] = value
+
+    def get_var(self, name):
+        """
+        Gets the value of the variable with the specified name
+        
+        :param name:
+            Variable name
+        :param errorpos:
+            Cursor position for raising an error
+        :return:
+            Value of variable
+        :raise CLICommandError:
+            Variable could not be found
+        """
+        # Get name
+        name = str(name)
+        if not (name in self.__vars):
+            raise _CLICommandError(f"Unknown variable: {name}")
+        # Get value
+        return self.__vars[name]
+
+    def resolvepath(self, path):
+        """
+        Resolves the path. If the path is relative, it is assumed it is relative to the working directory.
+        
+        :param self: Description
+        :param path: Description
+        """
+        path = _Path(str(path))
+        if not path.is_absolute():
+            path = self.__dpath / path
+        return str(path.resolve())
 
     #endregion

@@ -183,7 +183,7 @@ class TextReader:
             if not lineonly:
                 strio.write(f"Column: {col} ")
             # Message
-            strio.write(message)
+            strio.write(str(message))
             # Return
             return strio.getvalue()
 

@@ -41,7 +41,7 @@ class cmd_cpp(cli.CLICommand):
         try:
             self_config = cast(str, self.config) # type: ignore
             fpath, dpath = self.__evalpath(self_config)
-            cpp.Creator.run(str(fpath), str(dpath))
+            cpp.run(str(fpath), str(dpath))
             return 0
         except cliutil.CLICommandError as e:
             print(f"ERROR: {e}", file = sys.stderr)
