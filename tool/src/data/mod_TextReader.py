@@ -175,8 +175,6 @@ class TextReader:
                 _char = self.__text[pos]
                 row = _char.row
                 col = _char.col + 1
-            # ERROR
-            strio.write("ERROR: ")
             # Line
             strio.write(f"Line: {row} ")
             # Column

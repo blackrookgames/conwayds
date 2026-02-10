@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 #region CmdDef
 
-type _CmdCall = _Callable[[_Creator, list[_Text]], None]
+type _CmdCall = _Callable[[_Creator, list[str]], None]
 
 class _CmdDef:
     """
@@ -61,7 +61,7 @@ class _CmdDef:
 
 #region FuncDef
 
-type _FuncCall = _Callable[[_Creator, list[_Text]], _Text]
+type _FuncCall = _Callable[[_Creator, list[str]], str]
 
 class _FuncDef:
     """

@@ -1,10 +1,20 @@
 all = []
 
+from sys import\
+    stderr as _stderr
 from typing import\
     cast as _cast
 
-from ...data.mod_Text import\
-    Text as _Text
+from ...cli.mod_CLIParseUtil import\
+    CLIParseUtil as _CLIParseUtil
+from ...cli.mod_CLIRequiredDef import\
+    CLIRequiredDef as _CLIRequiredDef
+from ...data.mod_DataBuffer import\
+    DataBuffer as _DataBuffer
+from ...ds.mod_DSSerial import\
+    DSSerial as _DSSerial
+from ...ds.mod_DSTileset import\
+    DSTileset as _DSTileset
 from ...ds.mod_DSUtil import\
     DSUtil as _DSUtil
 from ...img.mod_ImgImage import\
@@ -15,24 +25,34 @@ from ...img.mod_ImgPalette import\
 from ..mod__call import _CmdDef
 from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
+from .mod___HCmdConvert import _HCmdConvert
 
-def __cmd(creator:_Creator, argv:list[_Text]):
-    if len(argv) <= 3:
-        raise _CmdFuncError("Expected an output variable name, input variable name, and bpp.")
-    # Output variable
-    output = argv[1]
-    # Input variable
-    input = creator.get_var(argv[2])
-    if not isinstance(input, _ImgImage):
-        raise _CmdFuncError(f"{input} is not an image.")
-    if not input.haspalette:
-        raise _CmdFuncError(f"{input} does not contain a palette.")
-    # BPP
-    bpp = argv[3]
-    # Create
-    if bpp == '4': data = _DSUtil.tileset4_get_img(input)
-    elif bpp == '8': data = _DSUtil.tileset8_get_img(input)
-    else: raise _CmdFuncError(f"{bpp} is not valid for bits-per-pixel.")
-    creator.set_var(output, data)
+def tobpp(input:str):
+    passs, value = _CLIParseUtil.to_int(input)
+    if not passs: return False, 0
+    if value != 4 and value != 8:
+        print(f"{value} is not valid for the bits-per-pixel.", file = _stderr)
+        return False, 0
+    return True, value
+
+class _HHCmd(_HCmdConvert[_DSTileset]):
+    __bpp = _CLIRequiredDef(name = "bpp", parse = tobpp)
+    @property
+    def _create(self):
+        return self.__create
+    def __init__(self):
+        super().__init__()
+        self.__create:dict[type, _HCmdConvert._TCreate] = {}
+        # ImgImage
+        def _create_ImgImage(cmd:_HCmdConvert[_DSTileset], input:object):
+            _input = _cast(_ImgImage, input)
+            cmd_bpp = _cast(int, cmd.bpp) # type: ignore
+            if cmd_bpp == 4:
+                return _DSUtil.tileset4_get_img(_input)
+            return _DSUtil.tileset8_get_img(_input)
+        self.__create[_ImgImage] = _create_ImgImage
+
+def __cmd(creator:_Creator, argv:list[str]):
+    _HHCmd().execute(creator, argv)
 
 __def = _CmdDef(__cmd)

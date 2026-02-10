@@ -3,30 +3,30 @@ all = []
 from typing import\
     cast as _cast
 
-from ...data.mod_Text import\
-    Text as _Text
+from ...data.mod_DataBuffer import\
+    DataBuffer as _DataBuffer
 from ...ds.mod_DSPalette import\
     DSPalette as _DSPalette
 from ...ds.mod_DSSerial import\
     DSSerial as _DSSerial
 
 from ..mod__call import _CmdDef
-from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
+from .mod___HCmdConvert import _HCmdConvert
 
-def __cmd(creator:_Creator, argv:list[_Text]):
-    if len(argv) <= 2:
-        raise _CmdFuncError("Expected an output variable name and an input variable name.")
-    # Output variable
-    output = argv[1]
-    # Input variable
-    input = creator.get_var(argv[2])
-    # Create
-    if isinstance(input, _DSPalette):
-        data = _DSSerial.palette_to_bin(input)
-    else:
-        raise _CmdFuncError(f"Cannot create a databuffer out of {type(input).__name__}.")
-    creator.set_var(output, data)
-    return
+class _HHCmd(_HCmdConvert[_DataBuffer]):
+    @property
+    def _create(self):
+        return self.__create
+    def __init__(self):
+        super().__init__()
+        self.__create:dict[type, _HCmdConvert._TCreate] = {}
+        # DSPalette
+        def _create_DSPalette(cmd:_HCmdConvert[_DataBuffer], input:object):
+            return _DSSerial.palette_to_bin(_cast(_DSPalette, input))
+        self.__create[_DSPalette] = _create_DSPalette
+
+def __cmd(creator:_Creator, argv:list[str]):
+    _HHCmd().execute(creator, argv)
 
 __def = _CmdDef(__cmd)

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 all = [\
     '_Creator',]
 
+from io import\
+    StringIO as _StringIO
 from pathlib import\
     Path as _Path
 from typing import\
@@ -84,11 +86,7 @@ class _Creator:
 
     #region helper methods
 
-    @classmethod
-    def __addtextchars(cls, l:list[_TextChar], t:_Text):
-        for c in t: l.append(c)
-
-    def __parse_cmd(self, argv:list[_Text]):
+    def __parse_cmd(self, argv:list[str]):
         if len(argv) == 0:
             raise _CmdFuncError("Command name expected")
         # Get name
@@ -98,7 +96,7 @@ class _Creator:
         # Call function
         self.__cmds[name].call(self, argv)
 
-    def __parse_func(self, argv:list[_Text]):
+    def __parse_func(self, argv:list[str]):
         if len(argv) == 0:
             raise _CmdFuncError("Function name expected")
         # Get name
@@ -107,16 +105,6 @@ class _Creator:
             raise _CmdFuncError(f"Unknown function: {name}")
         # Call function
         return self.__funcs[name].call(self, argv)
-
-    def __get_var(self, rawname:_Text):
-        """
-        Assume:
-        - len(name) > 0
-        """
-        value = self.get_var(rawname)
-        if not isinstance(value, _Text):
-            raise _CmdFuncError(f"{rawname} is not a string variable.")
-        return value
 
     def __read_esc(self):
         """
@@ -132,7 +120,7 @@ class _Creator:
             return self.__reader.error(
                 f"Unrecognized escape sequence: {_badseq}",
                 pos = _pos0)
-        def _getchar(_digits, _bspos, _bsrow, _bscol):
+        def _getchar(_digits, _bspos):
             _ord = 0
             while _digits > 0:
                 _digits -= 1
@@ -155,7 +143,7 @@ class _Creator:
                 raise _CLICommandError(self.__reader.error(
                     f"Invalid hex character: {self.__reader.chr}",
                     pos = _bspos))
-            return _TextChar(_ord, _bsrow, _bscol)
+            return chr(_ord)
         # Copy position of blackslash
         bspos = self.__reader.cursor
         bschr = self.__reader.chr
@@ -166,11 +154,11 @@ class _Creator:
             raise _CLICommandError(_end(bspos))
         # Compute character
         if self.__reader.chr.ord in self.__ESCSEQ:
-            char = _TextChar(self.__ESCSEQ[self.__reader.chr.ord], bschr.row, bschr.col)
+            char = chr(self.__ESCSEQ[self.__reader.chr.ord])
         elif self.__reader.chr.ord == 0x78:
-            char = _getchar(2, bspos, bschr.row, bschr.col)
+            char = _getchar(2, bspos)
         elif self.__reader.chr.ord == 0x75:
-            char = _getchar(4, bspos, bschr.row, bschr.col)
+            char = _getchar(4, bspos)
         else:
             raise _CLICommandError(_unrecognized(bspos, self.__reader.cursor + 1))
         # Success!!!
@@ -178,40 +166,40 @@ class _Creator:
         return char
 
     def __read_arg(self, endchr:int, noneifeol:bool):
-        arg:list[_TextChar] = []
-        while True:
-            # End of line?
-            if self.reader.eol:
-                if noneifeol: return None
-                break
-            # End character?
-            if self.reader.chr.ord == endchr:
-                break
-            # Whitespace?
-            if self.reader.chr.iswhite():
-                break
-            # Comment?
-            if self.reader.chr.ord == 0x23:
-                break
-            # Escape?
-            if self.reader.chr.ord == 0x5c:
-                arg.append(self.__read_esc())
-                continue
-            # Dollar sign?
-            if self.reader.chr.ord == 0x24:
-                self.__read_dollar(arg)
-                continue
-            # Quote?
-            if self.reader.chr.ord == 0x22:
-                self.__read_quote(arg)
-                continue
-            # Anything else
-            arg.append(self.reader.chr)
-            self.__reader.next()
-        # Success!!!
-        return _Text(arg)
+        with _StringIO() as strio:
+            while True:
+                # End of line?
+                if self.reader.eol:
+                    if noneifeol: return None
+                    break
+                # End character?
+                if self.reader.chr.ord == endchr:
+                    break
+                # Whitespace?
+                if self.reader.chr.iswhite():
+                    break
+                # Comment?
+                if self.reader.chr.ord == 0x23:
+                    break
+                # Escape?
+                if self.reader.chr.ord == 0x5c:
+                    strio.write(self.__read_esc())
+                    continue
+                # Dollar sign?
+                if self.reader.chr.ord == 0x24:
+                    self.__read_dollar(strio)
+                    continue
+                # Quote?
+                if self.reader.chr.ord == 0x22:
+                    self.__read_quote(strio)
+                    continue
+                # Anything else
+                strio.write(chr(self.reader.chr.ord))
+                self.__reader.next()
+            # Success!!!
+            return strio.getvalue()
 
-    def __read_quote(self, arg:list[_TextChar]):
+    def __read_quote(self, strio:_StringIO):
         """
         Assume
         - self.__reader.chr == '"'
@@ -228,36 +216,34 @@ class _Creator:
                 break
             # Escape?
             if self.reader.chr.ord == 0x5c:
-                arg.append(self.__read_esc())
+                strio.write(self.__read_esc())
                 continue
             # Dollar sign?
             if self.reader.chr.ord == 0x24:
-                self.__read_dollar(arg)
+                self.__read_dollar(strio)
                 continue
             # Anything else
-            arg.append(self.reader.chr)
+            strio.write(chr(self.reader.chr.ord))
             self.__reader.next()
-        # Success!!!
-        return _Text(arg)
     
     def __read_toline(self):
-        arg:list[_TextChar] = []
-        while not self.reader.eol:
-            # Escape?
-            if self.reader.chr.ord == 0x5c:
-                arg.append(self.__read_esc())
-                continue
-            # Dollar sign?
-            if self.reader.chr.ord == 0x24:
-                self.__read_dollar(arg)
-                continue
-            # Anything else
-            arg.append(self.reader.chr)
-            self.__reader.next()
-        # Success!!!
-        return _Text(arg)
+        with _StringIO() as strio:
+            while not self.reader.eol:
+                # Escape?
+                if self.reader.chr.ord == 0x5c:
+                    strio.write(self.__read_esc())
+                    continue
+                # Dollar sign?
+                if self.reader.chr.ord == 0x24:
+                    self.__read_dollar(strio)
+                    continue
+                # Anything else
+                strio.write(chr(self.reader.chr.ord))
+                self.__reader.next()
+            # Success!!!
+            return strio.getvalue()
 
-    def __read_dollar(self, arg:list[_TextChar]):
+    def __read_dollar(self, strio:_StringIO):
         """
         Assume
         - self.__reader.chr == '"'
@@ -277,7 +263,12 @@ class _Creator:
                     raise _CLICommandError(self.__reader.error(\
                         "Missing closing bracket",\
                         pos = opos))
-                self.__addtextchars(arg, self.__get_var(varname))
+                varvalue = self.get_var(varname)
+                if not isinstance(varvalue, str):
+                    raise _CLICommandError(self.__reader.error(\
+                        f"{varname} is not a string variable.",\
+                        pos = opos))
+                strio.write(varvalue)
                 return
             # Function?
             if self.__reader.chr.ord == 0x28:
@@ -287,7 +278,7 @@ class _Creator:
                     raise _CLICommandError(self.__reader.error(\
                         "Missing closing parenthesis",\
                         pos = opos))
-                self.__addtextchars(arg, self.__parse_func(funcargs))
+                strio.write(self.__parse_func(funcargs))
                 return
             # Invalid
             raise _CLICommandError(self.__reader.error(\
@@ -301,7 +292,7 @@ class _Creator:
         # Compute end character
         endchr = 0x29 if readfunc else -1
         # Read arguments
-        argv:list[_Text] = []
+        argv:list[str] = []
         minargs = None # This is the minimum before reading the rest as one argument
         while (not self.reader.eol) and self.reader.chr.ord != endchr:
             # Whitespace?
@@ -405,7 +396,7 @@ class _Creator:
             while not creator.reader.eof:
                 start = creator.reader.cursor
                 # Read command
-                argv = _cast(list[_Text], creator.__read_cmdorfunc(False))
+                argv = _cast(list[str], creator.__read_cmdorfunc(False))
                 if len(argv) == 0:
                     continue
                 # Execute command

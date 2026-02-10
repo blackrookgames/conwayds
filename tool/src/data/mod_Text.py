@@ -20,7 +20,7 @@ class Text:
 
     #region init
 
-    def __init__(self, src, norowcol:bool = False):
+    def __init__(self, src):
         """
         Initializer for Text
         
@@ -32,7 +32,7 @@ class Text:
             src is not of a valid type
         """
         try:
-            self.__chars = self.__getchars(src, norowcol)
+            self.__chars = self.__getchars(src)
             return
         except TypeError as _e:
             e = _e
@@ -129,19 +129,10 @@ class Text:
         return chars
 
     @classmethod
-    def __getchars(cls, src, norowcol:bool):
-        def _chrval(_chr:_TextChar):
-            if norowcol: return _chr
-            return _TextChar(_chr.ord, 0, 0)
+    def __getchars(cls, src):
         # Check if source is a text
         if isinstance(src, Text):
-            if not norowcol:
-                return src.__chars
-            chars = _np.empty(len(src.__chars), dtype = object)
-            for _i in range(len(src.__chars)):
-                _char = _cast(_TextChar, src.__chars[_i])
-                chars[_i] = _TextChar(_char.ord, 0, 0)
-            return chars
+            return src.__chars
         # Check if source is a list
         if isinstance(src, list):
             # Determine length
@@ -157,11 +148,11 @@ class Text:
             _i = 0
             for _item in src:
                 if isinstance(_item, _TextChar):
-                    chars[_i] = _chrval(_item)
+                    chars[_i] = _item
                     _i += 1
                 elif isinstance(_item, Text):
                     for _c in _item.__chars:
-                        chars[_i] = _chrval(_c)
+                        chars[_i] = _c
                         _i += 1
             return chars
         # Check if source is a non-tuple
@@ -181,7 +172,7 @@ class Text:
                     raise IndexError("Start index must be less than or equal to stop index.")
                 chars = _np.empty(_end - _beg, dtype = object)
                 for _i in range(len(chars)):
-                    chars[_i] = _chrval(_text.__chars[_beg + _i])
+                    chars[_i] = _text.__chars[_beg + _i]
                 return chars
         # Prepare to concatenate multiple texts
         count = 0
@@ -198,10 +189,10 @@ class Text:
         for _item in src:
             if isinstance(_item, Text):
                 for _char in _item.__chars:
-                    chars[_i] = _chrval(_char)
+                    chars[_i] = _char
                     _i += 1
             else:
-                chars[_i] = _chrval(_cast(_TextChar, _item))
+                chars[_i] = _item
                 _i += 1
         return chars
 
