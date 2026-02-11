@@ -1,4 +1,5 @@
 from .mod_CLICommand import *
+from .mod_CLICommandBase import *
 from .mod_CLIOption import *
 from .mod_CLIOptionDef import *
 from .mod_CLIOptionFlag import *

@@ -19,7 +19,7 @@ from ...img.mod_ImgPalette import\
 from ..mod__call import _CmdDef
 from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
-from .mod___HCmdConvert import _HCmdConvert
+from .c__HCmdConvert import _HCmdConvert
 
 class _HHCmd(_HCmdConvert[_DSPalette]):
     @property

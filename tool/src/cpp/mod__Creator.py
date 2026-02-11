@@ -46,6 +46,9 @@ class _Creator:
         self.__cmds = cmds
         self.__funcs = funcs
         self.__vars:dict[str, object] = {}
+        # file
+        self.__file_path:None|str = None
+        self.__file_data:None|list[str] = None
 
     #endregion
 
@@ -428,7 +431,7 @@ class _Creator:
         """
         self.__vars[str(name)] = value
 
-    def get_var(self, name):
+    def get_var(self, name, types:None|type|tuple[type, ...] = None):
         """
         Gets the value of the variable with the specified name
         
@@ -438,15 +441,49 @@ class _Creator:
             Cursor position for raising an error
         :return:
             Value of variable
-        :raise CLICommandError:
-            Variable could not be found
+        :raise _CmdFuncError:
+            Variable could not be found\n
+            or\n
+            Value is not of the specified types
         """
+        def _badtype():
+            _types = _cast(type|tuple[type, ...], types)
+            # Single type
+            if isinstance(_types, type) or len(_types) == 1:
+                if isinstance(_types, type): _type = _types
+                else: _type = _types[0]
+                raise _CmdFuncError(f"{name} is not a {_type.__name__}.")
+            # Two types
+            if len(_types) == 2:
+                raise _CmdFuncError(f"{name} is not a {_types[0].__name__} nor {_types[1].__name__}.")
+            # Multiple types
+            with _StringIO() as _strio:
+                _strio.write(f"{name} is not a ")
+                for _i in range(len(_types) - 1):
+                    _strio.write(f"{_types[_i].__name__}, ")
+                _strio.write(f"nor {_types[len(_types) - 1].__name__}.")
+                raise _CmdFuncError(_strio.getvalue())
         # Get name
         name = str(name)
         if not (name in self.__vars):
-            raise _CLICommandError(f"Unknown variable: {name}")
+            raise _CmdFuncError(f"Unknown variable: {name}")
         # Get value
-        return self.__vars[name]
+        value = self.__vars[name]
+        if types is not None:
+            if isinstance(types, type):
+                if not isinstance(value, types):
+                    _badtype()
+            elif len(types) > 0:
+                _found = False
+                for _type in types:
+                    if not isinstance(value, _type):
+                        continue
+                    _found = True
+                    break
+                if not _found:
+                    _badtype()
+        # Success!!!
+        return value
 
     def resolvepath(self, path):
         """
@@ -459,5 +496,68 @@ class _Creator:
         if not path.is_absolute():
             path = self.__dpath / path
         return str(path.resolve())
+    
+    def file_isopen(self):
+        """
+        Checks whether or not there is a file currently "open"
+
+        :return:
+            Whether or not there is a file currently "open"
+        """
+        return self.__file_path is not None
+
+    def file_open(self, path):
+        """
+        "Opens" a file for writing
+
+        :param path:
+            Path of the file
+        :raise _CmdFuncError:
+            There is file already "open"
+        """
+        if self.__file_path is not None:
+            raise _CmdFuncError("There is already a file open.")
+        # "Open"
+        self.__file_path = str(path)
+        self.__file_data = []
+    
+    def file_close(self):
+        """
+        Closes the file that is currently "open". This is where the file is actually created.
+
+        :raise _CmdFuncError:
+            There is not a file that is currently "open".\n
+            or\n
+            An error occurred while writing.
+        """
+        try:
+            if self.__file_path is None:
+                raise _CmdFuncError("There is not a file that is currently open.")
+            # Create file
+            with _StringIO() as _strio:
+                for _line in _cast(list[str], self.__file_data):
+                    _strio.write(f"{_line}\n")
+                _CLIStrUtil.str_to_file(_strio.getvalue(), self.__file_path)
+            # "Close"
+            self.__file_path = None
+            self.__file_data = None
+            # Success!!!
+            return
+        except _CLICommandError as _e:
+            e = _CmdFuncError(_e)
+        raise e
+    
+    def file_line(self, line):
+        """
+        "Writes" a line to the file that is currently "open"
+
+        :param line:
+            Line to write
+        :raise _CmdFuncError:
+            There is not a file that is currently "open".
+        """
+        if self.__file_path is None:
+            raise _CmdFuncError("There is not a file that is currently open.")
+        _cast(list[str], self.__file_data).append(str(line))
 
     #endregion

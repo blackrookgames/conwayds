@@ -1,34 +1,41 @@
-all = [\
-    'run',]
-
+all = ['run']
 from .mod__Creator import _Creator
 from .mod__call import _CmdDef, _FuncDef
-
-from ._cmds.mod__databuffer import __def as _cmd_databuffer
-from ._cmds.mod__dspalette import __def as _cmd_dspalette
-from ._cmds.mod__dstileset import __def as _cmd_dstileset
-from ._cmds.mod__imgimage import __def as _cmd_imgimage
-from ._cmds.mod__print import __def as _cmd_print
-from ._cmds.mod__var import __def as _cmd_var
-from ._funcs.mod__type import __def as _func_type
-
+from ._cf.c_close import __def as _c_close
+from ._cf.c_databuffer import __def as _c_databuffer
+from ._cf.c_dspalette import __def as _c_dspalette
+from ._cf.c_dstileset import __def as _c_dstileset
+from ._cf.c_line import __def as _c_line
+from ._cf.c_load import __def as _c_load
+from ._cf.c_open import __def as _c_open
+from ._cf.c_print import __def as _c_print
+from ._cf.c_var import __def as _c_var
+from ._cf.f_cppdata import __def as _f_cppdata
+from ._cf.f_cppsize import __def as _f_cppsize
+from ._cf.f_type import __def as _f_type
+# Commands
 _CMDS:dict[str, _CmdDef] = {
-    "@databuffer": _cmd_databuffer,
-    "@dspalette": _cmd_dspalette,
-    "@dstileset": _cmd_dstileset,
-    "@imgimage": _cmd_imgimage,
-    "@print": _cmd_print,
-    "@var": _cmd_var,
+    '@close': _c_close,
+    '@databuffer': _c_databuffer,
+    '@dspalette': _c_dspalette,
+    '@dstileset': _c_dstileset,
+    '@line': _c_line,
+    '@load': _c_load,
+    '@open': _c_open,
+    '@print': _c_print,
+    '@var': _c_var,
 }
-
+# Functions
 _FUNCS:dict[str, _FuncDef] = {
-    "type": _func_type,
+    'cppdata': _f_cppdata,
+    'cppsize': _f_cppsize,
+    'type': _f_type,
 }
-
+# Run
 def run(fpath:str, dpath:str):
     """
     Creates C++ sources.
-
+    
     :param fpath:
         Path of configuration file
     :param dpath:

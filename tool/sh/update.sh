@@ -3,6 +3,28 @@
 shdir="$(dirname $(realpath $BASH_SOURCE))"
 pydir="$(dirname $shdir)/src"
 
+declare -a excluded_paths=()
+excluded_paths+=("$pydir/cpp")
+
+declare -a excluded_dirs=()
+excluded_dirs+=("__pycache__")
+
+isexcluded() {
+    local _path=$1
+    local _item=
+    # Excluded paths
+    for _item in "${excluded_paths[@]}"; do
+        if [ "$_path" = "$_item" ]; then return 0; fi
+    done
+    # Excluded directory names
+    local _name="$(basename $_path)"
+    for _item in "${excluded_dirs[@]}"; do
+        if [ "$_name" = "$_item" ]; then return 0; fi
+    done
+    # Not excluded
+    return 1
+}
+
 updateinit() {
     local _dir=$1
     local _path=
@@ -26,7 +48,7 @@ updateinit() {
         # Is it a directory?
         elif [ -d "$_path" ]; then
             # Make sure it isn't a cache directory
-            if [ "$_name" = "__pycache__" ]; then continue ; fi
+            if isexcluded "$_path"; then continue ; fi
             # Update
             updateinit $_path
             # Add directory

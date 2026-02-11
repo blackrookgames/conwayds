@@ -7,9 +7,8 @@ from ...cli.mod_CLIRequiredDef import\
     CLIRequiredDef as _CLIRequiredDef
 
 from ..mod__call import _CmdDef
-from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
-from .mod___HCmd import _HCmd
+from .c__HCmd import _HCmd
 
 class _HHCmd(_HCmd):
     __varname = _CLIRequiredDef(name = "varname")

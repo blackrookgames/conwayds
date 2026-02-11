@@ -13,7 +13,7 @@ from ...cli.mod_CLIRequiredDef import\
 
 from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
-from .mod___HCmd import _HCmd
+from .c__HCmd import _HCmd
 
 T = _TypeVar('T')
 

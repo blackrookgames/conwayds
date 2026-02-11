@@ -3,12 +3,30 @@ __all__ = [\
 
 import numpy as _np
 
+from typing import\
+    Callable as _Callable,\
+    cast as _cast
+
 from .mod_DSColor import\
     DSColor as _DSColor
 from .mod_DSColorUtil import\
     DSColorUtil as _DSColorUtil
 from .mod_DSPalette import\
     DSPalette as _DSPalette
+from .mod_DSTile import\
+    DSTile as _DSTile,\
+    DSTILE_W as _DSTILE_W,\
+    DSTILE_H as _DSTILE_H
+from .mod_DSTile4 import\
+    DSTile4 as _DSTile4
+from .mod_DSTile8 import\
+    DSTile8 as _DSTile8
+from .mod_DSTileset import\
+    DSTileset as _DSTileset
+from .mod_DSTileset4 import\
+    DSTileset4 as _DSTileset4
+from .mod_DSTileset8 import\
+    DSTileset8 as _DSTileset8
 from ..data.mod_DataBuffer import\
     DataBuffer as _DataBuffer
 from ..img.mod_Img import\
@@ -28,7 +46,7 @@ class DSSerial:
         """
         Deserializes DSPalette binary data
         
-        :param data:
+        :param bin:
             Input DataBuffer
         :return:
             Created DSPalette
@@ -45,7 +63,7 @@ class DSSerial:
         """
         Serializes DSPalette binary data
         
-        :param data:
+        :param palette:
             Input DSPalette
         :param noalpha:
             Whether or not to ignore alpha
@@ -103,5 +121,81 @@ class DSSerial:
             img[_i % img_w, _i // img_w] = _color
         # Return
         return img
+
+    #endregion
+
+    #region tileset bin
+    
+    @classmethod
+    def __tileset_loop_pixels(cls, tileset:_DSTileset):
+        for _tile in tileset:
+            for _y in range(_DSTILE_H):
+                for _x in range(_DSTILE_W):
+                    yield int(_tile[_x, _y])
+                    
+    @classmethod
+    def tileset4_from_bin(cls, bin:_DataBuffer) -> _DSTileset4:
+        """
+        Deserializes DSTilset4 binary data
+        
+        :param bin:
+            Input DataBuffer
+        :return:
+            Created DSTileset4
+        """
+        raise NotImplementedError("tileset4_from_bin has not yet been implemeneted.")
+    
+    @classmethod
+    def tileset4_to_bin(cls, tileset:_DSTileset4):
+        """
+        Serializes DSTileset4 binary data
+        
+        :param tileset:
+            Input DSTileset4
+        :return:
+            Created DataBuffer
+        """
+        bin = _DataBuffer(size = (len(tileset) * _DSTILE_W * _DSTILE_H) // 2)
+        _STEPS = 2
+        _value = 0
+        _i = _STEPS
+        for _pixel in cls.__tileset_loop_pixels(tileset):
+            # Update value
+            _value <<= 4
+            _value |= _pixel
+            # Next
+            if _i == 1:
+                bin.write_uint8(_value)
+                _value = 0
+                _i = _STEPS
+            else: _i -= 1
+        return bin
+    
+    @classmethod
+    def tileset8_from_bin(cls, bin:_DataBuffer) -> _DSTileset8:
+        """
+        Deserializes DSTilset8 binary data
+        
+        :param bin:
+            Input DataBuffer
+        :return:
+            Created DSTileset8
+        """
+        raise NotImplementedError("tileset8_from_bin has not yet been implemeneted.")
+    
+    @classmethod
+    def tileset8_to_bin(cls, tileset:_DSTileset8):
+        """
+        Serializes DSTileset8 binary data
+        
+        :param tileset:
+            Input DSTileset8
+        :return:
+            Created DataBuffer
+        """
+        bin = _DataBuffer(size = len(tileset) * _DSTILE_W * _DSTILE_H)
+        for _pixel in cls.__tileset_loop_pixels(tileset):
+            bin.write_uint8(_pixel)
+        return bin
 
     #endregion
