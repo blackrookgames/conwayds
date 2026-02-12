@@ -4,6 +4,7 @@ import sys
 from typing import cast
 
 import src.cli as cli
+import src.cliutil as cliutil
 import src.data as data
 import src.img as img
 
@@ -71,17 +72,20 @@ class cmd_enbin(cli.CLICommand):
     #region methods
 
     def _main(self):
-        # Open input
-        input = cast(None|str, cli.helper.IOUtil.str_load(self.input))
-        if input is None: return 1
-        # Create binary
-        binary = data.DataBuffer()
-        if not self.__getdata(binary, input):
+        try:
+            self_input = cast(str, self.input) # type: ignore
+            self_output = cast(str, self.output) # type: ignore
+            # Open input
+            input = cliutil.CLIStrUtil.str_from_file(self_input)
+            # Create binary
+            binary = data.DataBuffer()
+            if not self.__getdata(binary, input):
+                return 1
+            # Save
+            cliutil.CLIDataUtil.buffer_to_file(binary, self_output)
+        except cliutil.CLICommandError as e:
+            print(f"ERROR: {e}", file = sys.stderr)
             return 1
-        # Save
-        if not cli.helper.IOUtil.buffer_save(binary, self.output):
-            return 1
-        # Success
         return 0
 
     #endregion

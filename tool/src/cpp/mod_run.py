@@ -9,6 +9,7 @@ from ._cf.c_line import __def as _c_line
 from ._cf.c_load import __def as _c_load
 from ._cf.c_open import __def as _c_open
 from ._cf.c_print import __def as _c_print
+from ._cf.c_save import __def as _c_save
 from ._cf.c_var import __def as _c_var
 from ._cf.f_cppdata import __def as _f_cppdata
 from ._cf.f_cppsize import __def as _f_cppsize
@@ -23,6 +24,7 @@ _CMDS:dict[str, _CmdDef] = {
     '@load': _c_load,
     '@open': _c_open,
     '@print': _c_print,
+    '@save': _c_save,
     '@var': _c_var,
 }
 # Functions

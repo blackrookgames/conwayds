@@ -1,9 +1,9 @@
 shdir="$(dirname $(realpath $BASH_SOURCE))"
 pydir="$(dirname $shdir)/src"
-srcdir="$pydir/cpp/_cf/c_loads"
+srcdir="$pydir/cpp/_cf/c_saves"
 srcpath="$srcdir/__init__.py"
 
-PREFIX=c_load_
+PREFIX=c_save_
 PREFIX_LEN="${#PREFIX}"
 
 # Get "sub-commands"
@@ -24,14 +24,14 @@ if [ -f "$srcpath" ]; then rm "$srcpath"; fi
 
 # Write to file
 echo "from typing import Callable as _Callable" >>"$srcpath"
-echo "from .c__HCmdLoad import _HCmdLoad" >>"$srcpath"
+echo "from .c__HCmdSave import _HCmdSave" >>"$srcpath"
 for name in "${subcmds[@]}"; do
-    echo "from .$PREFIX$name import _create as _create_$name" >>"$srcpath"
+    echo "from .$PREFIX$name import _create as _create_$name, _type as _type_$name" >>"$srcpath"
 done
 # Create dictionary
 echo "# Sub-commands" >>"$srcpath"
-echo "__DICT:dict[str, _Callable[[], _HCmdLoad]] = {" >>"$srcpath"
+echo "__DICT:dict[type, _Callable[[object], _HCmdSave]] = {" >>"$srcpath"
 for name in "${subcmds[@]}"; do
-    echo "    '$name': _create_$name," >>"$srcpath"
+    echo "    _type_$name.__value__: _create_$name," >>"$srcpath"
 done
 echo "}" >>"$srcpath"
