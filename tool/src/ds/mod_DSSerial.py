@@ -127,13 +127,6 @@ class DSSerial:
     #region tileset bin
     
     @classmethod
-    def __tileset_loop_pixels(cls, tileset:_DSTileset):
-        for _tile in tileset:
-            for _y in range(_DSTILE_H):
-                for _x in range(_DSTILE_W):
-                    yield int(_tile[_x, _y])
-                    
-    @classmethod
     def tileset4_from_bin(cls, bin:_DataBuffer) -> _DSTileset4:
         """
         Deserializes DSTilset4 binary data
@@ -143,7 +136,18 @@ class DSSerial:
         :return:
             Created DSTileset4
         """
-        raise NotImplementedError("tileset4_from_bin has not yet been implemeneted.")
+        tileset = _DSTileset4()
+        bin.set_cursor(0)
+        while bin.cursor < len(bin):
+            _tile = _DSTile4()
+            for _i in range(0, _DSTILE_W * _DSTILE_H, 2):
+                if bin.cursor == len(bin): break
+                _byte = bin.read_uint8()
+                _tile[_i % _DSTILE_W, _i // _DSTILE_H] = _byte & 0x0F
+                _j = _i + 1
+                _tile[_j % _DSTILE_W, _j // _DSTILE_H] = (_byte >> 4) & 0x0F
+            tileset.add(_tile)
+        return tileset
     
     @classmethod
     def tileset4_to_bin(cls, tileset:_DSTileset4):
@@ -158,21 +162,23 @@ class DSSerial:
         bin = _DataBuffer(size = (len(tileset) * _DSTILE_W * _DSTILE_H) // 2)
         _STEPS = 2
         _value = 0
-        _i = _STEPS
-        for _pixel in cls.__tileset_loop_pixels(tileset):
-            # Update value
-            _value <<= 4
-            _value |= _pixel
-            # Next
-            if _i == 1:
-                bin.write_uint8(_value)
-                _value = 0
-                _i = _STEPS
-            else: _i -= 1
+        _i = 0
+        for _tile in tileset:
+            for _y in range(_DSTILE_H):
+                for _x in range(_DSTILE_W):
+                    _pixel = int(_tile[_x, _y])
+                    # Update value
+                    _value |= _pixel << (_i * 4)
+                    # Next
+                    _i += 1
+                    if _i == _STEPS:
+                        bin.write_uint8(_value)
+                        _value = 0
+                        _i = 0
         return bin
     
     @classmethod
-    def tileset8_from_bin(cls, bin:_DataBuffer) -> _DSTileset8:
+    def tileset8_from_bin(cls, bin:_DataBuffer):
         """
         Deserializes DSTilset8 binary data
         
@@ -181,7 +187,16 @@ class DSSerial:
         :return:
             Created DSTileset8
         """
-        raise NotImplementedError("tileset8_from_bin has not yet been implemeneted.")
+        tileset = _DSTileset8()
+        bin.set_cursor(0)
+        while bin.cursor < len(bin):
+            _tile = _DSTile8()
+            for _i in range(_DSTILE_W * _DSTILE_H):
+                if bin.cursor == len(bin): break
+                _byte = bin.read_uint8()
+                _tile[_i % _DSTILE_W, _i // _DSTILE_H] = _byte
+            tileset.add(_tile)
+        return tileset
     
     @classmethod
     def tileset8_to_bin(cls, tileset:_DSTileset8):
@@ -194,8 +209,11 @@ class DSSerial:
             Created DataBuffer
         """
         bin = _DataBuffer(size = len(tileset) * _DSTILE_W * _DSTILE_H)
-        for _pixel in cls.__tileset_loop_pixels(tileset):
-            bin.write_uint8(_pixel)
+        for _tile in tileset:
+            for _y in range(_DSTILE_H):
+                for _x in range(_DSTILE_W):
+                    _pixel = int(_tile[_x, _y])
+                    bin.write_uint8(_pixel)
         return bin
 
     #endregion

@@ -5,6 +5,7 @@ from ._cf.c_close import __def as _c_close
 from ._cf.c_databuffer import __def as _c_databuffer
 from ._cf.c_dspalette import __def as _c_dspalette
 from ._cf.c_dstileset import __def as _c_dstileset
+from ._cf.c_imgimage import __def as _c_imgimage
 from ._cf.c_line import __def as _c_line
 from ._cf.c_load import __def as _c_load
 from ._cf.c_open import __def as _c_open
@@ -20,6 +21,7 @@ _CMDS:dict[str, _CmdDef] = {
     '@databuffer': _c_databuffer,
     '@dspalette': _c_dspalette,
     '@dstileset': _c_dstileset,
+    '@imgimage': _c_imgimage,
     '@line': _c_line,
     '@load': _c_load,
     '@open': _c_open,

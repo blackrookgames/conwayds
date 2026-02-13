@@ -14,6 +14,7 @@ for path in $srcdir/*; do
     name="${name%.*}"
     name_len="${#name}"
     if [ $name_len -lt $PREFIX_LEN ]; then continue; fi
+    if [[ $name_len -gt $prefix_len && "${name:$prefix_len:1}" = "_" ]]; then continue; fi
     if [ ! "${name:0:$PREFIX_LEN}" = "$PREFIX" ]; then continue; fi
     # Add sub-command
     subcmds+=("${name:$PREFIX_LEN}")

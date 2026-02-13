@@ -1,8 +1,0 @@
-@var appdir ../../../app
-@var hdrdir ${appdir}/hdr
-@var srcdir ${appdir}/src
-
-@load databuffer idata ./.test.tileset.bin
-@dstileset tileset idata 8
-@databuffer odata tileset
-@save odata ./.test.tileset2.bin
