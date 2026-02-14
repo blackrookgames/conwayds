@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>C++ Config Syntax</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="cppconfig.css">
+    </head>
+    <body>
+        
+        <div class="sidenav">
+            <a href="#s_syntax">Syntax</a>
+            <a href="#s_syntax_args">&emsp;&emsp;Arguments</a>
+            <a href="#s_syntax_vars">&emsp;&emsp;Referencing String Variables</a>
+            <a href="#s_syntax_funcs">&emsp;&emsp;Calling Functions</a>
+            <a href="#s_syntax_esc">&emsp;&emsp;Escape Sequences</a>
+            <a href="#s_syntax_cmts">&emsp;&emsp;Comments</a>
+            <a href="#s_howto">How To</a>
+            <a href="#s_howto_print">&emsp;&emsp;Print to Console</a>
+            <a href="#s_howto_setvar">&emsp;&emsp;Declare String Variables</a>
+            <a href="#s_howto_file">&emsp;&emsp;Create Text Files</a>
+            <a href="#s_cmd">Commands</a>
+            <a href="#s_cmd_close">&emsp;&emsp;@close</a>
+            <a href="#s_cmd_databuffer">&emsp;&emsp;@databuffer</a>
+            <a href="#s_cmd_dspalette">&emsp;&emsp;@dspalette</a>
+            <a href="#s_cmd_dstileset">&emsp;&emsp;@dstileset</a>
+            <a href="#s_cmd_imgimage">&emsp;&emsp;@imgimage</a>
+            <a href="#s_cmd_line">&emsp;&emsp;@line</a>
+            <a href="#s_cmd_load">&emsp;&emsp;@load</a>
+            <a href="#s_cmd_open">&emsp;&emsp;@open</a>
+            <a href="#s_cmd_print">&emsp;&emsp;@print</a>
+            <a href="#s_cmd_save">&emsp;&emsp;@save</a>
+            <a href="#s_cmd_var">&emsp;&emsp;@var</a>
+            <a href="#s_func">Functions</a>
+            <a href="#s_func_cppdata">&emsp;&emsp;cppdata</a>
+            <a href="#s_func_cppsize">&emsp;&emsp;cppsize</a>
+            <a href="#s_func_type">&emsp;&emsp;type</a>
+        </div>
+        
+        <div class="main">
+            <div class="section" id="s_syntax">
+                <h1>Syntax</h1>
+                <p>This is the basic syntax of a command:</p>
+                <code>@<i>command argument1 argument2 ...</i></code>
+                <div class="subsection" id="s_syntax_args">
+                    <h3>Arguments</h3>
+                    <p>A single argument normally ends at the next space.</p>
+                    <code>@cmdone these are all different arguments</code>
+                    <p>To create an argument containing spaces, the argument must be placed within quotations.</p>
+                    <code>@cmdone "this is a single argument"</code>
+                    <p>The arguments for a single command normally end at the end of a line. However, by placing a backslash at the end of the line, the following line can also be used to specify arguments for the same command.</p>
+                    <code>@cmdone these are arguments for cmdone \<br/>these are more arguments for cmdone</code>
+                </div>
+                <div class="subsection" id="s_syntax_vars">
+                    <h3>Referencing String Variables</h3>
+                    <p>String variables can be referenced by using a dollar sign followed by curly brackets.</p>
+                    <code>@cmdone ${strvar}</code>
+                    <p>At runtime, variable references are substituted by their corresponding values.</p>
+                    <code>
+                        # The variable name is strvar<br/>
+                        # The variable value is variabletext<br/>
+                        @var strvar variabletext<br/>
+                        <br/>
+                        # Here is a command that references the variable<br/>
+                        @cmdone ${strvar}<br/>
+                        <br/>
+                        # At runtime, the variable reference will be substituted by it's corresponding value<br/>
+                        # @cmdone variabletext
+                    </code>
+                </div>
+                <div class="subsection" id="s_syntax_funcs">
+                    <h3>Calling Functions</h3>
+                    <p>Functions can be called by using a dollar sign followed by parentheses. They essentially follow the same syntax as commands. However, they must be ended by a closing parenthesis.</p>
+                    <code>@cmdone $(func funcarg1 funcarg2)</code>
+                    <p>To create an argument that contains a closing parenthesis, simply place the argument within quotes.</p>
+                    <code>@cmdone $(func "Not ) closed")</code>
+                </div>
+                <div class="subsection" id="s_syntax_esc">
+                    <h3>Escape Sequences</h3>
+                    <p>The backslash is used for escape sequences:</p>
+                    <table class="escseq">
+                        <tr><th>Sequence</th><th>Description</th></tr>
+                        <tr><td>\n</td><td>Newline</td></tr>
+                        <tr><td>\t</td><td>Horizontal Tab</td></tr>
+                        <tr><td>\\</td><td>Backslash</td></tr>
+                        <tr><td>\"</td><td>Double Quote</td></tr>
+                        <tr><td>\b</td><td>Backspace</td></tr>
+                        <tr><td>\r</td><td>Carriage Return</td></tr>
+                        <tr><td>\a</td><td>Audible Bell</td></tr>
+                        <tr><td>\0</td><td>Null character</td></tr>
+                        <tr><td>\$</td><td>Dollar sign</td></tr>
+                        <tr><td>\#</td><td>Hash symbol</td></tr>
+                    </table>
+                    <p>The following escape sequences are for unicode characters</p>
+                    <table class="escseq">
+                        <tr><th>Sequence</th><th>Description</th></tr>
+                        <tr><td>\xXX</td><td>8-bit unicode character (where XX is the hex value)</td></tr>
+                        <tr><td>\uXXXX</td><td>16-bit unicode character (where XXXX is the hex value)</td></tr>
+                    </table>
+                </div>
+                <div class="subsection" id="s_syntax_cmts">
+                    <h3>Comments</h3>
+                    <p>A hash symbol indicates the start of a comment. When a comment is detected, the rest of the line is ignored.</p>
+                    <code>@cmdone argument # Comment after command</code>
+                    <p>However, hash symbols within quoted arguments are not interpreted as comments.</p>
+                    <code>@cmdone "this # is not the start of a comment"</code>
+                </div>
+            </div>
+            <div class="section" id="s_howto">
+                <h1>How To</h1>
+                <p>This is how to perform common tasks</p>
+                <div class="subsection" id="s_howto_print">
+                    <h3>Print to Console</h3>
+                    <p>To print to the console, use the print command</p>
+                    <code>@print <i>message</i></code>
+                    <h4>Example</h4>
+                    <code>@print Hello world!</code>
+                </div>
+                <div class="subsection" id="s_howto_setvar">
+                    <h3>Declare String Variables</h3>
+                    <p>To declare a string variable, use the var command</p>
+                    <code>@var <i>name</i> <i>value</i></code>
+                    <h4>Example</h4>
+                    <code>@var color red</code>
+                </div>
+                <div class="subsection" id="s_howto_file">
+                    <h3>Create Text Files</h3>
+                    <p>Creating a text file requires use of the commands open, line, and close</p>
+                    <code>
+                        @file <i>savepath</i><br/>
+                        @line <i>text</i><br/>
+                        @close
+                    </code>
+                    <p>The open command opens the file, the line command writes a line of text to the file, and the close command safely closes the file.</p>
+                    <p>NOTE: Only one file can be open at a time</p>
+                    <h4>Example</h4>
+                    <code>
+                        @file C:\path\to\save\file.txt<br/>
+                        @line This is the first line<br/>
+                        @line This is the second line<br/>
+                        @line This is the third line<br/>
+                        @close
+                    </code>
+                </div>
+            </div>
+            <div class="section" id="s_cmd">
+                <h1>Commands</h1>
+                <div class="cmddef" id="s_cmd_close">
+                    <h3 class="mono">@close</h3>
+                    <p>
+                        Closes the file that is currently open
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_databuffer">
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>dspalette</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a DSPalette
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>dspalette</td><td>Name of input variable; this is where the DSPalette is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>dstileset4</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a DSTileset4
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>dstileset4</td><td>Name of input variable; this is where the DSTileset4 is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>dstileset8</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a DSTileset8
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>dstileset8</td><td>Name of input variable; this is where the DSTileset8 is stored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_dspalette">
+                    <h3 class="mono">@dspalette <i>ovar</i> <i>databuffer</i></h3>
+                    <p>
+                        Creates a DSPalette using data from a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSPalette will be stored</td></tr>
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@dspalette <i>ovar</i> <i>imgimage</i></h3>
+                    <p>
+                        Creates a DSPalette using data from a ImgImage<br/>
+                        NOTE: ImgImage must be paletted.
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSPalette will be stored</td></tr>
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_dstileset">
+                    <h3 class="mono">@dstileset <i>ovar</i> <i>databuffer</i> [--bpp <i>4or8</i>]</h3>
+                    <p>
+                        Creates a DSTileset using data from a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSTileset will be stored</td></tr>
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                            <tr><td>--bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@dstileset <i>ovar</i> <i>imgimage</i> [--bpp <i>4or8</i>]</h3>
+                    <p>
+                        Creates a DSTileset using data from a ImgImage<br/>
+                        NOTE: ImgImage must be paletted.
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSTileset will be stored</td></tr>
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
+                            <tr><td>--bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_imgimage">
+                    <h3 class="mono">@imgimage <i>ovar</i> <i>dstileset4</i> <i>dspalette</i> [--tpr <i>int</i>] [--noalpha]</h3>
+                    <p>
+                        Creates an ImgImage using data from a DSTileset4
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>dstileset4</td><td>Name of input variable; this is where the DSTileset4 is stored</td></tr>
+                            <tr><td>dspalette</td><td>Name of input variable that stores the DSPalette; this is required as the tileset alone contains no color information</td></tr>
+                            <tr><td>--tpr</td><td>Number of tiles per row; this is 16 by default</td></tr>
+                            <tr><td>--noalpha</td><td>If specified, alpha data will be ignored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@imgimage <i>ovar</i> <i>dstileset8</i> <i>dspalette</i> [--tpr <i>int</i>] [--noalpha]</h3>
+                    <p>
+                        Creates an ImgImage using data from a DSTileset8
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>dstileset8</td><td>Name of input variable; this is where the DSTileset8 is stored</td></tr>
+                            <tr><td>dspalette</td><td>Name of input variable that stores the DSPalette; this is required as the tileset alone contains no color information</td></tr>
+                            <tr><td>--tpr</td><td>Number of tiles per row; this is 16 by default</td></tr>
+                            <tr><td>--noalpha</td><td>If specified, alpha data will be ignored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_line">
+                    <h3 class="mono">@line <i>text</i></h3>
+                    <p>
+                        Writes a line of text to the open file
+                        <table class="argdesc">
+                            <tr><td>text</td><td>Text to write</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_load">
+                    <h3 class="mono">@load databuffer <i>ovar</i> <i>path</i></h3>
+                    <p>
+                        Creates a DataBuffer by loading from a file
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>path</td><td>Path to input file</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@load imgimage <i>ovar</i> <i>path</i></h3>
+                    <p>
+                        Creates an ImgImage by loading from a file
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>path</td><td>Path to input file</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_open">
+                    <h3 class="mono">@open <i>path</i></h3>
+                    <p>
+                        Opens a text file for writing<br/>
+                        NOTE: Only one file can be opened at a time
+                        <table class="argdesc">
+                            <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_print">
+                    <h3 class="mono">@print <i>text</i></h3>
+                    <p>
+                        Prints text to the console
+                        <table class="argdesc">
+                            <tr><td>text</td><td>Text to print</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_save">
+                    <h3 class="mono">@save <i>databuffer</i> <i>path</i></h3>
+                    <p>
+                        Saves DataBuffer data to a file
+                        <table class="argdesc">
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                            <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@save <i>imgimage</i> <i>path</i></h3>
+                    <p>
+                        Saves ImgImage data to a file
+                        <table class="argdesc">
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
+                            <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_var">
+                    <h3 class="mono">@var <i>name</i> <i>value</i></h3>
+                    <p>
+                        Sets the value of a string variable
+                        <table class="argdesc">
+                            <tr><td>name</td><td>Variable name</td></tr>
+                            <tr><td>value</td><td>String value</td></tr>
+                        </table>
+                    </p>
+                </div>
+            </div>
+            <div class="section" id="s_func">
+                <h1>Functions</h1>
+                <div class="funcdef" id="s_func_cppdata">
+                    <h3 class="mono">cppdata <i>databuffer</i></h3>
+                    <p>
+                        Returns a C++ representation of the byte data within a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="funcdef" id="s_func_cppsize">
+                    <h3 class="mono">cppsize <i>databuffer</i></h3>
+                    <p>
+                        Returns the size of the byte data within a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="funcdef" id="s_func_type">
+                    <h3 class="mono">type <i>ivar</i></h3>
+                    <p>
+                        Returns the type of data being stored at a variable
+                        <table class="argdesc">
+                            <tr><td>ivar</td><td>Name of input variable</td></tr>
+                        </table>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 
