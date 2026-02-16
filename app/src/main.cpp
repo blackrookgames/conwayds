@@ -1,8 +1,8 @@
 #include <nds.h>
 #include <stdio.h>
 
-// #include "DataBitmap.h"
-#include "DataChamp.h"
+#include "DataBitmap.h"
+// #include "DataChamp.h"
 
 int main(void)
 {
@@ -10,6 +10,7 @@ int main(void)
 	
 	fprintf(stderr, "Hello world!!!\n");
 
+	/*
 	videoSetMode(MODE_0_2D);
 	vramSetBankA(VRAM_A_MAIN_BG);
 	
@@ -25,8 +26,8 @@ int main(void)
 
 	DC_FlushRange(DataChamp::palette_data, DataChamp::palette_size);
 	dmaCopy(DataChamp::palette_data, BG_PALETTE, DataChamp::palette_size);
+	*/
 
-	/*
 	videoSetMode(MODE_5_2D);
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
 
@@ -37,7 +38,6 @@ int main(void)
 	
 	DC_FlushRange(DataBitmap::palette_data, DataBitmap::palette_size);
 	dmaCopy(DataBitmap::palette_data, BG_PALETTE, DataBitmap::palette_size);
-	*/
 
 	while(pmMainLoop())
 	{

@@ -21,6 +21,7 @@
             <a href="#s_cmd">Commands</a>
             <a href="#s_cmd_close">&emsp;&emsp;@close</a>
             <a href="#s_cmd_databuffer">&emsp;&emsp;@databuffer</a>
+            <a href="#s_cmd_dsbitmap">&emsp;&emsp;@dsbitmap</a>
             <a href="#s_cmd_dspalette">&emsp;&emsp;@dspalette</a>
             <a href="#s_cmd_dstileset">&emsp;&emsp;@dstileset</a>
             <a href="#s_cmd_imgimage">&emsp;&emsp;@imgimage</a>
@@ -32,8 +33,10 @@
             <a href="#s_cmd_var">&emsp;&emsp;@var</a>
             <a href="#s_func">Functions</a>
             <a href="#s_func_cppdata">&emsp;&emsp;cppdata</a>
-            <a href="#s_func_cppsize">&emsp;&emsp;cppsize</a>
+            <a href="#s_func_height">&emsp;&emsp;height</a>
+            <a href="#s_func_len">&emsp;&emsp;len</a>
             <a href="#s_func_type">&emsp;&emsp;type</a>
+            <a href="#s_func_width">&emsp;&emsp;width</a>
         </div>
         
         <div class="main">
@@ -151,6 +154,24 @@
                     </p>
                 </div>
                 <div class="cmddef" id="s_cmd_databuffer">
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>dsbitmap8</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a DSBitmap8<br/>
+                        NOTE: Width and height values are not included
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>dsbitmap8</td><td>Name of input variable; this is where the DSBitmap8 is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>dsbitmap16</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a DSBitmap16<br/>
+                        NOTE: Width and height values are not included
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>dsbitmap16</td><td>Name of input variable; this is where the DSBitmap16 is stored</td></tr>
+                        </table>
+                    </p>
                     <h3 class="mono">@databuffer <i>ovar</i> <i>dspalette</i></h3>
                     <p>
                         Creates a DataBuffer using data from a DSPalette
@@ -176,6 +197,28 @@
                         </table>
                     </p>
                 </div>
+                <div class="cmddef" id="s_cmd_dsbitmap">
+                    <h3 class="mono">@dsbitmap <i>ovar</i> <i>databuffer</i> <i>width</i> <i>height</i> <i>bpp</i></h3>
+                    <p>
+                        Creates a DSBitmap using data from a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSBitmap will be stored</td></tr>
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                            <tr><td>width</td><td>Width of the bitmap</td></tr>
+                            <tr><td>height</td><td>Height of the bitmap</td></tr>
+                            <tr><td>bpp</td><td>Bits-per-pixel; a value of 8 creates a DSBitmap8 and a value of 16 creates a DSBitmap16</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@dsbitmap <i>ovar</i> <i>imgimage</i> <i>bpp</i></h3>
+                    <p>
+                        Creates a DSBitmap using data from a ImgImage
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DSBitmap will be stored</td></tr>
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored (must be paletted if bpp == 8)</td></tr>
+                            <tr><td>bpp</td><td>Bits-per-pixel; a value of 8 creates a DSBitmap8 and a value of 16 creates a DSBitmap16</td></tr>
+                        </table>
+                    </p>
+                </div>
                 <div class="cmddef" id="s_cmd_dspalette">
                     <h3 class="mono">@dspalette <i>ovar</i> <i>databuffer</i></h3>
                     <p>
@@ -196,27 +239,45 @@
                     </p>
                 </div>
                 <div class="cmddef" id="s_cmd_dstileset">
-                    <h3 class="mono">@dstileset <i>ovar</i> <i>databuffer</i> [--bpp <i>4or8</i>]</h3>
+                    <h3 class="mono">@dstileset <i>ovar</i> <i>databuffer</i> <i>bpp</i></h3>
                     <p>
                         Creates a DSTileset using data from a DataBuffer
                         <table class="argdesc">
                             <tr><td>ovar</td><td>Name of output variable; this is where the DSTileset will be stored</td></tr>
                             <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
-                            <tr><td>--bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
+                            <tr><td>bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
                         </table>
                     </p>
-                    <h3 class="mono">@dstileset <i>ovar</i> <i>imgimage</i> [--bpp <i>4or8</i>]</h3>
+                    <h3 class="mono">@dstileset <i>ovar</i> <i>imgimage</i> <i>bpp</i></h3>
                     <p>
                         Creates a DSTileset using data from a ImgImage<br/>
                         NOTE: ImgImage must be paletted.
                         <table class="argdesc">
                             <tr><td>ovar</td><td>Name of output variable; this is where the DSTileset will be stored</td></tr>
                             <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
-                            <tr><td>--bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
+                            <tr><td>bpp</td><td>Bits-per-pixel; a value of 4 creates a DSTileset4 and a value of 8 creates a DSTileset8</td></tr>
                         </table>
                     </p>
                 </div>
                 <div class="cmddef" id="s_cmd_imgimage">
+                    <h3 class="mono">@imgimage <i>ovar</i> <i>dsbitmap8</i> <i>dspalette</i> [--noalpha]</h3>
+                    <p>
+                        Creates an ImgImage using data from a DSBitmap8
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>dsbitmap8</td><td>Name of input variable; this is where the DSBitmap8 is stored</td></tr>
+                            <tr><td>dspalette</td><td>Name of input variable that stores the DSPalette; this is required as the bitmap alone contains no color information</td></tr>
+                            <tr><td>--noalpha</td><td>If specified, alpha data will be ignored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@imgimage <i>ovar</i> <i>dsbitmap16</i></h3>
+                    <p>
+                        Creates an ImgImage using data from a DSBitmap16
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>dsbitmap16</td><td>Name of input variable; this is where the DSBitmap16 is stored</td></tr>
+                        </table>
+                    </p>
                     <h3 class="mono">@imgimage <i>ovar</i> <i>dstileset4</i> <i>dspalette</i> [--tpr <i>int</i>] [--noalpha]</h3>
                     <p>
                         Creates an ImgImage using data from a DSTileset4
@@ -326,12 +387,35 @@
                         </table>
                     </p>
                 </div>
-                <div class="funcdef" id="s_func_cppsize">
-                    <h3 class="mono">cppsize <i>databuffer</i></h3>
+                <div class="funcdef" id="s_func_height">
+                    <h3 class="mono">height <i>dsbitmap</i></h3>
+                    <p>
+                        Returns the height of an DSBitmap
+                        <table class="argdesc">
+                            <tr><td>dsbitmap</td><td>Name of input variable; this is where the DSBitmap is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">height <i>imgimage</i></h3>
+                    <p>
+                        Returns the height of an ImgImage
+                        <table class="argdesc">
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="funcdef" id="s_func_len">
+                    <h3 class="mono">len <i>databuffer</i></h3>
                     <p>
                         Returns the size of the byte data within a DataBuffer
                         <table class="argdesc">
                             <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">len <i>dstileset</i></h3>
+                    <p>
+                        Returns the number of tiles within a DSTileset
+                        <table class="argdesc">
+                            <tr><td>dstileset</td><td>Name of input variable; this is where the DSTileset is stored</td></tr>
                         </table>
                     </p>
                 </div>
@@ -341,6 +425,22 @@
                         Returns the type of data being stored at a variable
                         <table class="argdesc">
                             <tr><td>ivar</td><td>Name of input variable</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="funcdef" id="s_func_width">
+                    <h3 class="mono">width <i>dsbitmap</i></h3>
+                    <p>
+                        Returns the width of an DSBitmap
+                        <table class="argdesc">
+                            <tr><td>dsbitmap</td><td>Name of input variable; this is where the DSBitmap is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">width <i>imgimage</i></h3>
+                    <p>
+                        Returns the width of an ImgImage
+                        <table class="argdesc">
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
                         </table>
                     </p>
                 </div>

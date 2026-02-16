@@ -7,6 +7,10 @@ from typing import\
     Callable as _Callable,\
     cast as _cast
 
+from .mod_DSBitmap8 import\
+    DSBitmap8 as _DSBitmap8
+from .mod_DSBitmap16 import\
+    DSBitmap16 as _DSBitmap16
 from .mod_DSColor import\
     DSColor as _DSColor
 from .mod_DSColorUtil import\
@@ -38,6 +42,92 @@ class DSSerial:
     """
     Serialization utility
     """
+    
+    #region bitmap bin
+    
+    @classmethod
+    def bitmap8_from_bin(cls, bin:_DataBuffer, width:int, height:int):
+        """
+        Deserializes DSBitmap8 binary data
+        
+        :param bin:
+            Input DataBuffer
+        :param width:
+            Bitmap width
+        :param height:
+            Bitmap height
+        :return:
+            Created DSBitmap8
+        :raise ValueError:
+            width is less than or equal to zero\n
+            or\n
+            height is less than or equal to zero
+        """
+        bitmap = _DSBitmap8(width = width, height = height)
+        minlen = min(len(bitmap), len(bin))
+        bin.set_cursor(0)
+        for _i in range(minlen):
+            bitmap[_i] = bin.read_uint8()
+        return bitmap
+    
+    @classmethod
+    def bitmap8_to_bin(cls, bitmap:_DSBitmap8):
+        """
+        Serializes DSBitmap8 binary data\n
+        NOTE: The width and height values are not serialized.
+        
+        :param bitmap:
+            Input DSBitmap8
+        :return:
+            Created DataBuffer
+        """
+        bin = _DataBuffer(size = len(bitmap))
+        for _pixel in bitmap:
+            bin.write_uint8(int(_pixel))
+        return bin
+    
+    @classmethod
+    def bitmap16_from_bin(cls, bin:_DataBuffer, width:int, height:int):
+        """
+        Deserializes DSBitmap16 binary data
+        
+        :param bin:
+            Input DataBuffer
+        :param width:
+            Bitmap width
+        :param height:
+            Bitmap height
+        :return:
+            Created DSBitmap16
+        :raise ValueError:
+            width is less than or equal to zero\n
+            or\n
+            height is less than or equal to zero
+        """
+        bitmap = _DSBitmap16(width = width, height = height)
+        minlen = min(len(bitmap), len(bin))
+        bin.set_cursor(0)
+        for _i in range(minlen):
+            bitmap[_i] = _DSColor(bin.read_uint16_l())
+        return bitmap
+    
+    @classmethod
+    def bitmap16_to_bin(cls, bitmap:_DSBitmap16):
+        """
+        Serializes DSBitmap16 binary data\n
+        NOTE: The width and height values are not serialized.
+        
+        :param bitmap:
+            Input DSBitmap16
+        :return:
+            Created DataBuffer
+        """
+        bin = _DataBuffer(size = len(bitmap))
+        for _pixel in bitmap:
+            bin.write_uint16_l(int(_pixel.to16()))
+        return bin
+
+    #endregion
 
     #region palette bin
 
@@ -129,7 +219,7 @@ class DSSerial:
     @classmethod
     def tileset4_from_bin(cls, bin:_DataBuffer) -> _DSTileset4:
         """
-        Deserializes DSTilset4 binary data
+        Deserializes DSTileset4 binary data
         
         :param bin:
             Input DataBuffer
@@ -180,7 +270,7 @@ class DSSerial:
     @classmethod
     def tileset8_from_bin(cls, bin:_DataBuffer):
         """
-        Deserializes DSTilset8 binary data
+        Deserializes DSTileset8 binary data
         
         :param bin:
             Input DataBuffer

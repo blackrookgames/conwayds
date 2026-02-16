@@ -1,3 +1,6 @@
+from .mod_DSBitmap import *
+from .mod_DSBitmap16 import *
+from .mod_DSBitmap8 import *
 from .mod_DSColor import *
 from .mod_DSColorUtil import *
 from .mod_DSPalette import *

@@ -7,6 +7,10 @@ from typing import\
     Callable as _Callable,\
     cast as _cast
 
+from .mod_DSBitmap8 import\
+    DSBitmap8 as _DSBitmap8
+from .mod_DSBitmap16 import\
+    DSBitmap16 as _DSBitmap16
 from .mod_DSColor import\
     DSColor as _DSColor
 from .mod_DSColorUtil import\
@@ -33,6 +37,8 @@ from ..img.mod_ImgColor import\
     ImgColor as _ImgColor
 from ..img.mod_ImgImage import\
     ImgImage as _ImgImage
+from ..img.mod_ImgImageRGBAPixels import\
+    ImgImageRGBAPixels as _ImgImageRGBAPixels
 from ..img.mod_ImgImagePPixels import\
     ImgImagePPixels as _ImgImagePPixels
 from ..img.mod_ImgPalette import\
@@ -45,6 +51,83 @@ class DSUtil:
 
     __MASK_4 = _np.uint8(0xF)
     __MASK_8 = _np.uint8(0xFF)
+
+    #region bitmap img
+    
+    @classmethod
+    def bitmap8_get_img(cls, img:_ImgImage):
+        """
+        Creates a DSBitmap8 using data from an ImgImage
+        
+        :param img:
+            Input ImgImage (must be paletted)
+        :return:
+            Created DSBitmap8
+        :raise ValueError:
+            img is not paletted
+        """
+        if not img.haspalette: raise ValueError("img must be paletted.")
+        assert isinstance(img.pixels, _ImgImagePPixels)
+        bitmap = _DSBitmap8(width = img.width, height = img.height)
+        for _y in range(img.height):
+            for _x in range(img.width):
+                bitmap[_x, _y] = img.pixels[_x, _y]
+        return bitmap
+    
+    @classmethod
+    def bitmap8_set_img(cls, img:_ImgImage, bitmap:_DSBitmap8):
+        """
+        Outputs DSBitmap8 pixels onto an ImgImage
+        
+        :param img:
+            Output ImgImage (must be paletted)
+        :param bitmap:
+            Input DSBitmap8
+        :raise ValueError:
+            img is not paletted
+        """
+        if not img.haspalette: raise ValueError("img must be paletted.")
+        assert isinstance(img.pixels, _ImgImagePPixels)
+        img.resize(bitmap.width, bitmap.height)
+        for _y in range(bitmap.height):
+            for _x in range(bitmap.width):
+                img.pixels[_x, _y] = bitmap[_x, _y]
+
+    @classmethod
+    def bitmap16_get_img(cls, img:_ImgImage):
+        """
+        Creates a DSBitmap16 using data from an ImgImage
+        
+        :param img:
+            Input ImgImage
+        :return:
+            Created DSBitmap16
+        """
+        bitmap = _DSBitmap16(width = img.width, height = img.height)
+        for _y in range(img.height):
+            for _x in range(img.width):
+                _ipixel = img.getpixel(_x, _y)
+                bitmap[_x, _y] = _DSColor(0x0000) if (_ipixel is None)\
+                    else _DSColorUtil.from_imgcolor(_ipixel)
+        return bitmap
+    
+    @classmethod
+    def bitmap16_set_img(cls, img:_ImgImage, bitmap:_DSBitmap16):
+        """
+        Outputs DSBitmap16 pixels onto an ImgImage
+        
+        :param img:
+            Output ImgImage
+        :param bitmap:
+            Input DSBitmap16
+        """
+        img.format(width = bitmap.width, height = bitmap.height)
+        assert isinstance(img.pixels, _ImgImageRGBAPixels)
+        for _y in range(bitmap.height):
+            for _x in range(bitmap.width):
+                img.pixels[_x, _y] = _DSColorUtil.to_imgcolor(bitmap[_x, _y])
+    
+    #endregion
 
     #region palette pal
 

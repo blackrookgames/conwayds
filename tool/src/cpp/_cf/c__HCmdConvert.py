@@ -7,6 +7,8 @@ from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
 from .c__HCmd import _HCmd
 
+from .h_helper import _tryfindtype
+
 class _HCmdConvert(_HCmd):
     """
     Represents a conversion command helper class
@@ -50,7 +52,9 @@ def __cmd(creator:_Creator, argv:list[str],\
     ivar = argv[2]
     data = creator.get_var(ivar)
     dtype = type(data)
-    if not (dtype in compatible):
+    found, cmd = _tryfindtype(compatible, dtype)
+    if not found:
         raise _CmdFuncError(f"Cannot create a {otype.__name__} out of {dtype.__name__}.")
-    savecmd = compatible[dtype](data, ovar)
-    savecmd.execute(creator, [argv[_i] for _i in range(2, len(argv))])
+    assert cmd is not None
+    convertcmd = cmd(data, ovar)
+    convertcmd.execute(creator, [argv[_i] for _i in range(2, len(argv))])
