@@ -1,0 +1,37 @@
+@var appdir ../car
+@var hdrdir ${appdir}/hdr
+@var srcdir ${appdir}/src
+
+@var cpp_name Car10
+@var cpp_caps CAR10
+@var cpp_hdrpath ${hdrdir}/${cpp_name}.h
+@var cpp_srcpath ${srcdir}/${cpp_name}.cpp
+
+@load imgimage img_car ./car.10.bmp
+@dsbitmap ds_car img_car 8
+@databuffer db_car ds_car
+
+@open ${cpp_hdrpath}
+@line \#ifndef ${cpp_caps}_H
+@line \#define ${cpp_caps}_H
+@line 
+@line \#include <nds.h>
+@line 
+@line class ${cpp_name}
+@line {
+@line     public:
+@line 
+@line     static const size_t img_size;
+@line     static const u8 img_data[];
+@line };
+@line 
+@line \#endif
+@close
+
+@open ${cpp_srcpath}
+@line \#include "${cpp_name}.h"
+@line 
+@line const size_t ${cpp_name}::img_size = $(len db_car);
+@line const u8 ${cpp_name}::img_data[] = 
+@line $(cppdata db_car);
+@close

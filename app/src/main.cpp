@@ -1,8 +1,7 @@
 #include <nds.h>
 #include <stdio.h>
 
-#include "DataBitmap.h"
-// #include "DataChamp.h"
+#include "Assets.h"
 
 int main(void)
 {
@@ -31,17 +30,17 @@ int main(void)
 	videoSetMode(MODE_5_2D);
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
 
-	int bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	int bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0, 0);
 
-	DC_FlushRange(DataBitmap::bitmap_data, DataBitmap::bitmap_size);
-	dmaCopy(DataBitmap::bitmap_data, bgGetGfxPtr(bg3), DataBitmap::bitmap_size);
+	dmaFillWords(0, bgGetGfxPtr(bg3), 256 * 256);
 	
-	DC_FlushRange(DataBitmap::palette_data, DataBitmap::palette_size);
-	dmaCopy(DataBitmap::palette_data, BG_PALETTE, DataBitmap::palette_size);
+	DC_FlushRange(Assets::palette_data, Assets::palette_size);
+	dmaCopy(Assets::palette_data, BG_PALETTE, Assets::palette_size);
 
 	while(pmMainLoop())
 	{
 		swiWaitForVBlank();
+
 		scanKeys();
 		if (keysDown() & KEY_START)
 			break;

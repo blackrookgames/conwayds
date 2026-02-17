@@ -18,13 +18,17 @@ OBJDIR := $(MKFILE_DIR)obj
 HDRDIR := $(MKFILE_DIR)hdr
 SRCDIR := $(MKFILE_DIR)src
 
-EXENAME := conway
+EXENAME := car
 EXEPATH := $(BINDIR)/$(EXENAME).nds
 ELFPATH := $(BINDIR)/$(EXENAME).elf
 MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
-SRCPATHS := main.cpp Assets.cpp
+SRCPATHS := main.cpp Palette.cpp\
+	Car00.cpp Car01.cpp Car02.cpp Car03.cpp Car04.cpp Car05.cpp Car06.cpp Car07.cpp Car08.cpp Car09.cpp\
+	Car10.cpp Car11.cpp Car12.cpp Car13.cpp Car14.cpp Car15.cpp Car16.cpp Car17.cpp Car18.cpp Car19.cpp\
+	Car20.cpp Car21.cpp Car22.cpp Car23.cpp Car24.cpp Car25.cpp Car26.cpp Car27.cpp Car28.cpp Car29.cpp\
+	Car30.cpp Car31.cpp Car32.cpp Car33.cpp Car34.cpp Car35.cpp Car36.cpp Car37.cpp
 
 OBJPATHS := $(foreach path,$(notdir $(SRCPATHS)),$(OBJDIR)/$(path:.cpp=.o))
 

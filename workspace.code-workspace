@@ -12,6 +12,14 @@
 		    "name": "Tool",
 		    "path": "./tool"
 		},
+		{
+		    "name": "Car App",
+		    "path": "./car"
+		},
+		{
+		    "name": "Car Misc",
+		    "path": "./car.misc"
+		},
 	],
 	"settings": {
 		"explorer.fileNesting.enabled": true,
