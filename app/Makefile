@@ -24,7 +24,7 @@ ELFPATH := $(BINDIR)/$(EXENAME).elf
 MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
-SRCPATHS := main.cpp Assets.cpp
+SRCPATHS := main.cpp Assets.cpp StartPattern.cpp
 
 OBJPATHS := $(foreach path,$(notdir $(SRCPATHS)),$(OBJDIR)/$(path:.cpp=.o))
 
