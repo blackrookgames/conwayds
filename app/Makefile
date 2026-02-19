@@ -16,7 +16,6 @@ LIBNDS := $(DEVKITARM)/../libnds
 BINDIR := $(MKFILE_DIR)bin
 OBJDIR := $(MKFILE_DIR)obj
 HDRDIR := $(MKFILE_DIR)hdr
-SRCDIR := $(MKFILE_DIR)src
 
 EXENAME := conway
 EXEPATH := $(BINDIR)/$(EXENAME).nds
@@ -24,9 +23,12 @@ ELFPATH := $(BINDIR)/$(EXENAME).elf
 MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
-SRCPATHS := main.cpp Assets.cpp StartPattern.cpp
+SCRNAMES := main.cpp\
+	src/Assets.cpp\
+	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp\
+	src/entity/StartPattern.cpp src/entity/TestScene.cpp
 
-OBJPATHS := $(foreach path,$(notdir $(SRCPATHS)),$(OBJDIR)/$(path:.cpp=.o))
+OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))
 
 all : $(EXEPATH)
 
@@ -50,7 +52,7 @@ $(EXEPATH) : $(OBJPATHS)
 		"app;built with devkitARM;http://devkitpro.org" \
 		> /dev/null
 
-$(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o : $(MKFILE_DIR)/%.cpp
 	@mkdir -p "$$(dirname $@)"
 	$(GPP) \
 		-MMD -MP -MF $(@:.o=.d) \

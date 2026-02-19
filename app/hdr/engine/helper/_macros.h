@@ -1,5 +1,5 @@
-#ifndef _MACROS_H
-#define _MACROS_H
+#ifndef ENGINE_HELPER__MACROS_H
+#define ENGINE_HELPER__MACROS_H
 
 #pragma region INIT
 
