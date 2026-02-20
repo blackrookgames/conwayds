@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "engine/scenes/__.h"
-#include "entity/TestScene.h"
+#include "game/scns/sim/Scene.h"
 
 int main(void)
 {
@@ -12,7 +12,7 @@ int main(void)
 
     engine::scenes::initialize();
 
-    entity::TestScene* scene = new entity::TestScene();
+    game::scns::sim::Scene* scene = new game::scns::sim::Scene();
     scene->deleteOnExit(true);
     engine::scenes::gotoScene(scene);
 

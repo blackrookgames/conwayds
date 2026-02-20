@@ -24,9 +24,9 @@ MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
 SCRNAMES := main.cpp\
-	src/Assets.cpp\
 	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp\
-	src/entity/StartPattern.cpp src/entity/TestScene.cpp
+	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp \
+	src/game/scns/sim/Scene.cpp
 
 OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))
 
