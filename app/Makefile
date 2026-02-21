@@ -25,7 +25,7 @@ LSTPATH := $(BINDIR)/$(EXENAME).lst
 
 SCRNAMES := main.cpp\
 	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp\
-	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp \
+	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp src/game/assets/Zach.cpp \
 	src/game/scns/sim/Scene.cpp
 
 OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))

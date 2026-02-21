@@ -26,10 +26,12 @@
             <a href="#s_cmd_dstileset">&emsp;&emsp;@dstileset</a>
             <a href="#s_cmd_imgimage">&emsp;&emsp;@imgimage</a>
             <a href="#s_cmd_line">&emsp;&emsp;@line</a>
+            <a href="#s_cmd_lifepattern">&emsp;&emsp;@lifepattern</a>
             <a href="#s_cmd_load">&emsp;&emsp;@load</a>
             <a href="#s_cmd_open">&emsp;&emsp;@open</a>
             <a href="#s_cmd_print">&emsp;&emsp;@print</a>
             <a href="#s_cmd_save">&emsp;&emsp;@save</a>
+            <a href="#s_cmd_string">&emsp;&emsp;@string</a>
             <a href="#s_cmd_var">&emsp;&emsp;@var</a>
             <a href="#s_func">Functions</a>
             <a href="#s_func_cppdata">&emsp;&emsp;cppdata</a>
@@ -196,6 +198,15 @@
                             <tr><td>dstileset8</td><td>Name of input variable; this is where the DSTileset8 is stored</td></tr>
                         </table>
                     </p>
+                    <h3 class="mono">@databuffer <i>ovar</i> <i>lifepattern</i></h3>
+                    <p>
+                        Creates a DataBuffer using data from a life pattern<br/>
+                        NOTE: Pattern rules are not included
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the DataBuffer will be stored</td></tr>
+                            <tr><td>lifepattern</td><td>Name of input variable; this is where the life pattern is stored</td></tr>
+                        </table>
+                    </p>
                 </div>
                 <div class="cmddef" id="s_cmd_dsbitmap">
                     <h3 class="mono">@dsbitmap <i>ovar</i> <i>databuffer</i> <i>width</i> <i>height</i> <i>bpp</i></h3>
@@ -300,6 +311,15 @@
                             <tr><td>--noalpha</td><td>If specified, alpha data will be ignored</td></tr>
                         </table>
                     </p>
+                    <h3 class="mono">@imgimage <i>ovar</i> <i>lifepattern</i></h3>
+                    <p>
+                        Creates an ImgImage using data from a life pattern<br/>
+                        NOTE: Pattern rules are not included
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>lifepattern</td><td>Name of input variable; this is where the life pattern is stored</td></tr>
+                        </table>
+                    </p>
                 </div>
                 <div class="cmddef" id="s_cmd_line">
                     <h3 class="mono">@line <i>text</i></h3>
@@ -307,6 +327,33 @@
                         Writes a line of text to the open file
                         <table class="argdesc">
                             <tr><td>text</td><td>Text to write</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_lifepattern">
+                    <h3 class="mono">@lifepattern <i>ovar</i> <i>databuffer</i></h3>
+                    <p>
+                        Creates a life pattern using data from a DataBuffer
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the life pattern will be stored</td></tr>
+                            <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@lifepattern <i>ovar</i> <i>imgimage</i></h3>
+                    <p>
+                        Creates a life pattern using data from an ImgImage
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the life pattern will be stored</td></tr>
+                            <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@lifepattern <i>ovar</i> <i>string</i> <i>type</i></h3>
+                    <p>
+                        Creates a life pattern using data from a string
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the life pattern will be stored</td></tr>
+                            <tr><td>string</td><td>Name of input variable; this is where the string is stored</td></tr>
+                            <tr><td>type</td><td>Format type (TXT or RLE)</td></tr>
                         </table>
                     </p>
                 </div>
@@ -324,6 +371,14 @@
                         Creates an ImgImage by loading from a file
                         <table class="argdesc">
                             <tr><td>ovar</td><td>Name of output variable; this is where the ImgImage will be stored</td></tr>
+                            <tr><td>path</td><td>Path to input file</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@load string <i>ovar</i> <i>path</i></h3>
+                    <p>
+                        Creates a string by loading from a file
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the string will be stored</td></tr>
                             <tr><td>path</td><td>Path to input file</td></tr>
                         </table>
                     </p>
@@ -362,6 +417,25 @@
                         <table class="argdesc">
                             <tr><td>imgimage</td><td>Name of input variable; this is where the ImgImage is stored</td></tr>
                             <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">@save <i>string</i> <i>path</i></h3>
+                    <p>
+                        Saves string data to a file
+                        <table class="argdesc">
+                            <tr><td>string</td><td>Name of input variable; this is where the string is stored</td></tr>
+                            <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
+                </div>
+                <div class="cmddef" id="s_cmd_string">
+                    <h3 class="mono">@string <i>ovar</i> <i>lifepattern</i> <i>type</i></h3>
+                    <p>
+                        Creates a string using data from a life pattern
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the string will be stored</td></tr>
+                            <tr><td>lifepattern</td><td>Name of input variable; this is where the life pattern is stored</td></tr>
+                            <tr><td>type</td><td>Format type (TXT or RLE) (if TXT, pattern rules won't be saved)</td></tr>
                         </table>
                     </p>
                 </div>

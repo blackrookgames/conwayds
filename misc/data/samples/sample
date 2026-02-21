@@ -1,0 +1,67 @@
+@var savedir ../../../app/data/samples
+
+@var name sample0
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample1
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample2
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample3
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample4
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample5
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample6
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample7
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample8
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name sample9
+@load string input ./${name}.rle
+@lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+# TODO: Remove after implementing RLE
+@load databuffer test ${savedir}/sample0.bin
+@lifepattern testpat test
+@string teststr testpat txt
+@print ${teststr}

@@ -13,6 +13,7 @@ import src.life as life
 class Format(Enum):
     RLE = auto()
     TXT = auto()
+    BIN = auto()
     IMG = auto()
 
 class cmd_life(cli.CLICommand):
@@ -37,14 +38,14 @@ class cmd_life(cli.CLICommand):
     __itype = cli.CLIOptionWArgDef(\
         name = "itype",\
         short = 'i',\
-        desc = f"Input type. Allowed values: txt, rle, img",\
+        desc = f"Input type. Allowed values: txt, rle, bin, img",\
         parse = cli.CLIParseUtil.to_enum,\
         arg = (Format, True, ),\
         default = None)
     __otype = cli.CLIOptionWArgDef(\
         name = "otype",\
         short = 'o',\
-        desc = f"Output type. Allowed values: txt, rle, img",\
+        desc = f"Output type. Allowed values: txt, rle, bin, img",\
         parse = cli.CLIParseUtil.to_enum,\
         arg = (Format, True, ),\
         default = None)
@@ -61,6 +62,8 @@ class cmd_life(cli.CLICommand):
             return Format.IMG
         if path.endswith(".rle"):
             return Format.RLE
+        if path.endswith(".bin"):
+            return Format.BIN
         return Format.TXT
         
     #endregion
@@ -81,9 +84,12 @@ class cmd_life(cli.CLICommand):
                 case Format.TXT:
                     _input = cliutil.CLIStrUtil.str_from_file(self_input)
                     pattern = life.LifeSerial.pattern_from_txt(_input)
+                case Format.BIN:
+                    _input = cliutil.CLIDataUtil.buffer_from_file(self_input)
+                    pattern = life.LifeSerial.pattern_from_bin(_input)
                 case Format.IMG:
-                    _input = cliutil.CLIImgUtil.from_file(self_input)
-                    pattern = life.LifeSerial.pattern_from_img(_input)
+                    _input = cliutil.CLIImgUtil.image_from_file(self_input)
+                    pattern = life.LifeUtil.pattern_get_img(_input)
                 case _: return 1 # Should never happen
             # Output
             match self.__getformat(self_otype, self_output):
@@ -93,9 +99,13 @@ class cmd_life(cli.CLICommand):
                 case Format.TXT:
                     _output = life.LifeSerial.pattern_to_txt(pattern)
                     cliutil.CLIStrUtil.str_to_file(_output, self_output)
+                case Format.BIN:
+                    _output = life.LifeSerial.pattern_to_bin(pattern)
+                    cliutil.CLIDataUtil.buffer_to_file(_output, self_output)
                 case Format.IMG:
-                    _output = life.LifeSerial.pattern_to_img(pattern)
-                    cliutil.CLIImgUtil.to_file(_output, self_output)
+                    _output = img.ImgImage()
+                    life.LifeUtil.pattern_set_img(_output, pattern)
+                    cliutil.CLIImgUtil.image_to_file(_output, self_output)
                 case _: return 1 # Should never happen
         except cliutil.CLICommandError as e:
             print(f"ERROR: {e}", file = sys.stderr)

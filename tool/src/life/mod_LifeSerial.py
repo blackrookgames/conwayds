@@ -4,12 +4,20 @@ __all__ = [\
 from io import\
     StringIO as _StringIO
 
+from ..data.mod_DataBuffer import\
+    DataBuffer as _DataBuffer
+from ..data.mod_DataError import\
+    DataError as _DataError
 from ..data.mod_SerialError import\
     SerialError as _SerialError
 from ..data.mod_SerialParse import\
     SerialParse as _SerialParse
 from ..data.mod_StringReader import\
     StringReader as _StringReader
+from ..helper.mod_const import\
+    U32_MAX as _U32_MAX
+from ..helper.mod_BadOpError import\
+    BadOpError as _BadOpError
 from ..img.mod_Img import\
     Img as _Img
 from ..img.mod_ImgColor import\
@@ -341,12 +349,12 @@ class LifeSerial:
         if hdr_y is None:
             raise _SerialError("ERROR: Required parameter y has not been defined.")
         if hdr_rule is None:
-            hdrdefs = _LifePatternRule()
+            hdrdefs = _LifePatternRule() # type: ignore
         # Init pattern
         pattern = _LifePattern(\
             width = hdr_x,\
             height = hdr_y,\
-            rule = hdr_rule)
+            rule = hdr_rule) # type: ignore
         # Parse data
         if not _parsedata(pattern, reader):
             raise _tempkill()
@@ -483,46 +491,96 @@ class LifeSerial:
 
     #endregion
 
-    #region pattern img
+    #region pattern bin
 
     @classmethod
-    def pattern_from_img(cls, img:_Img):
+    def pattern_from_bin(cls, data:_DataBuffer):
         """
-        Deserializes LifePattern data from an Img
+        Deserializes LifePattern data from an DataBuffer
         
-        :param img:
-            Input Img
+        :param data:
+            Input DataBuffer
         :return:
             Created LifePattern
+        :raise SerialError:
+            Unexpected end of data
         """
-        pattern = _LifePattern(\
-            width = img.width,\
-            height = img.height)
-        for y in range(img.height):
-            for x in range(img.width):
-                pixel = img[x, y]
-                pattern[x, y] = (pixel.r >= 128 and pixel.g >= 128 and pixel.b >= 128)
-        return pattern
+        # TODO: Implement RLE
+        try:
+            data.set_cursor(0)
+            # Read width and height
+            width = data.read_uint32_l()
+            height = data.read_uint32_l()
+            # Get RLE info
+            hasrle = data.read_uint8() != 0x00
+            rleval = data.read_uint8()
+            if hasrle: raise _SerialError("RLE has not yet been implemented")
+            # Create pattern
+            pattern = _LifePattern(width = width, height = height)
+            _pos = 0
+            _rest = len(pattern)
+            while _rest > 0 and data.cursor < len(data):
+                # Read byte
+                _byte = data.read_uint8()
+                # Set cell data
+                for _i in range(min(8, _rest)):
+                    # Set cell
+                    pattern[_pos] = (_byte & 1) != 0
+                    # Next
+                    _byte >>= 1
+                    _pos += 1
+                    _rest -= 1
+            # Success!!!
+            return pattern
+        except _DataError as _e:
+            e = _SerialError(_e)
+        raise e
 
     @classmethod
-    def pattern_to_img(cls, pattern:_LifePattern):
+    def pattern_to_bin(cls, pattern:_LifePattern, uncompressed:bool = False):
         """
-        Serializes LifePattern data to an Img\n
+        Serializes LifePattern data to an DataBuffer\n
         NOTE: Rule configurations will not be saved
         
         :param pattern:
             Input LifePattern
+        :param uncompressed:
+            If true, data will not be compressed
         :return:
-            Created Img
+            Created DataBuffer
+        :raise SerialError:
+            Pattern width is larger than 4294967295\n
+            or\n
+            Pattern height is larger than 4294967295
         """
-        img = _Img(\
-            width = max(1, pattern.width),
-            height = max(1, pattern.height))
-        LIVE = _ImgColor(r = 255, g = 255, b = 255)
-        DEAD = _ImgColor()
-        for y in range(pattern.height):
-            for x in range(pattern.width):
-                img[x, y] = LIVE if pattern[x, y] else DEAD
-        return img
+        # TODO: Implement RLE
+        if pattern.width > _U32_MAX:
+            raise _SerialError(f"Pattern width must be less than or equal to {_U32_MAX}.")
+        if pattern.height > _U32_MAX:
+            raise _SerialError(f"Pattern height must be less than or equal to {_U32_MAX}.")
+        # Create buffer
+        data = _DataBuffer(2 + 2 + (pattern.width * pattern.height + 7) // 8)
+        # Write width and height
+        data.write_uint32_l(pattern.width)
+        data.write_uint32_l(pattern.height)
+        # Save RLE info (not implemented yet)
+        data.write_uint8(0x00)
+        data.write_uint8(0x00)
+        # Write cell data
+        _pos = 0
+        _rest = len(pattern)
+        while _rest > 0:
+            _value = 0
+            _mask = 1
+            for _i in range(min(8, _rest)):
+                # Get cell
+                if pattern[_pos]: _value |= _mask
+                # Next
+                _mask <<= 1
+                _pos += 1
+                _rest -= 1
+            data.write_uint8(_value)
+        # Success!!!
+        return data
 
     #endregion

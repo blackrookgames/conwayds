@@ -7,11 +7,13 @@ from ._cf.c_dsbitmap import __def as _c_dsbitmap
 from ._cf.c_dspalette import __def as _c_dspalette
 from ._cf.c_dstileset import __def as _c_dstileset
 from ._cf.c_imgimage import __def as _c_imgimage
+from ._cf.c_lifepattern import __def as _c_lifepattern
 from ._cf.c_line import __def as _c_line
 from ._cf.c_load import __def as _c_load
 from ._cf.c_open import __def as _c_open
 from ._cf.c_print import __def as _c_print
 from ._cf.c_save import __def as _c_save
+from ._cf.c_string import __def as _c_string
 from ._cf.c_var import __def as _c_var
 from ._cf.f_cppdata import __def as _f_cppdata
 from ._cf.f_height import __def as _f_height
@@ -26,11 +28,13 @@ _CMDS:dict[str, _CmdDef] = {
     '@dspalette': _c_dspalette,
     '@dstileset': _c_dstileset,
     '@imgimage': _c_imgimage,
+    '@lifepattern': _c_lifepattern,
     '@line': _c_line,
     '@load': _c_load,
     '@open': _c_open,
     '@print': _c_print,
     '@save': _c_save,
+    '@string': _c_string,
     '@var': _c_var,
 }
 # Functions
