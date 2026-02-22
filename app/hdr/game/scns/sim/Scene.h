@@ -30,7 +30,14 @@ namespace game::scns::sim
         u16* f_main_3_gfx;
         u16* f_main_3_map;
 
-        s32 f_scale;
+        s32 f_view_w;
+        s32 f_view_h;
+        s32 f_view_max_x;
+        s32 f_view_max_y;
+        s32 f_view_inc;
+
+        s32 f_view_x;
+        s32 f_view_y;
 
         #pragma endregion
 
@@ -43,6 +50,10 @@ namespace game::scns::sim
         void m_exit() override;
 
         void m_update() override;
+
+        private:
+
+        void m_update_view_size(s32 size);
 
         #pragma endregion
     };

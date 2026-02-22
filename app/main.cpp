@@ -6,9 +6,7 @@
 
 int main(void)
 {
-    consoleDebugInit(DebugDevice_NOCASH);
-
-    fprintf(stderr, "Hello world!!!\n");
+    nocashMessage("Hello world!!!\n");
 
     engine::scenes::initialize();
 

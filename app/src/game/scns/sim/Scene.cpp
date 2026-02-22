@@ -4,15 +4,16 @@
 #include "game/assets/SimTileset.h"
 #include "game/assets/Zach.h"
 
-#include <stdio.h>
+#include <cstdio>
+#include <nds/debug.h>
 
 using namespace game::scns::sim;
 
 #pragma region macros
 
-#define SCALE_MIN 64
-#define SCALE_MAX 1024
-#define SCALE_INC 8
+#define VIEWSIZE_MIN 64
+#define VIEWSIZE_MAX 1024
+#define VIEWSIZE_INC 8
 
 #pragma endregion
 
@@ -43,39 +44,69 @@ void Scene::m_enter()
 	DC_FlushRange(assets::SimTileset::data, assets::SimTileset::size);
     dmaCopy(assets::SimTileset::data, f_main_3_gfx, assets::SimTileset::size);
     
-    const u8* iptr = game::assets::Zach::data + 8; // Assume size of 256 x 256
-    u8* optr = new u8[128 * 128]();
-    bool hasrle = *(iptr++) != 0;
-    u8 rleval = *(iptr++);
-    if (hasrle) { }
-    else
+    const u32 cells_w = 256;
+    const u32 cells_h = 256;
+    const u32 cells_area = cells_w * cells_h;
+    bool* cells = new bool[cells_area];
     {
-        u32 i = 0;
-        while (i < (256 * 256))
+        const u8* iptr = game::assets::Zach::data + 8; // Assume size of 256 x 256
+        bool* optr = cells;
+        u32 pos = 0;
+        while (pos < cells_area)
         {
-            u8 mask = 1;
-            for (u8 j = 0; j < 8; ++j)
+            // Compressed?
+            if ((*iptr & 0b00000001) != 0)
             {
-                u32 x = i & 0xFF;
-                u32 y = i >> 8;
-                u32 pos = (x >> 1) + ((y >> 1) << 7);
-                u8 omsk = 1 << ((x & 1) | ((y & 1) << 1));
-                // Set bit
-                if ((*iptr & mask) != 0) optr[pos] |= omsk;
-                // Next bit
-                ++i;
-                mask <<= 1;
+                bool live = (*iptr & 0b00000010) != 0;
+                u8 count = *iptr >> 2;
+                while (pos < cells_area && count > 0)
+                {
+                    // Set cell
+                    *(optr++) = live;
+                    // Next
+                    ++pos;
+                    --count;
+                }
             }
-            // Next byte
+            // Uncompressed?
+            else
+            {
+                u16 mask = 0b00000010;
+                while (pos < cells_area && mask <= 0b10000000)
+                {
+                    // Set cell
+                    *(optr++) = (*iptr & mask) != 0;
+                    // Next
+                    ++pos;
+                    mask <<= 1;
+                }
+            }
+            // Next
             ++iptr;
         }
-    } 
-	DC_FlushRange(optr, 128 * 128);
-    dmaCopy(optr, f_main_3_map, 128 * 128);
-    delete[] optr;
+    }
 
-    f_scale = 128;
-    bgSetScale(f_main_3, f_scale, f_scale);
+    const u32 map_area = 128 * 128;
+    u8* map = new u8[map_area]();
+    {
+        const bool* iptr = cells;
+        for (u32 i = 0; i < cells_area; ++i)
+        {
+            u32 x = i & 0xFF;
+            u32 y = i >> 8;
+            u32 pos = (x >> 1) + ((y >> 1) << 7);
+            u8 omsk = 1 << ((x & 1) | ((y & 1) << 1));
+            if (*(iptr++)) map[pos] |= omsk;
+        }
+    } 
+	DC_FlushRange(map, map_area);
+    dmaCopy(map, f_main_3_map, map_area);
+    delete[] map;
+
+    m_update_view_size(128);
+    f_view_x = (VIEWSIZE_MAX - f_view_w) / 2;
+    f_view_y = (VIEWSIZE_MAX - f_view_h) / 2;
+    bgSetScroll(f_main_3, f_view_x, f_view_y);
 }
 
 void Scene::m_exit()
@@ -90,22 +121,71 @@ void Scene::m_update()
 	scanKeys();
 	if (keysDown() & KEY_START)
     {
-        fprintf(stderr, "Start\n");
+        nocashMessage("Start\n");
     }
     if (keysCurrent() & KEY_L)
     {
-        f_scale += SCALE_INC;
-        if (f_scale > SCALE_MAX) f_scale = SCALE_MAX;
-        bgSetScale(f_main_3, f_scale, f_scale);
+        m_update_view_size(f_view_w + VIEWSIZE_INC);
     }
     if (keysCurrent() & KEY_R)
     {
-        f_scale -= SCALE_INC;
-        if (f_scale < SCALE_MIN) f_scale = SCALE_MIN;
-        bgSetScale(f_main_3, f_scale, f_scale);
+        m_update_view_size(f_view_w - VIEWSIZE_INC);
+    }
+    if (keysCurrent() & KEY_LEFT)
+    {
+        f_view_x -= f_view_inc;
+        if (f_view_x < 0) f_view_x = 0;
+        bgSetScroll(f_main_3, f_view_x, f_view_y);
+    }
+    if (keysCurrent() & KEY_RIGHT)
+    {
+        f_view_x += f_view_inc;
+        if (f_view_x > f_view_max_x) f_view_x = f_view_max_x;
+        bgSetScroll(f_main_3, f_view_x, f_view_y);
+    }
+    if (keysCurrent() & KEY_UP)
+    {
+        f_view_y -= f_view_inc;
+        if (f_view_y < 0) f_view_y = 0;
+        bgSetScroll(f_main_3, f_view_x, f_view_y);
+    }
+    if (keysCurrent() & KEY_DOWN)
+    {
+        f_view_y += f_view_inc;
+        if (f_view_y > f_view_max_y) f_view_y = f_view_max_y;
+        bgSetScroll(f_main_3, f_view_x, f_view_y);
     }
     
     bgUpdate();
+}
+
+void Scene::m_update_view_size(s32 size)
+{
+    s32 off_x = f_view_x + f_view_w / 2;
+    s32 off_y = f_view_y + f_view_h / 2;
+    // Set size
+    if (size < VIEWSIZE_MIN)
+        f_view_w = VIEWSIZE_MIN;
+    else if (size > VIEWSIZE_MAX)
+        f_view_w = VIEWSIZE_MAX;
+    else
+        f_view_w = size;
+    f_view_h = (f_view_w * DS_SCREEN_HEIGHT + DS_SCREEN_WIDTH - 1) / DS_SCREEN_WIDTH;
+    // Update max
+    f_view_max_x = VIEWSIZE_MAX - f_view_w;
+    f_view_max_y = VIEWSIZE_MAX - f_view_h;
+    // Update inc
+    f_view_inc = VIEWSIZE_MAX / f_view_w;
+    // Update position
+    f_view_x = off_x - f_view_w / 2;
+    f_view_y = off_y - f_view_h / 2;
+    if (f_view_x < 0) f_view_x = 0;
+    if (f_view_y < 0) f_view_y = 0;
+    if (f_view_x > f_view_max_x) f_view_x = f_view_max_x;
+    if (f_view_y > f_view_max_y) f_view_y = f_view_max_y;
+    // Update background
+    bgSetScroll(f_main_3, f_view_x, f_view_y);
+    bgSetScale(f_main_3, f_view_w, f_view_w); // f_view_w is the scale for both axes
 }
 
 #pragma endregion

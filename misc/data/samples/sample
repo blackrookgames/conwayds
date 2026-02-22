@@ -59,9 +59,3 @@
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
-
-# TODO: Remove after implementing RLE
-@load databuffer test ${savedir}/sample0.bin
-@lifepattern testpat test
-@string teststr testpat txt
-@print ${teststr}

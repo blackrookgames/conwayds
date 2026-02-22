@@ -24,6 +24,13 @@
 
 #pragma endregion
 
+#pragma region DS
+
+#define DS_SCREEN_WIDTH 256
+#define DS_SCREEN_HEIGHT 192
+
+#pragma endregion
+
 #pragma region PATTERN
 
 #define PATTERN_WIDTH 256

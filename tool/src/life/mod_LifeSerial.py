@@ -505,31 +505,32 @@ class LifeSerial:
         :raise SerialError:
             Unexpected end of data
         """
-        # TODO: Implement RLE
         try:
             data.set_cursor(0)
             # Read width and height
             width = data.read_uint32_l()
             height = data.read_uint32_l()
-            # Get RLE info
-            hasrle = data.read_uint8() != 0x00
-            rleval = data.read_uint8()
-            if hasrle: raise _SerialError("RLE has not yet been implemented")
             # Create pattern
             pattern = _LifePattern(width = width, height = height)
             _pos = 0
-            _rest = len(pattern)
-            while _rest > 0 and data.cursor < len(data):
+            while _pos < len(pattern) and data.cursor < len(data):
                 # Read byte
                 _byte = data.read_uint8()
-                # Set cell data
-                for _i in range(min(8, _rest)):
-                    # Set cell
-                    pattern[_pos] = (_byte & 1) != 0
-                    # Next
-                    _byte >>= 1
-                    _pos += 1
-                    _rest -= 1
+                # Compressed?
+                if (_byte & 0b00000001) != 0:
+                    _live = (_byte & 0b00000010) != 0
+                    _count = _byte >> 2
+                    while _pos < len(pattern) and _count > 0:
+                        pattern[_pos] = _live
+                        _pos += 1
+                        _count -= 1
+                # Not compressed?
+                else:
+                    _mask = 0b00000010
+                    while _pos < len(pattern) and _mask <= 0b10000000:
+                        pattern[_pos] = (_byte & _mask) != 0
+                        _pos += 1
+                        _mask <<= 1
             # Success!!!
             return pattern
         except _DataError as _e:
@@ -537,15 +538,13 @@ class LifeSerial:
         raise e
 
     @classmethod
-    def pattern_to_bin(cls, pattern:_LifePattern, uncompressed:bool = False):
+    def pattern_to_bin(cls, pattern:_LifePattern):
         """
         Serializes LifePattern data to an DataBuffer\n
         NOTE: Rule configurations will not be saved
         
         :param pattern:
             Input LifePattern
-        :param uncompressed:
-            If true, data will not be compressed
         :return:
             Created DataBuffer
         :raise SerialError:
@@ -553,33 +552,52 @@ class LifeSerial:
             or\n
             Pattern height is larger than 4294967295
         """
-        # TODO: Implement RLE
         if pattern.width > _U32_MAX:
             raise _SerialError(f"Pattern width must be less than or equal to {_U32_MAX}.")
         if pattern.height > _U32_MAX:
             raise _SerialError(f"Pattern height must be less than or equal to {_U32_MAX}.")
+        # Gather cell data
+        celldata = bytearray((len(pattern) + 6) // 7)
+        cellsize = 0
+        _pos = 0
+        while _pos < len(pattern):
+            # Get first cell in byte
+            _first = pattern[_pos]
+            _pos += 1
+            # Get next 6 cells
+            _byte = 0b00000010 if _first else 0b00000000
+            _mask = 0b00000100
+            _compressable = True
+            while _pos < len(pattern) and _mask <= 0b10000000:
+                # Get cell
+                _cell = pattern[_pos]
+                _pos += 1
+                # Compare with first
+                if _cell != _first: _compressable = False
+                # Add to byte
+                if _cell: _byte |= _mask
+                # Next
+                _mask <<= 1
+            if _mask <= 0b10000000:
+                _compressable = False
+            # Compressable?
+            if _compressable:
+                _count = 7
+                while _count < 63 and _pos < len(pattern) and pattern[_pos] == _first:
+                    _pos += 1
+                    _count += 1
+                _byte = ((_byte & 0b00000010) | (0b00000001)) | (_count << 2)
+            # Add byte
+            celldata[cellsize] = _byte
+            cellsize += 1
         # Create buffer
-        data = _DataBuffer(2 + 2 + (pattern.width * pattern.height + 7) // 8)
+        data = _DataBuffer()
         # Write width and height
         data.write_uint32_l(pattern.width)
         data.write_uint32_l(pattern.height)
-        # Save RLE info (not implemented yet)
-        data.write_uint8(0x00)
-        data.write_uint8(0x00)
         # Write cell data
-        _pos = 0
-        _rest = len(pattern)
-        while _rest > 0:
-            _value = 0
-            _mask = 1
-            for _i in range(min(8, _rest)):
-                # Get cell
-                if pattern[_pos]: _value |= _mask
-                # Next
-                _mask <<= 1
-                _pos += 1
-                _rest -= 1
-            data.write_uint8(_value)
+        for _i in range(cellsize):
+            data.write_uint8(celldata[_i])
         # Success!!!
         return data
 
