@@ -1,4 +1,4 @@
-@var savedir ../../../app/data/samples
+@var savedir ../../../app/nitro/samples
 
 @var name sample0
 @load string input ./${name}.rle
@@ -57,5 +57,11 @@
 @var name sample9
 @load string input ./${name}.rle
 @lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name zach
+@load imgimage input ./${name}.png
+@lifepattern pattern input
 @databuffer output pattern
 @save output ${savedir}/${name}.bin

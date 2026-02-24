@@ -16,6 +16,7 @@ LIBNDS := $(DEVKITARM)/../libnds
 BINDIR := $(MKFILE_DIR)bin
 OBJDIR := $(MKFILE_DIR)obj
 HDRDIR := $(MKFILE_DIR)hdr
+NTRDIR := $(MKFILE_DIR)nitro
 
 EXENAME := conway
 EXEPATH := $(BINDIR)/$(EXENAME).nds
@@ -23,9 +24,11 @@ ELFPATH := $(BINDIR)/$(EXENAME).elf
 MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
-SCRNAMES := main.cpp\
-	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp\
-	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp src/game/assets/Zach.cpp \
+SCRNAMES := main.cpp \
+	src/__.cpp \
+	src/engine/data/Pattern.cpp src/engine/data/Serial.cpp \
+	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp \
+	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp \
 	src/game/scns/sim/Scene.cpp
 
 OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))
@@ -40,7 +43,7 @@ $(EXEPATH) : $(OBJPATHS)
 		-g -march=armv5te -mtune=arm946e-s -mthumb \
 		-Wl,-Map,$(MAPPATH) \
 		$(OBJPATHS) \
-		-lnds9 -lcalico_ds9 \
+		-lfat -lnds9 -lcalico_ds9 \
 		-o $(ELFPATH)
 	$(GNM) \
 		-CSn $(ELFPATH) > $(LSTPATH)
@@ -50,6 +53,7 @@ $(EXEPATH) : $(OBJPATHS)
 		-7 $(CALICO)/bin/ds7_maine.elf \
 		-b $(CALICO)/share/nds-icon.bmp \
 		"app;built with devkitARM;http://devkitpro.org" \
+		-d $(NTRDIR) \
 		> /dev/null
 
 $(OBJDIR)/%.o : $(MKFILE_DIR)/%.cpp

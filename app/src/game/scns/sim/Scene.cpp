@@ -1,8 +1,8 @@
 #include "game/scns/sim/Scene.h"
 
+#include "engine/data/Pattern.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
-#include "game/assets/Zach.h"
 
 #include <cstdio>
 #include <nds/debug.h>
@@ -44,53 +44,14 @@ void Scene::m_enter()
 	DC_FlushRange(assets::SimTileset::data, assets::SimTileset::size);
     dmaCopy(assets::SimTileset::data, f_main_3_gfx, assets::SimTileset::size);
     
-    const u32 cells_w = 256;
-    const u32 cells_h = 256;
-    const u32 cells_area = cells_w * cells_h;
-    bool* cells = new bool[cells_area];
-    {
-        const u8* iptr = game::assets::Zach::data + 8; // Assume size of 256 x 256
-        bool* optr = cells;
-        u32 pos = 0;
-        while (pos < cells_area)
-        {
-            // Compressed?
-            if ((*iptr & 0b00000001) != 0)
-            {
-                bool live = (*iptr & 0b00000010) != 0;
-                u8 count = *iptr >> 2;
-                while (pos < cells_area && count > 0)
-                {
-                    // Set cell
-                    *(optr++) = live;
-                    // Next
-                    ++pos;
-                    --count;
-                }
-            }
-            // Uncompressed?
-            else
-            {
-                u16 mask = 0b00000010;
-                while (pos < cells_area && mask <= 0b10000000)
-                {
-                    // Set cell
-                    *(optr++) = (*iptr & mask) != 0;
-                    // Next
-                    ++pos;
-                    mask <<= 1;
-                }
-            }
-            // Next
-            ++iptr;
-        }
-    }
+    engine::data::Pattern pattern;
+    pattern.load_file("nitro:/samples/sample0.bin");
 
     const u32 map_area = 128 * 128;
     u8* map = new u8[map_area]();
     {
-        const bool* iptr = cells;
-        for (u32 i = 0; i < cells_area; ++i)
+        const bool* iptr = pattern.cells();
+        for (u32 i = 0; i < PATTERN_AREA; ++i)
         {
             u32 x = i & 0xFF;
             u32 y = i >> 8;
@@ -103,7 +64,7 @@ void Scene::m_enter()
     dmaCopy(map, f_main_3_map, map_area);
     delete[] map;
 
-    m_update_view_size(128);
+    m_update_view_size(256);
     f_view_x = (VIEWSIZE_MAX - f_view_w) / 2;
     f_view_y = (VIEWSIZE_MAX - f_view_h) / 2;
     bgSetScroll(f_main_3, f_view_x, f_view_y);

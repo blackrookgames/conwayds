@@ -1,3 +1,4 @@
+#include <filesystem.h>
 #include <nds.h>
 #include <stdio.h>
 
@@ -6,20 +7,25 @@
 
 int main(void)
 {
-    nocashMessage("Hello world!!!\n");
+    if (nitroFSInit(NULL))
+    {
+        engine::scenes::initialize();
 
-    engine::scenes::initialize();
+        game::scns::sim::Scene* scene = new game::scns::sim::Scene();
+        scene->deleteOnExit(true);
+        engine::scenes::gotoScene(scene);
 
-    game::scns::sim::Scene* scene = new game::scns::sim::Scene();
-    scene->deleteOnExit(true);
-    engine::scenes::gotoScene(scene);
+        while(pmMainLoop())
+        {
+            swiWaitForVBlank();
+            
+            engine::scenes::update();
+        }
 
-	while(pmMainLoop())
-	{
-		swiWaitForVBlank();
-        
-        engine::scenes::update();
+        engine::scenes::finalize();
     }
-
-    engine::scenes::finalize();
+    else
+    {
+        nocashMessage("Fail to initialize nitro\n");
+    }
 }
