@@ -1,11 +1,12 @@
 #include "game/scns/sim/Scene.h"
 
+#include <cstdio>
+#include <nds/debug.h>
+
+#include <__.h>
 #include "engine/data/Pattern.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
-
-#include <cstdio>
-#include <nds/debug.h>
 
 using namespace game::scns::sim;
 
@@ -68,57 +69,93 @@ void Scene::m_enter()
     f_view_x = (VIEWSIZE_MAX - f_view_w) / 2;
     f_view_y = (VIEWSIZE_MAX - f_view_h) / 2;
     bgSetScroll(f_main_3, f_view_x, f_view_y);
+    
+    timerStart(0, ClockDivider_1024, 0, nullptr);
+
+    f_paused = false;
+
+    f_cycle_length = 10000;
+    f_cycle_progress = 0;
 }
 
 void Scene::m_exit()
 {
     engine::scenes::Scene::m_exit();
+
+    timerStop(0);
 }
 
 void Scene::m_update()
 {
     engine::scenes::Scene::m_update();
 
-	scanKeys();
-	if (keysDown() & KEY_START)
+    u16 ticks = timerElapsed(0);
+    if (f_paused) m_update_paused();
+    else m_update_unpaused(ticks);
+    
+    bgUpdate();
+}
+
+void Scene::m_update_unpaused(u16 ticks)
+{
+    // Update cycle
+    f_cycle_progress += ticks;
+    if (f_cycle_progress >= f_cycle_length)
     {
-        nocashMessage("Start\n");
+        NOCASHMESSAGE("test")
+        f_cycle_progress = f_cycle_progress % f_cycle_length;
     }
-    if (keysCurrent() & KEY_L)
+
+    // Scan input
+    scanKeys();
+    if (keysDown() & KEY_START)
+    {
+        f_paused = true;
+    }
+    else if (keysCurrent() & KEY_L)
     {
         m_update_view_size(f_view_w + VIEWSIZE_INC);
     }
-    if (keysCurrent() & KEY_R)
+    else if (keysCurrent() & KEY_R)
     {
         m_update_view_size(f_view_w - VIEWSIZE_INC);
     }
-    if (keysCurrent() & KEY_LEFT)
+    else if (keysCurrent() & KEY_LEFT)
     {
         f_view_x -= f_view_inc;
         if (f_view_x < 0) f_view_x = 0;
         bgSetScroll(f_main_3, f_view_x, f_view_y);
     }
-    if (keysCurrent() & KEY_RIGHT)
+    else if (keysCurrent() & KEY_RIGHT)
     {
         f_view_x += f_view_inc;
         if (f_view_x > f_view_max_x) f_view_x = f_view_max_x;
         bgSetScroll(f_main_3, f_view_x, f_view_y);
     }
-    if (keysCurrent() & KEY_UP)
+    else if (keysCurrent() & KEY_UP)
     {
         f_view_y -= f_view_inc;
         if (f_view_y < 0) f_view_y = 0;
         bgSetScroll(f_main_3, f_view_x, f_view_y);
     }
-    if (keysCurrent() & KEY_DOWN)
+    else if (keysCurrent() & KEY_DOWN)
     {
         f_view_y += f_view_inc;
         if (f_view_y > f_view_max_y) f_view_y = f_view_max_y;
         bgSetScroll(f_main_3, f_view_x, f_view_y);
     }
-    
-    bgUpdate();
 }
+
+void Scene::m_update_paused()
+{
+    // Scan input
+    scanKeys();
+    if (keysDown() & KEY_START)
+    {
+        f_paused = false;
+    }
+}
+
 
 void Scene::m_update_view_size(s32 size)
 {

@@ -39,6 +39,11 @@ namespace game::scns::sim
         s32 f_view_x;
         s32 f_view_y;
 
+        bool f_paused;
+
+        u32 f_cycle_length;
+        u32 f_cycle_progress;
+
         #pragma endregion
 
         #pragma region helper functions
@@ -52,6 +57,10 @@ namespace game::scns::sim
         void m_update() override;
 
         private:
+
+        void m_update_unpaused(u16 ticks);
+
+        void m_update_paused();
 
         void m_update_view_size(s32 size);
 
