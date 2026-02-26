@@ -26,9 +26,14 @@ namespace game::scns::sim
 
         private:
 
+        u8* f_sim_a;
+        u8* f_sim_b;
+        u8* f_sim_ptr;
+
         int f_main_3;
         u16* f_main_3_gfx;
         u16* f_main_3_map;
+        u8* f_main_3_buffer;
 
         s32 f_view_w;
         s32 f_view_h;
@@ -61,6 +66,10 @@ namespace game::scns::sim
         void m_update_unpaused(u16 ticks);
 
         void m_update_paused();
+
+        void m_update_sim();
+
+        void m_update_simtiles();
 
         void m_update_view_size(s32 size);
 
