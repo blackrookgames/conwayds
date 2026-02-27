@@ -17,8 +17,6 @@ int main(void)
 
         while(pmMainLoop())
         {
-            swiWaitForVBlank();
-            
             engine::scenes::update();
         }
 

@@ -33,8 +33,8 @@
 
 #pragma region PATTERN
 
-#define PATTERN_WIDTH 256
-#define PATTERN_HEIGHT 256
+#define PATTERN_WIDTH 254
+#define PATTERN_HEIGHT 254
 #define PATTERN_AREA (PATTERN_WIDTH * PATTERN_HEIGHT)
 
 #pragma endregion

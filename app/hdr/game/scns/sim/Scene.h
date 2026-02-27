@@ -26,10 +26,15 @@ namespace game::scns::sim
 
         private:
 
-        u8* f_sim_a;
-        u8* f_sim_b;
+        u8* f_sim_tiles_a;
+        u8* f_sim_tiles_b;
         u8* f_sim_ptr;
+        bool f_sim_dirty;
 
+        int f_main_2;
+        u16* f_main_2_gfx;
+        u16* f_main_2_map;
+        
         int f_main_3;
         u16* f_main_3_gfx;
         u16* f_main_3_map;
@@ -72,6 +77,8 @@ namespace game::scns::sim
         void m_update_simtiles();
 
         void m_update_view_size(s32 size);
+
+        void m_update_scroll();
 
         #pragma endregion
     };
