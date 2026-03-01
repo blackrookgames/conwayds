@@ -26,14 +26,11 @@ namespace game::scns::sim
 
         private:
 
+        u8* f_sim_empty;
         u8* f_sim_tiles_a;
         u8* f_sim_tiles_b;
         u8* f_sim_ptr;
         bool f_sim_dirty;
-
-        int f_main_2;
-        u16* f_main_2_gfx;
-        u16* f_main_2_map;
         
         int f_main_3;
         u16* f_main_3_gfx;
@@ -53,6 +50,17 @@ namespace game::scns::sim
 
         u32 f_cycle_length;
         u32 f_cycle_progress;
+
+        #pragma endregion
+
+        #pragma region properties
+
+        public:
+
+        /// @brief Length of a single cycle
+        u32 cycle_length() const;
+        /// @brief Length of a single cycle
+        void cycle_length(u32 value);
 
         #pragma endregion
 

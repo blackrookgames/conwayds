@@ -1,3 +1,4 @@
+#include "engine/helper/ArrayUtil.h"
 #include "game/scns/sim/Scene.h"
 
 #include <cstdio>
@@ -13,20 +14,82 @@ using namespace game::scns::sim;
 
 #pragma region macros
 
-#define MAIN_2_MAP_WIDTH 32
-#define MAIN_2_MAP_HEIGHT 32
-#define MAIN_2_MAP_AREA (MAIN_2_MAP_WIDTH * MAIN_2_MAP_HEIGHT)
-
 #define MAIN_3_MAP_WIDTH 128
 #define MAIN_3_MAP_HEIGHT 128
 #define MAIN_3_MAP_AREA (MAIN_3_MAP_WIDTH * MAIN_3_MAP_HEIGHT)
 
-#define VIEW_2_MIN 16
-#define VIEW_2_MAX 256
-#define VIEW_2_INC 2
 #define VIEW_3_MIN 64
 #define VIEW_3_MAX 1024
 #define VIEW_3_INC 8
+
+#define CYCLE_LENGTH_MIN 1000
+#define CYCLE_LENGTH_MAX 100000
+
+#pragma endregion
+
+#pragma region properties
+
+
+u32 Scene::cycle_length() const { return f_cycle_length; }
+
+void Scene::cycle_length(u32 value)
+{
+    if (value < CYCLE_LENGTH_MIN)
+        f_cycle_length = CYCLE_LENGTH_MIN;
+    else if (value > CYCLE_LENGTH_MAX)
+        f_cycle_length = CYCLE_LENGTH_MAX;
+    else f_cycle_length = value;
+}
+
+#pragma endregion
+
+#pragma region helper functions
+
+void sim_initEmpty(u8* output)
+{
+    u8* optr = output;
+    // Top
+    *(optr++) = 0x10;
+    for (u16 x = 2; x < MAIN_3_MAP_WIDTH; ++x) *(optr++) = 0x70;
+    *(optr++) = 0x20;
+    // Top
+    for (u16 y = 2; y < MAIN_3_MAP_HEIGHT; ++y)
+    {
+        *(optr++) = 0x50;
+        for (u16 x = 2; x < MAIN_3_MAP_WIDTH; ++x) *(optr++) = 0x00;
+        *(optr++) = 0x60;
+    }
+    // Bottom
+    *(optr++) = 0x30;
+    for (u16 x = 2; x < MAIN_3_MAP_WIDTH; ++x) *(optr++) = 0x80;
+    *(optr++) = 0x40;
+
+}
+
+void sim_loadPattern(const char* path, const u8* empty, u8* output)
+{
+    // Open pattern
+    engine::data::Pattern pattern;
+    pattern.load_file(path);
+    // Clear first row
+    std::copy(empty, empty + MAIN_3_MAP_WIDTH, output);
+    // Clear first column
+    engine::helper::ArrayUtil::copy(empty, empty + MAIN_3_MAP_AREA, output, MAIN_3_MAP_WIDTH);
+    // Plot rows
+    u8* optr = output;
+    for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
+    {
+        for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
+        {
+            if (pattern.getcell(ix, iy)) *optr |= 0b1000;
+            if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
+            if (pattern.getcell(ix, iy + 1)) optr[MAIN_3_MAP_WIDTH] |= 0b0010;
+            optr[MAIN_3_MAP_WIDTH + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
+            ++optr;
+        }
+        ++optr;
+    }
+}
 
 #pragma endregion
 
@@ -45,47 +108,19 @@ void Scene::m_enter()
     engine::scenes::Scene::m_enter();
 
     // Initialize simulation
+    f_sim_empty = new u8[MAIN_3_MAP_AREA];
     f_sim_tiles_a = new u8[MAIN_3_MAP_AREA];
     f_sim_tiles_b = new u8[MAIN_3_MAP_AREA];
     f_sim_ptr = f_sim_tiles_a;
     f_sim_dirty = true;
-    {
-        u8* optr;
-        // Open pattern
-        engine::data::Pattern pattern;
-        pattern.load_file("nitro:/samples/sample0.bin");
-        // Clear first row
-        std::fill(f_sim_ptr, f_sim_ptr + MAIN_3_MAP_WIDTH, (u8)0);
-        // Clear first column
-        optr = f_sim_ptr;
-        for (u16 y = 0; y < MAIN_3_MAP_HEIGHT; ++y) { *optr = 0; optr += MAIN_3_MAP_WIDTH; }
-        // Plot rows
-        optr = f_sim_ptr;
-        for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
-        {
-            for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
-            {
-                if (pattern.getcell(ix, iy)) *optr |= 0b1000;
-                if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
-                if (pattern.getcell(ix, iy + 1)) optr[MAIN_3_MAP_WIDTH] |= 0b0010;
-                optr[MAIN_3_MAP_WIDTH + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
-                ++optr;
-            }
-            ++optr;
-        }
-    }
+    sim_initEmpty(f_sim_empty);
+    sim_loadPattern("nitro:/samples/sample0.bin", f_sim_empty, f_sim_ptr);
 
     // Initialize video
 	videoSetMode(MODE_2_2D);
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
 
-    // Initialize "back" background layer
-    f_main_2 = bgInit(2, BgType_Rotation, BgSize_R_256x256, 8, 0);
-	f_main_2_gfx = bgGetGfxPtr(f_main_2);
-    f_main_2_map = bgGetMapPtr(f_main_2);
-    bgSetPriority(f_main_2, 3);
-
-    // Initialize "fore" background layer
+    // Initialize background layer
     f_main_3 = bgInit(3, BgType_Rotation, BgSize_R_1024x1024, 9, 0);
 	f_main_3_gfx = bgGetGfxPtr(f_main_3);
     f_main_3_map = bgGetMapPtr(f_main_3);
@@ -109,32 +144,6 @@ void Scene::m_enter()
     // Setup "fore" background layer tiles
     m_update_simtiles();
 
-    // Setup "back" background layer tiles
-    {
-        u8* temp = new u8[MAIN_2_MAP_AREA];
-        u8* optr = temp;
-        // Top
-        *(optr++) = 0x10;
-        for (u8 x = 2; x < MAIN_2_MAP_WIDTH; ++x) *(optr++) = 0x14;
-        *(optr++) = 0x11;
-        // Middle
-        for (u8 y = 2; y < MAIN_2_MAP_HEIGHT; ++y)
-        {
-            *(optr++) = 0x16;
-            for (u8 x = 2; x < MAIN_2_MAP_WIDTH; ++x) *(optr++) = 0x00;
-            *(optr++) = 0x17;
-        }
-        // Bottom
-        *(optr++) = 0x12;
-        for (u8 x = 2; x < MAIN_2_MAP_WIDTH; ++x) *(optr++) = 0x15;
-        *(optr++) = 0x13;
-        // To VRAM
-        DC_FlushRange(temp, MAIN_2_MAP_AREA);
-        dmaCopy(temp, f_main_2_map, MAIN_2_MAP_AREA);
-        // Dispose
-        delete[] temp;
-    }
-    
     // Start timer
     timerStart(0, ClockDivider_1024, 0, nullptr);
 
@@ -154,6 +163,7 @@ void Scene::m_exit()
 
     delete[] f_sim_tiles_b;
     delete[] f_sim_tiles_a;
+    delete[] f_sim_empty;
 
     engine::scenes::Scene::m_exit();
 }
@@ -237,56 +247,57 @@ void Scene::m_update_paused()
 
 void Scene::m_update_sim()
 {
-    const u8* iptr;
-    u8* optr;
     // Update pointer
     u8* prev_ptr = f_sim_ptr;
     f_sim_ptr = (f_sim_ptr == f_sim_tiles_a) ? f_sim_tiles_b : f_sim_tiles_a;
     // Clear first row
-    std::fill(f_sim_ptr, f_sim_ptr + MAIN_3_MAP_WIDTH, (u8)0);
+    std::copy(f_sim_empty, f_sim_empty + MAIN_3_MAP_WIDTH, f_sim_ptr);
     // Clear first column
-    optr = f_sim_ptr;
-    for (u16 y = 0; y < MAIN_3_MAP_HEIGHT; ++y) *(optr++) = 0;
+    engine::helper::ArrayUtil::copy(f_sim_empty, f_sim_empty + MAIN_3_MAP_AREA, f_sim_ptr, MAIN_3_MAP_WIDTH);
     // Plot rows
-    iptr = prev_ptr;
-    optr = f_sim_ptr;
+    const u8* iptr = prev_ptr;
+    const u8* eptr = f_sim_empty;
+    u8* optr = f_sim_ptr;
     for (u16 y = 1; y < MAIN_3_MAP_HEIGHT; ++y)
     {
         for (u16 x = 1; x < MAIN_3_MAP_WIDTH; ++x)
         {
-            if (*iptr != 0 || iptr[1] != 0 || iptr[MAIN_3_MAP_WIDTH] != 0 || iptr[MAIN_3_MAP_WIDTH + 1] != 0)
+            u8 tl = *iptr & 0x0F;
+            u8 tr = iptr[1] & 0x0F;
+            u8 bl = iptr[MAIN_3_MAP_WIDTH] & 0x0F;
+            u8 br = iptr[MAIN_3_MAP_WIDTH + 1] & 0x0F;
+            ++iptr;
+            if (tl != 0 || tr != 0 || bl != 0 || br != 0)
             {
                 bool live;
                 u8 neighbors;
                 // Get TL
-                bool x0y0 = (*iptr & 0b0001) != 0;
-                bool x1y0 = (*iptr & 0b0010) != 0;
-                bool x0y1 = (*iptr & 0b0100) != 0;
-                bool x1y1 = (*iptr & 0b1000) != 0;
-                iptr += MAIN_3_MAP_WIDTH;
-                // Get BL
-                bool x0y2 = (*iptr & 0b0001) != 0;
-                bool x1y2 = (*iptr & 0b0010) != 0;
-                bool x0y3 = (*iptr & 0b0100) != 0;
-                bool x1y3 = (*iptr & 0b1000) != 0;
-                iptr += 1;
-                // Get BR
-                bool x2y2 = (*iptr & 0b0001) != 0;
-                bool x3y2 = (*iptr & 0b0010) != 0;
-                bool x2y3 = (*iptr & 0b0100) != 0;
-                bool x3y3 = (*iptr & 0b1000) != 0;
-                iptr -= MAIN_3_MAP_WIDTH;
+                bool x0y0 = (tl & 0b0001) != 0;
+                bool x1y0 = (tl & 0b0010) != 0;
+                bool x0y1 = (tl & 0b0100) != 0;
+                bool x1y1 = (tl & 0b1000) != 0;
                 // Get TR
-                bool x2y0 = (*iptr & 0b0001) != 0;
-                bool x3y0 = (*iptr & 0b0010) != 0;
-                bool x2y1 = (*iptr & 0b0100) != 0;
-                bool x3y1 = (*iptr & 0b1000) != 0;
+                bool x2y0 = (tr & 0b0001) != 0;
+                bool x3y0 = (tr & 0b0010) != 0;
+                bool x2y1 = (tr & 0b0100) != 0;
+                bool x3y1 = (tr & 0b1000) != 0;
+                // Get BL
+                bool x0y2 = (bl & 0b0001) != 0;
+                bool x1y2 = (bl & 0b0010) != 0;
+                bool x0y3 = (bl & 0b0100) != 0;
+                bool x1y3 = (bl & 0b1000) != 0;
+                // Get BR
+                bool x2y2 = (br & 0b0001) != 0;
+                bool x3y2 = (br & 0b0010) != 0;
+                bool x2y3 = (br & 0b0100) != 0;
+                bool x3y3 = (br & 0b1000) != 0;
                 // Set TL
                 neighbors = 0;
                 if (x0y0) ++neighbors; if (x1y0) ++neighbors; if (x2y0) ++neighbors; if (x0y1) ++neighbors;
                 if (x0y2) ++neighbors; if (x1y2) ++neighbors; if (x2y2) ++neighbors; if (x2y1) ++neighbors;
                 if (x1y1) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
                 if (live) *optr |= 0b1000;
+                eptr += MAIN_3_MAP_WIDTH;
                 optr += MAIN_3_MAP_WIDTH;
                 // Set BL
                 neighbors = 0;
@@ -294,13 +305,15 @@ void Scene::m_update_sim()
                 if (x0y3) ++neighbors; if (x1y3) ++neighbors; if (x2y3) ++neighbors; if (x2y2) ++neighbors;
                 if (x1y2) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
                 if (live) *optr |= 0b0010;
+                eptr += 1;
                 optr += 1;
                 // Set BR
                 neighbors = 0;
                 if (x1y1) ++neighbors; if (x2y1) ++neighbors; if (x3y1) ++neighbors; if (x1y2) ++neighbors;
                 if (x1y3) ++neighbors; if (x2y3) ++neighbors; if (x3y3) ++neighbors; if (x3y2) ++neighbors;
                 if (x2y2) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
-                *optr = live ? 0b0001 : 0b0000; // Use set, not or
+                *optr = *eptr | (live ? 0b0001 : 0b0000);
+                eptr -= MAIN_3_MAP_WIDTH;
                 optr -= MAIN_3_MAP_WIDTH;
                 // Set TR
                 neighbors = 0;
@@ -311,11 +324,11 @@ void Scene::m_update_sim()
             }
             else
             {
-                optr[MAIN_3_MAP_WIDTH + 1] = 0;
-                ++iptr; ++optr;
+                optr[MAIN_3_MAP_WIDTH + 1] = eptr[MAIN_3_MAP_WIDTH + 1];
+                ++eptr; ++optr;
             }
         }
-        ++iptr; ++optr;
+        ++iptr; ++eptr; ++optr;
     }
     // Update tiles
     m_update_simtiles();
@@ -353,15 +366,12 @@ void Scene::m_update_view_size(s32 size)
     if (f_view_x > f_view_max_x) f_view_x = f_view_max_x;
     if (f_view_y > f_view_max_y) f_view_y = f_view_max_y;
     // Update background
-    int size2 = f_view_w / 4;
     m_update_scroll();
-    bgSetScale(f_main_2, size2, size2);
     bgSetScale(f_main_3, f_view_w, f_view_w); // f_view_3_w is the scale for both axes
 }
 
 void Scene::m_update_scroll()
 {
-    bgSetScroll(f_main_2, f_view_x / 4, f_view_y / 4);
     bgSetScroll(f_main_3, f_view_x, f_view_y);
 }
 
