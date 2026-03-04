@@ -9,6 +9,7 @@
 #include "engine/data/Pattern.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
+#include "game/assets/TextTileset.h"
 
 using namespace game::scns::sim;
 
@@ -31,22 +32,34 @@ Scene::~Scene()
 void Scene::m_enter()
 {
     engine::scenes::Scene::m_enter();
+    // Turn off screen
+    DS_SCREEN_OFF
     // Initialize pause indicater
     f_Paused = false;
     // Initialize video
 	videoSetMode(MODE_2_2D);
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
+    videoSetModeSub(MODE_0_2D);
+    vramSetBankC(VRAM_C_SUB_BG_0x06200000);
     // Initialize simulation
     f_Simulation = new Simulation(3, 9, 0, 2);
     f_RegLen = f_Simulation->cycle_Length();
-    // Setup palette
+    // Initialize main palette
     DC_FlushRange(assets::Palette::data, assets::Palette::size);
     dmaCopy(assets::Palette::data, BG_PALETTE, assets::Palette::size);
-    // Setup tileset
+    // Initialize main tileset
 	DC_FlushRange(assets::SimTileset::data, assets::SimTileset::size);
     dmaCopy(assets::SimTileset::data, f_Simulation->bg_GFX(), assets::SimTileset::size);
+    // Initialize sub palette
+    DC_FlushRange(assets::Palette::data, assets::Palette::size);
+    dmaCopy(assets::Palette::data, BG_PALETTE_SUB, assets::Palette::size);
+    // Initialize sub tileset
+	// DC_FlushRange(assets::TextTileset::data, assets::TextTileset::size);
+    // dmaCopy(assets::TextTileset::data, f_Simulation->bg_GFX(), assets::TextTileset::size);
     // Start timer
     timerStart(0, ClockDivider_1024, 0, nullptr);
+    // Turn on screen
+    DS_SCREEN_ON
 }
 
 void Scene::m_exit()

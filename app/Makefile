@@ -28,7 +28,7 @@ SCRNAMES := main.cpp \
 	src/__.cpp \
 	src/engine/data/Pattern.cpp src/engine/data/Serial.cpp \
 	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp \
-	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp \
+	src/game/assets/Palette.cpp src/game/assets/SimTileset.cpp src/game/assets/TextTileset.cpp \
 	src/game/scns/sim/Scene.cpp src/game/scns/sim/Simulation.cpp
 
 OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))

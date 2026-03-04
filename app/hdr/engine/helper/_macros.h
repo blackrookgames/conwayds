@@ -29,6 +29,9 @@
 #define DS_SCREEN_WIDTH 256
 #define DS_SCREEN_HEIGHT 192
 
+#define DS_SCREEN_OFF setBrightness(3, -16);
+#define DS_SCREEN_ON setBrightness(3, 0);
+
 #pragma endregion
 
 #pragma region PATTERN
