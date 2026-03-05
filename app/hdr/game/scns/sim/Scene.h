@@ -1,3 +1,4 @@
+#include "engine/gfx/TextGFX.h"
 #include "engine/scenes/Scene.h"
 
 #include "./Simulation.h"
@@ -30,6 +31,8 @@ namespace game::scns::sim
 
         bool f_Paused;
 
+        engine::gfx::TextGFX* f_TextGFX;
+        std::ostream* f_TextStream;
         Simulation* f_Simulation;
         u32 f_RegLen; // TODO: Remove
 

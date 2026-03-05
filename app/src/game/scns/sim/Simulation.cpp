@@ -104,6 +104,9 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     // Cycle
     f_Cycle_Length = 5000;
     f_Cycle_Progress = 0;
+    // Simulation details
+    f_Sim_Live = 0;
+    f_Sim_Gen = 0;
 }
 
 Simulation::~Simulation()
@@ -163,6 +166,10 @@ void Simulation::cycle_Length(u32 value)
     else f_Cycle_Length = value;
 }
 
+u32 Simulation::sim_Live() const { return f_Sim_Live; }
+
+u32 Simulation::sim_Gen() const { return f_Sim_Gen; }
+
 #pragma endregion
 
 #pragma region helper functions
@@ -220,6 +227,10 @@ void Simulation::update(u16 delta)
         f_Cycle_Progress += delta;
         if (f_Cycle_Progress >= f_Cycle_Length)
         {
+            // Next generation
+            ++f_Sim_Gen;
+            // Reset live cell count
+            f_Sim_Live = 0;
             // Update pointer
             u8* prev_ptr = f_Map_Ptr;
             f_Map_Ptr = (f_Map_Ptr == f_Map_A) ? f_Map_B : f_Map_A;
@@ -269,7 +280,7 @@ void Simulation::update(u16 delta)
                         if (x0y0) ++neighbors; if (x1y0) ++neighbors; if (x2y0) ++neighbors; if (x0y1) ++neighbors;
                         if (x0y2) ++neighbors; if (x1y2) ++neighbors; if (x2y2) ++neighbors; if (x2y1) ++neighbors;
                         if (x1y1) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
-                        if (live) *optr |= 0b1000;
+                        if (live) { *optr |= 0b1000; ++f_Sim_Live; }
                         eptr += BG_TILEW;
                         optr += BG_TILEW;
                         // Set BL
@@ -277,7 +288,7 @@ void Simulation::update(u16 delta)
                         if (x0y1) ++neighbors; if (x1y1) ++neighbors; if (x2y1) ++neighbors; if (x0y2) ++neighbors;
                         if (x0y3) ++neighbors; if (x1y3) ++neighbors; if (x2y3) ++neighbors; if (x2y2) ++neighbors;
                         if (x1y2) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
-                        if (live) *optr |= 0b0010;
+                        if (live) { *optr |= 0b0010; ++f_Sim_Live; }
                         eptr += 1;
                         optr += 1;
                         // Set BR
@@ -285,6 +296,8 @@ void Simulation::update(u16 delta)
                         if (x1y1) ++neighbors; if (x2y1) ++neighbors; if (x3y1) ++neighbors; if (x1y2) ++neighbors;
                         if (x1y3) ++neighbors; if (x2y3) ++neighbors; if (x3y3) ++neighbors; if (x3y2) ++neighbors;
                         if (x2y2) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
+                        *optr = *eptr;
+                        if (live) { *optr |= 0b0001; ++f_Sim_Live; }
                         *optr = *eptr | (live ? 0b0001 : 0b0000);
                         eptr -= BG_TILEW;
                         optr -= BG_TILEW;
@@ -293,7 +306,7 @@ void Simulation::update(u16 delta)
                         if (x1y0) ++neighbors; if (x2y0) ++neighbors; if (x3y0) ++neighbors; if (x1y1) ++neighbors;
                         if (x1y2) ++neighbors; if (x2y2) ++neighbors; if (x3y2) ++neighbors; if (x3y1) ++neighbors;
                         if (x2y1) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
-                        if (live) *optr |= 0b0100;
+                        if (live) { *optr |= 0b0100; ++f_Sim_Live; }
                     }
                     else
                     {

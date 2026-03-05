@@ -56,6 +56,9 @@ namespace game::scns::sim
         u32 f_Cycle_Length;
         u32 f_Cycle_Progress;
 
+        u32 f_Sim_Live;
+        u32 f_Sim_Gen;
+
         #pragma endregion
 
         #pragma region properties
@@ -103,6 +106,12 @@ namespace game::scns::sim
         u32 cycle_Length() const;
         /// @brief Length of a single cycle
         void cycle_Length(u32 value);
+
+        /// @brief Number of live cells
+        u32 sim_Live() const;
+
+        /// @brief Current generation
+        u32 sim_Gen() const;
 
         #pragma endregion
 

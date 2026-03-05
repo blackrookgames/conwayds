@@ -8,7 +8,7 @@
 @var class TextTileset
 
 @load imgimage source ./TextTileset.bmp
-@dstileset dsdata source 8
+@dstileset dsdata source 4
 @databuffer data dsdata
 
 @open ${hdrpath}
