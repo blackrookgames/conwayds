@@ -99,7 +99,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 1) 
 
     @classmethod
-    def uint8_to_file(cls, data:list[int], path:str):
+    def uint8_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 8-bit unsigned integers to a file
         
@@ -131,7 +131,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 1, neg = _I8_NEG) 
 
     @classmethod
-    def int8_to_file(cls, data:list[int], path:str):
+    def int8_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 8-bit signed integers to a file
         
@@ -163,7 +163,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 2) 
 
     @classmethod
-    def uint16_to_file(cls, data:list[int], path:str):
+    def uint16_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 16-bit unsigned integers to a file
         
@@ -195,7 +195,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 2, neg = _I16_NEG) 
 
     @classmethod
-    def int16_to_file(cls, data:list[int], path:str):
+    def int16_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 16-bit signed integers to a file
         
@@ -227,7 +227,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 4) 
 
     @classmethod
-    def uint32_to_file(cls, data:list[int], path:str):
+    def uint32_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 32-bit unsigned integers to a file
         
@@ -259,7 +259,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 4, neg = _I32_NEG) 
 
     @classmethod
-    def int32_to_file(cls, data:list[int], path:str):
+    def int32_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 32-bit signed integers to a file
         
@@ -291,7 +291,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 8) 
 
     @classmethod
-    def uint64_to_file(cls, data:list[int], path:str):
+    def uint64_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 64-bit unsigned integers to a file
         
@@ -323,7 +323,7 @@ class CLIListUtil:
         return cls.__int_from_file(path, 8, neg = _I64_NEG) 
 
     @classmethod
-    def int64_to_file(cls, data:list[int], path:str):
+    def int64_to_file(cls, data:_Collection[int], path:str):
         """
         Saves a list of 64-bit signed integers to a file
         
