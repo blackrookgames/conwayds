@@ -97,6 +97,22 @@ class ImgColor:
     #endregion
 
     #region methods
+    
+    @classmethod
+    def from_int(cls, rgba:int):
+        """
+        Creates a color from an RGBA integer value
+
+        :param rgba:
+            32-bit RGBA color value
+        :return:
+            Created color
+        """
+        return cls(\
+            r = 0xFF & (rgba >> 24),\
+            g = 0xFF & (rgba >> 16),\
+            b = 0xFF & (rgba >> 8),\
+            a = 0xFF & rgba)
 
     def to_int(self) -> int:
         """
