@@ -2,7 +2,7 @@ __all__ = [\
     'PALETTE_SUBCOUNT',\
     'Palette',]
 
-from .mod_PaletteSub import\
+from .g_PaletteSub import\
     PaletteSub as _PaletteSub
 
 #region helper const
