@@ -8,28 +8,27 @@ from tkinter import\
 import gui.helper as _gui_helper
 import src.helper as _helper
 
-from .w_FrameTileset import\
-    FrameTileset as _FrameTileset
+import gui.tmap.w__common as _tmap_common
 
-class WinTileset(_tk.Toplevel):
+class Window(_tk.Toplevel):
     """
-    Represents a window for configuring the tileset
+    Represents a window for configuring the size
     """
 
     #region init
 
     def __init__(self, *args, **kwargs):
         """
-        Initializer for WinTileset
+        Initializer for Window
         """
         super().__init__(*args, **kwargs)
         # Window Properties
-        self.title("Configure Tileset")
-        self.geometry('400x175')
+        self.title("Set Size")
+        self.geometry('400x100')
         self.resizable(False, False)
         self.config(padx = 5, pady = 5)
         # Main
-        self.__main = _FrameTileset(\
+        self.__main = _tmap_common.FrameSize(\
             master = self,\
             padding = (0, 0, 0, 5))
         self.__main.pack(fill = 'x')

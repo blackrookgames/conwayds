@@ -9,7 +9,7 @@ from typing import\
 
 class FrameTileset(_ttk.Frame):
     """
-    Represents a main window
+    Represents a frame for configuring the tileset
     """
 
     #region init

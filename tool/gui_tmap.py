@@ -1,6 +1,5 @@
 from async_tkinter_loop import async_mainloop
 
-import gui.tmap as gui
+from gui.tmap.w_main import Window
 
-main = gui.WinMain()
-async_mainloop(main)
+async_mainloop(Window())

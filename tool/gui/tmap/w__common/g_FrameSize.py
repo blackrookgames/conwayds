@@ -15,7 +15,7 @@ _LIST_ANCHOR = [ "Top-Left", "Top", "Top-Right", "Left", "Center", "Right", "Bot
 
 class FrameSize(_ttk.Frame):
     """
-    Represents a main window
+    Represents a frame for configuring the size
     """
 
     #region init

@@ -8,7 +8,7 @@ from tkinter import\
 import gui.helper as _gui_helper
 import src.helper as _helper
 
-class WinTranslate(_tk.Toplevel):
+class Window(_tk.Toplevel):
     """
     Represents a window for translating map tiles
     """
@@ -17,7 +17,7 @@ class WinTranslate(_tk.Toplevel):
 
     def __init__(self, *args, **kwargs):
         """
-        Initializer for WinTranslate
+        Initializer for Window
         """
         _PROMPTWIDTH = 15
         super().__init__(*args, **kwargs)

@@ -8,31 +8,36 @@ from tkinter import\
 import gui.helper as _gui_helper
 import src.helper as _helper
 
-from .w_FrameSize import\
-    FrameSize as _FrameSize
+import gui.tmap.w__common as _tmap_common
 
-class WinSize(_tk.Toplevel):
+class Window(_tk.Toplevel):
     """
-    Represents a window for configuring the size
+    Represents a window for configuring a new tilemap
     """
 
     #region init
 
     def __init__(self, *args, **kwargs):
         """
-        Initializer for WinSize
+        Initializer for Window
         """
         super().__init__(*args, **kwargs)
         # Window Properties
-        self.title("Set Size")
-        self.geometry('400x100')
+        self.title("New Tilemap")
+        self.geometry('400x200')
         self.resizable(False, False)
         self.config(padx = 5, pady = 5)
-        # Main
-        self.__main = _FrameSize(\
+        # Tileset
+        self.__tileset = _tmap_common.FrameTileset(\
             master = self,\
             padding = (0, 0, 0, 5))
-        self.__main.pack(fill = 'x')
+        self.__tileset.pack(fill = 'x')
+        # Size
+        self.__size = _tmap_common.FrameSize(\
+            master = self,\
+            showanchor = False,\
+            padding = (0, 0, 0, 5))
+        self.__size.pack(fill = 'x')
         # Buttons
         self.__widget_buttons = _gui_helper.ButtonRow(\
             self,\

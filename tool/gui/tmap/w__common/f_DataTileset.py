@@ -2,10 +2,12 @@ __all__ = [\
     'TILESET_SIZE',\
     'TILESET_TILE_W',\
     'TILESET_TILE_H',\
-    'Tileset',]
+    'DataTileset',]
 
 import numpy as _np
 import numpy.typing as _npt
+
+import src.img as _img
 
 #region helper const
 
@@ -141,7 +143,7 @@ def _copy_default_data():
 
 #endregion
 
-class Tileset:
+class DataTileset:
     """
     Represents a tileset
     """
@@ -154,11 +156,29 @@ class Tileset:
 
     #region init
 
-    def __init__(self):
+    def __init__(self, src:None|_img.ImgImagePPixels):
         """
-        Initializer for Tileset
+        Initializer for DataTileset
+
+        :param src:
+            Source pixels
         """
         self.__data = _copy_default_data()
+        # Import tiles
+        if src is not None:
+            tiles_cols = src.width // TILESET_TILE_W
+            tiles_rows = src.height // TILESET_TILE_H
+            tiles_total = tiles_cols * tiles_rows
+            if tiles_total > 0:
+                for _i in range(min(TILESET_SIZE, tiles_total)):
+                    _off_x = (_i % tiles_cols) * TILESET_TILE_W
+                    _off_y = (_i // tiles_cols) * TILESET_TILE_H
+                    # Copy pixels
+                    _iy = _off_y
+                    for _oy in range(TILESET_TILE_H):
+                        _ix = _off_x
+                        for _ox in range(TILESET_TILE_W):
+                            self.__data[_i, _ox, _oy] = src[_ix, _iy]
 
     #endregion
 
@@ -182,35 +202,6 @@ class Tileset:
         i, x, y = ixy
         try:
             return self.__data[i, x, y]
-        except Exception as _e:
-            if i < 0 or i >= TILESET_SIZE:
-                e = IndexError("Tile index is out of range.")
-            elif x < 0 or x >= TILESET_TILE_W:
-                e = IndexError("X-coordinate is out of range.")
-            elif y < 0 or y >= TILESET_TILE_H:
-                e = IndexError("Y-coordinate is out of range.")
-            else: e = _e
-        raise e
-
-    def __setitem__(self, ixy:tuple[int,int,int], color:int):
-        """
-        Sets the pixel at the specified coordinates
-
-        :param i:
-            Tile index
-        :param x:
-            X-coordinate
-        :param y:
-            Y-coordinate
-        :color:
-            Color index
-        :raise IndexError:
-            One or more coordinates are out of range
-        """
-        i, x, y = ixy
-        try:
-            self.__data[i, x, y] = color & self.__MASK
-            return
         except Exception as _e:
             if i < 0 or i >= TILESET_SIZE:
                 e = IndexError("Tile index is out of range.")
