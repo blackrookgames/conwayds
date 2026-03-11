@@ -1,3 +1,5 @@
+__all__ = ['FrameTileset']
+
 import tkinter as _tk
 
 from async_tkinter_loop import\
@@ -6,6 +8,10 @@ from tkinter import\
     ttk as _ttk
 from typing import\
     Any as _Any
+
+from .g_FramePath import FramePath as _FramePath
+from .m_SignalHandler import SignalHandler as _SignalHandler
+from .m_SignalReceiver import SignalReceiver as _SignalReceiver
 
 class FrameTileset(_ttk.Frame):
     """
@@ -20,8 +26,8 @@ class FrameTileset(_ttk.Frame):
         """
         Initializer for FrameTileset
         """
-        _PROMPTWIDTH = 15
         super().__init__(master = master, **kwargs)
+        FILETYPES = ( ( "Bitmap", "*.bmp", ), )
         #region Tileset
         self.__widget_t = _ttk.LabelFrame(\
             master = self,\
@@ -29,18 +35,11 @@ class FrameTileset(_ttk.Frame):
             text = "Tileset")
         self.__widget_t.pack(fill = 'x')
         # Path
-        self.__widget_tp = _ttk.Frame(\
+        self.__widget_t_path = _FramePath(\
             master = self.__widget_t)
-        self.__widget_tp.pack(fill = 'x')
-        self.__widget_tp_label = _ttk.Label(\
-            master = self.__widget_tp,\
-            text = "/path/to/the/tileset.bmp")
-        self.__widget_tp_label.pack(anchor = 'w', side = 'left', fill = 'x', expand = True)
-        self.__widget_tp_button = _ttk.Button(\
-            master = self.__widget_tp,\
-            command = self.__r_widget_tp_button,\
-            text = "Open")
-        self.__widget_tp_button.pack(anchor = 'w', side = 'left')
+        self.__widget_t_path.dialog_title = "Browse for a Paletted Bitmap"
+        self.__widget_t_path.dialog_filetypes = FILETYPES
+        self.__widget_t_path.pack(fill = 'x')
         #endregion
         #region Palette
         self.__widget_p = _ttk.LabelFrame(\
@@ -57,29 +56,24 @@ class FrameTileset(_ttk.Frame):
             text = "Use custom palette")
         self.__widget_p_custom.pack(fill = 'x')
         # Path
-        self.__widget_pp = _ttk.Frame(\
+        self.__widget_p_path = _FramePath(\
             master = self.__widget_p)
-        self.__widget_pp.pack(fill = 'x')
-        self.__widget_pp_label = _ttk.Label(\
-            master = self.__widget_pp,\
-            text = "/path/to/the/palette.bmp")
-        self.__widget_pp_label.pack(anchor = 'w', side = 'left', fill = 'x', expand = True)
-        self.__widget_pp_button = _ttk.Button(\
-            master = self.__widget_pp,\
-            command = self.__r_widget_pp_button,\
-            text = "Open")
-        self.__widget_pp_button.pack(anchor = 'w', side = 'left')
+        self.__widget_p_path.enabled = False
+        self.__widget_p_path.dialog_title = "Browse for a Paletted Bitmap"
+        self.__widget_p_path.dialog_filetypes = FILETYPES
+        self.__widget_p_path.pack(fill = 'x')
+        #endregion
+        #region signals
+        
         #endregion
     
     #endregion
 
     #region receivers
 
-    def __r_widget_tp_button(self):
-        print("Open Tileset")
-
     def __r_widget_p_custom(self):
-        print(self.__widget_p_custom_var.get())
+        value = self.__widget_p_custom_var.get()
+        self.__widget_p_path.enabled = value
 
     def __r_widget_pp_button(self):
         print("Open Palette")

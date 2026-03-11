@@ -1,5 +1,4 @@
-__all__ = [\
-    'FileTileset',]
+__all__ = ['FileTileset',]
 
 import src.cliutil as _cliutil
 import src.img as _img

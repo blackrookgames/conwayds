@@ -1,5 +1,4 @@
-__all__ = [\
-    'FilePalette',]
+__all__ = ['FilePalette',]
 
 import src.cliutil as _cliutil
 

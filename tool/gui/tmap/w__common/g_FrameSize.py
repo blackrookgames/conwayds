@@ -1,3 +1,5 @@
+__all__ = ['FrameSize']
+
 import tkinter as _tk
 
 from async_tkinter_loop import\
