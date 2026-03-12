@@ -5,7 +5,7 @@ from async_tkinter_loop import\
 from tkinter import\
     ttk as _ttk
 
-import gui.helper as _gui_helper
+import gui.helper as _guihelper
 import src.helper as _helper
 
 class Window(_tk.Toplevel):
@@ -29,7 +29,7 @@ class Window(_tk.Toplevel):
         # X
         self.__widget_x_var = _tk.StringVar(value = "0")
         self.__widget_x_var.trace('w', self.__r_widget_x_changed)
-        self.__widget_x = _gui_helper.PVEntry(\
+        self.__widget_x = _guihelper.PVEntry(\
             master = self,\
             kwargs = _helper.kwargs(\
                 padding = (0, 0, 0, 5)),\
@@ -43,7 +43,7 @@ class Window(_tk.Toplevel):
         # Y
         self.__widget_y_var = _tk.StringVar(value = "0")
         self.__widget_y_var.trace('w', self.__r_widget_y_changed)
-        self.__widget_y = _gui_helper.PVEntry(\
+        self.__widget_y = _guihelper.PVEntry(\
             master = self,\
             kwargs = _helper.kwargs(\
                 padding = (0, 0, 0, 5)),\
@@ -73,7 +73,7 @@ class Window(_tk.Toplevel):
             padding = (0, 0, 0, 5))
         self.__widget_wrapy.pack(fill = 'x')
         # Buttons
-        self.__widget_buttons = _gui_helper.ButtonRow(\
+        self.__widget_buttons = _guihelper.ButtonRow(\
             self,\
             buttons = [\
                 _helper.kwargs(\

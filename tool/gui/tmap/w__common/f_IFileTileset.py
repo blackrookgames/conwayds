@@ -1,31 +1,29 @@
-__all__ = ['FileTileset',]
+__all__ = ['IFileTileset',]
 
 import src.cliutil as _cliutil
 import src.img as _img
 
-from .f_DataPalette import\
-    DataPalette as _DataPalette
-from .f_DataTileset import\
-    DataTileset as _DataTileset
+from .f_IDataPalette import IDataPalette as _IDataPalette
+from .f_IDataTileset import IDataTileset as _IDataTileset
+from .f_IFile import IFile as _IFile
 
-class FileTileset:
+class IFileTileset(_IFile):
     """
-    Represents a palette data from a file
+    Immutable object representing tileset data from a file
     """
 
     #region init
 
     def __init__(self, path:None|str):
         """
-        Initializer for FileTileset
+        Initializer for IFileTileset
         
         :param path:
             Path of input file
         :raise CLICommandError:
             An error occurred
         """
-        # path
-        self.__path = path
+        super().__init__(path)
         # tileset/palette
         if path is not None:
             # Load image
@@ -41,19 +39,12 @@ class FileTileset:
         else:
             _src_pixels = None
             _src_palette = None
-        self.__tileset = _DataTileset(_src_pixels)
-        self.__palette = _DataPalette(_src_palette)
+        self.__tileset = _IDataTileset(_src_pixels)
+        self.__palette = _IDataPalette(_src_palette)
 
     #endregion
 
     #region properties
-
-    @property
-    def path(self):
-        """
-        File path
-        """
-        return self.__path
 
     @property
     def tileset(self):

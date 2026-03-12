@@ -5,7 +5,7 @@ from async_tkinter_loop import\
 from tkinter import\
     ttk as _ttk
 
-import gui.helper as _gui_helper
+import gui.helper as _guihelper
 import src.helper as _helper
 
 import gui.tmap.w__common as _tmap_common
@@ -33,7 +33,7 @@ class Window(_tk.Toplevel):
             padding = (0, 0, 0, 5))
         self.__main.pack(fill = 'x')
         # Buttons
-        self.__widget_buttons = _gui_helper.ButtonRow(\
+        self.__widget_buttons = _guihelper.ButtonRow(\
             self,\
             buttons = [\
                 _helper.kwargs(\

@@ -1,28 +1,27 @@
-__all__ = ['FilePalette',]
+__all__ = ['IFilePalette',]
 
 import src.cliutil as _cliutil
 
-from .f_DataPalette import\
-    DataPalette as _DataPalette
+from .f_IDataPalette import IDataPalette as _IDataPalette
+from .f_IFile import IFile as _IFile
 
-class FilePalette:
+class IFilePalette(_IFile):
     """
-    Represents a palette data from a file
+    Immutable object representing palette data from a file
     """
 
     #region init
 
     def __init__(self, path:None|str):
         """
-        Initializer for FilePalette
+        Initializer for IFilePalette
         
         :param path:
             Path of input file
         :raise CLICommandError:
             An error occurred
         """
-        # path
-        self.__path = path
+        super().__init__(path)
         # palette
         if path is not None:
             # Load image
@@ -34,18 +33,11 @@ class FilePalette:
             assert _image.palette is not None
             _src = _image.palette
         else: _src = None
-        self.__palette = _DataPalette(_src)
+        self.__palette = _IDataPalette(_src)
 
     #endregion
 
     #region properties
-
-    @property
-    def path(self):
-        """
-        File path
-        """
-        return self.__path
 
     @property
     def palette(self):

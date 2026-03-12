@@ -1,25 +1,25 @@
 __all__ = [\
-    'DATAPALETTESUB_SIZE',\
-    'DataPaletteSub',]
+    'IDATAPALETTESUB_SIZE',\
+    'IDataPaletteSub',]
 
 from collections.abc import\
     Iterable as _Iterable
 
-DATAPALETTESUB_SIZE = 16
+IDATAPALETTESUB_SIZE = 16
 """
 Number of colors within a sub-palette
 """
 
-class DataPaletteSub:
+class IDataPaletteSub:
     """
-    Represents a sub-palette
+    Immutable object representing sub-palette data
     """
 
     #region init
 
     def __init__(self, colors:_Iterable[str]):
         """
-        Initializer for DataPaletteSub
+        Initializer for IDataPaletteSub
 
         :param colors:
             Palette colors (ex: '#FF8040', '#80FF80')
@@ -29,11 +29,11 @@ class DataPaletteSub:
         self.__data:list[str] = []
         # Get colors
         for _color in colors:
-            if len(self.__data) == DATAPALETTESUB_SIZE:
+            if len(self.__data) == IDATAPALETTESUB_SIZE:
                 break
             self.__data.append(self.__valid_color(_color))
         # Pad colors
-        while len(self.__data) < DATAPALETTESUB_SIZE:
+        while len(self.__data) < IDATAPALETTESUB_SIZE:
             self.__data.append("#000000")
 
     #endregion
@@ -41,7 +41,7 @@ class DataPaletteSub:
     #region operators
 
     def __len__(self):
-        return DATAPALETTESUB_SIZE
+        return IDATAPALETTESUB_SIZE
 
     def __getitem__(self, index:int):
         """
@@ -57,7 +57,7 @@ class DataPaletteSub:
         try:
             return self.__data[index]
         except Exception as _e:
-            if index < 0 or index >= DATAPALETTESUB_SIZE:
+            if index < 0 or index >= IDATAPALETTESUB_SIZE:
                 e = IndexError("Index is out of range.")
             else: e = _e
         raise e

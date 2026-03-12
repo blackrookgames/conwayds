@@ -58,6 +58,7 @@ class TilePane(_ttk.Frame):
             state = _tk.DISABLED)
         self.__widget_flipy.grid(column = 2, row = 0)
         # Tiles
+        self.__widget_tiles_image:None|int = None
         self.__widget_tiles = _tk.Canvas(\
             self,\
             width = 256,\
@@ -81,4 +82,14 @@ class TilePane(_ttk.Frame):
     def __r_widget_flipy(self):
         print(self.__widget_flipy_var.get())
 
+    #endregion
+
+    #region methods
+
+    def test(self, image:_tk.PhotoImage):
+        self.__widget_tiles_image = self.__widget_tiles.create_image(\
+            (0, 0),\
+            image = image,\
+            anchor = "nw")
+    
     #endregion

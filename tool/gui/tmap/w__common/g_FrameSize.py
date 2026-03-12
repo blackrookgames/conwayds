@@ -9,7 +9,7 @@ from tkinter import\
 from typing import\
     Any as _Any
 
-import gui.helper as _gui_helper
+import gui.helper as _guihelper
 import src.helper as _helper
 
 _LIST_SIZE = [ "256x256", "512x256", "256x512", "512x512", ]
@@ -33,7 +33,7 @@ class FrameSize(_ttk.Frame):
         super().__init__(master = master, **kwargs)
         # X
         self.__widget_x_var = _tk.StringVar()
-        self.__widget_x = _gui_helper.PVCombobox(\
+        self.__widget_x = _guihelper.PVCombobox(\
             master = self,\
             kwargs = _helper.kwargs(\
                 padding = (0, 0, 0, 5)),\
@@ -50,7 +50,7 @@ class FrameSize(_ttk.Frame):
         self.__widget_x.pack(fill = 'x')
         # Anchor
         self.__widget_y_var = _tk.StringVar()
-        self.__widget_y = _gui_helper.PVCombobox(\
+        self.__widget_y = _guihelper.PVCombobox(\
             master = self,\
             kwargs = _helper.kwargs(\
                 padding = (0, 0, 0, 5)),\
@@ -65,6 +65,15 @@ class FrameSize(_ttk.Frame):
         self.__widget_y.value.bind("<<ComboboxSelected>>", self.__r_widget_y_changed)
         self.__widget_y.value.set(_LIST_ANCHOR[0])
         if showanchor: self.__widget_y.pack(fill = 'x')
+    
+    #endregion
+
+    #region properties
+
+    @property
+    def size(self):
+        """ Map size """
+        pass
     
     #endregion
 

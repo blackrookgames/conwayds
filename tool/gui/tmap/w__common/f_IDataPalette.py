@@ -1,12 +1,12 @@
 __all__ = [\
-    'DATAPALETTE_SUBCOUNT',\
-    'DataPalette',]
+    'IDATAPALETTE_SUBCOUNT',\
+    'IDataPalette',]
 
 import src.img as _img
 
-from .f_DataPaletteSub import\
-    DataPaletteSub as _DataPaletteSub,\
-    DATAPALETTESUB_SIZE as _DATAPALETTESUB_SIZE
+from .f_IDataPaletteSub import\
+    IDataPaletteSub as _IDataPaletteSub,\
+    IDATAPALETTESUB_SIZE as _IDATAPALETTESUB_SIZE
 
 #region helper const
 
@@ -32,45 +32,45 @@ _DEF_PALETTE = [\
 
 #region const
 
-DATAPALETTE_SUBCOUNT = 16
+IDATAPALETTE_SUBCOUNT = 16
 """
 Number of sub-palettes within a palette
 """
 
 #endregion
 
-class DataPalette:
+class IDataPalette:
     """
-    Represents a palette
+    Immutable object representing palette data
     """
 
     #region init
 
     def __init__(self, src:None|_img.ImgPalette):
         """
-        Initializer for DataPalette
+        Initializer for IDataPalette
 
         :param src:
             Source palette
         """
         def _createsub():
             nonlocal self, _colors
-            self.__data.append(_DataPaletteSub(_colors))
+            self.__data.append(_IDataPaletteSub(_colors))
             _colors.clear()
-        self.__data:list[_DataPaletteSub] = []
+        self.__data:list[_IDataPaletteSub] = []
         # Load colors
         _colors:list[str] = []
-        _rest = DATAPALETTE_SUBCOUNT * _DATAPALETTESUB_SIZE
+        _rest = IDATAPALETTE_SUBCOUNT * _IDATAPALETTESUB_SIZE
         if src is not None:
             for _i in range(min(len(src), _rest)):
                 _raw = src[_i]
                 _colors.append(f"#{_raw.r:02X}{_raw.g:02X}{_raw.b:02X}")
-                if (len(_colors) % _DATAPALETTESUB_SIZE) == 0: _createsub()
+                if (len(_colors) % _IDATAPALETTESUB_SIZE) == 0: _createsub()
                 _rest -= 1
         # Pad
         while _rest > 0:
-            _colors.append("#000000")
-            if (len(_colors) % _DATAPALETTESUB_SIZE) == 0: _createsub()
+            _colors.append(_DEF_PALETTE[len(_colors)])
+            if (len(_colors) % _IDATAPALETTESUB_SIZE) == 0: _createsub()
             _rest -= 1
 
     #endregion
@@ -78,7 +78,7 @@ class DataPalette:
     #region operators
 
     def __len__(self):
-        return DATAPALETTE_SUBCOUNT
+        return IDATAPALETTE_SUBCOUNT
 
     def __getitem__(self, index:int):
         """
@@ -94,7 +94,7 @@ class DataPalette:
         try:
             return self.__data[index]
         except Exception as _e:
-            if index < 0 or index >= DATAPALETTE_SUBCOUNT:
+            if index < 0 or index >= IDATAPALETTE_SUBCOUNT:
                 e = IndexError("Index is out of range.")
             else: e = _e
         raise e

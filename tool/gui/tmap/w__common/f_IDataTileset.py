@@ -1,8 +1,9 @@
 __all__ = [\
-    'TILESET_SIZE',\
-    'TILESET_TILE_W',\
-    'TILESET_TILE_H',\
-    'DataTileset',]
+    'IDATATILESET_SIZE',\
+    'IDATATILESET_TILE_W',\
+    'IDATATILESET_TILE_H',\
+    'IDATATILESET_BPP',\
+    'IDataTileset',]
 
 import numpy as _np
 import numpy.typing as _npt
@@ -86,22 +87,22 @@ _DEF_TILESRC1 = [\
 
 #region const
 
-TILESET_SIZE = 1024
+IDATATILESET_SIZE = 1024
 """
 Number of tiles within a tileset
 """
 
-TILESET_TILE_W = 8
+IDATATILESET_TILE_W = 8
 """
 Width of a tile
 """
 
-TILESET_TILE_H = 8
+IDATATILESET_TILE_H = 8
 """
 Height of a tile
 """
 
-TILESET_BPP = 4
+IDATATILESET_BPP = 4
 """
 Bits-per-pixel
 """
@@ -121,9 +122,9 @@ def _copy_default_data():
     # Create default data if needed
     if _default_data is None:
         _default_data = _np.zeros(\
-            [TILESET_SIZE, TILESET_TILE_W, TILESET_TILE_H],\
+            [IDATATILESET_SIZE, IDATATILESET_TILE_W, IDATATILESET_TILE_H],\
             dtype = _np.uint8)
-        for _i in range(TILESET_SIZE):
+        for _i in range(IDATATILESET_SIZE):
             _digit0 = (_i & 0b1111) | ((_i >> 4) & 0b10000)
             _digit1 = ((_i >> 4) & 0b1111) | ((_i >> 5) & 0b10000)
             # Digit 1
@@ -143,14 +144,14 @@ def _copy_default_data():
 
 #endregion
 
-class DataTileset:
+class IDataTileset:
     """
-    Represents a tileset
+    Immutable object representing tileset data
     """
 
     #region helper const
     
-    __MASK = (1 << TILESET_BPP) - 1
+    __MASK = (1 << IDATATILESET_BPP) - 1
 
     #endregion
 
@@ -158,7 +159,7 @@ class DataTileset:
 
     def __init__(self, src:None|_img.ImgImagePPixels):
         """
-        Initializer for DataTileset
+        Initializer for IDataTileset
 
         :param src:
             Source pixels
@@ -166,19 +167,21 @@ class DataTileset:
         self.__data = _copy_default_data()
         # Import tiles
         if src is not None:
-            tiles_cols = src.width // TILESET_TILE_W
-            tiles_rows = src.height // TILESET_TILE_H
+            tiles_cols = src.width // IDATATILESET_TILE_W
+            tiles_rows = src.height // IDATATILESET_TILE_H
             tiles_total = tiles_cols * tiles_rows
             if tiles_total > 0:
-                for _i in range(min(TILESET_SIZE, tiles_total)):
-                    _off_x = (_i % tiles_cols) * TILESET_TILE_W
-                    _off_y = (_i // tiles_cols) * TILESET_TILE_H
+                for _i in range(min(IDATATILESET_SIZE, tiles_total)):
+                    _off_x = (_i % tiles_cols) * IDATATILESET_TILE_W
+                    _off_y = (_i // tiles_cols) * IDATATILESET_TILE_H
                     # Copy pixels
                     _iy = _off_y
-                    for _oy in range(TILESET_TILE_H):
+                    for _oy in range(IDATATILESET_TILE_H):
                         _ix = _off_x
-                        for _ox in range(TILESET_TILE_W):
+                        for _ox in range(IDATATILESET_TILE_W):
                             self.__data[_i, _ox, _oy] = src[_ix, _iy]
+                            _ix += 1
+                        _iy += 1
 
     #endregion
 
@@ -203,11 +206,11 @@ class DataTileset:
         try:
             return self.__data[i, x, y]
         except Exception as _e:
-            if i < 0 or i >= TILESET_SIZE:
+            if i < 0 or i >= IDATATILESET_SIZE:
                 e = IndexError("Tile index is out of range.")
-            elif x < 0 or x >= TILESET_TILE_W:
+            elif x < 0 or x >= IDATATILESET_TILE_W:
                 e = IndexError("X-coordinate is out of range.")
-            elif y < 0 or y >= TILESET_TILE_H:
+            elif y < 0 or y >= IDATATILESET_TILE_H:
                 e = IndexError("Y-coordinate is out of range.")
             else: e = _e
         raise e

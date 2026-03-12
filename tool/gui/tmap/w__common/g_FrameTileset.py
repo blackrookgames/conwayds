@@ -69,13 +69,29 @@ class FrameTileset(_ttk.Frame):
     
     #endregion
 
+    #region properties
+
+    @property
+    def tileset_path(self):
+        """ Tileset path """
+        return self.__widget_t_path.path
+    
+    @property
+    def palette_custom(self):
+        """ Whether or not a custom palette should be used """
+        return self.__widget_p_path.enabled
+
+    @property
+    def palette_path(self):
+        """ Palette path """
+        return self.__widget_p_path.path
+
+    #endregion
+
     #region receivers
 
     def __r_widget_p_custom(self):
         value = self.__widget_p_custom_var.get()
         self.__widget_p_path.enabled = value
-
-    def __r_widget_pp_button(self):
-        print("Open Palette")
 
     #endregion
