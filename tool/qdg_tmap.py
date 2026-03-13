@@ -1,19 +1,35 @@
+import os
 import sys
 import tkinter as tk
 
 from async_tkinter_loop import async_mainloop
 from pathlib import Path
-from PIL import Image, ImageTk
+from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 from typing import cast
 
 import qdg.tmap.w__common as qdg_tmap_common
 import qdg.tmap.w_main as qdg_tmap_main
 import src.cli as cli
 import src.cliutil as cliutil
-
-import time # TODO: Remove
+import src.helper as helper
 
 TILESIZE = 8
+
+def init_cache():
+    CACHENAME = ".cache"
+    # Determine path
+    if len(sys.argv) > 0:
+        path = Path(sys.argv[0])
+        ext = helper.StrUtil.find_last(path.name, '.')
+        cachepath = path.parent.joinpath(CACHENAME).joinpath(path.name if (ext == -1) else path.name[:ext])
+    else:
+        cachepath = Path('.').joinpath(CACHENAME)
+    # Make directory
+    os.makedirs(str(cachepath), exist_ok = True)
+    # Return path
+    return cachepath
+CACHEDIR = init_cache()
 
 class qgd_tmap(cli.CLICommand):
 
@@ -58,6 +74,22 @@ class qgd_tmap(cli.CLICommand):
         _IMAGE_H = 2048
         _TILE_COUNT = 0x10000
         _TILE_COLS = _IMAGE_W // qdg_tmap_common.IDATATILESET_TILE_W
+        _CACHE_PATH = CACHEDIR.joinpath("image.png")
+        _CACHE_KEY = 'reference'
+        # Is tileset source cached?
+        if _CACHE_PATH.exists():
+            # Open cached image
+            cache_img = cliutil.CLIPILUtil.image_from_file(str(_CACHE_PATH))
+            # Do the sources match?
+            matching = False
+            if _CACHE_KEY in cache_img.info:
+                if self_tileset is not None:
+                    if Path(cache_img.info[_CACHE_KEY]).resolve() == Path(self_tileset).resolve():
+                        matching = True
+            elif self_tileset is None:
+                matching = True
+            if matching: return cache_img
+        #region Make tileset
         # Progress updater
         def _prog(_prog:float):
             nonlocal prog_len
@@ -110,7 +142,28 @@ class qgd_tmap(cli.CLICommand):
             # Next
             _prog(100 * ((_i + 1) / _TILE_COUNT))
         print()
+        # Save image
+        def _save():
+            nonlocal image, self_tileset
+            try:
+                # Custom metadata
+                _info = PngInfo()
+                if self_tileset is not None:
+                    _info.add_text(_CACHE_KEY, self_tileset)
+                # Save
+                image.save(_CACHE_PATH, pnginfo = _info)
+                # Success!!!
+                return
+            except Exception as e:
+                error = cliutil.CLICommandError(e)
+            raise error
+        _save()
+        # Return
         return image
+        #endregion
+
+        
+        
 
     #endregion
 
