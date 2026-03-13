@@ -1,7 +1,6 @@
 import numpy as _np
 import tkinter as _tk
 
-import gui.tmap.w__common as _tmap_common
 from .m_ContentSize import ContentSize as _ContentSize
 
 class ContentCells:
@@ -11,14 +10,13 @@ class ContentCells:
     
     #region init
 
-    def __init__(self,\
-            size:_ContentSize):
+    def __init__(self):
         """
         Initializer for ContentCells
 
         :param size: Map size
         """
-        self.__format_map(size)
+        self.format(_ContentSize.W256H256)
 
     #endregion
 
@@ -26,7 +24,7 @@ class ContentCells:
 
     def __len__(self): return len(self.__cells)
 
-    def __getitem__(self, key:int|tuple[int, int]):
+    def __getitem__(self, key:int|tuple[int, int]) -> _np.uint16:
         """
         Gets the cell at the specified coordinates
 
@@ -53,31 +51,17 @@ class ContentCells:
     
     @property
     def width(self):
-        """ Map width """
+        """ Map width (in cells)"""
         return self.__width
     
     @property
     def height(self):
-        """ Map height """
+        """ Map height (in cells) """
         return self.__height
 
     #endregion
 
     #region helper methods
-
-    def __format_map(self, size:_ContentSize):
-        def _format(_width:int, _height:int):
-            return _width, _height, _np.zeros(_width * _height, dtype = _np.uint16)
-        match size:
-            case _ContentSize.W256H256:
-                self.__width, self.__height, self.__cells = _format(256, 256)
-            case _ContentSize.W512H256:
-                self.__width, self.__height, self.__cells = _format(512, 256)
-            case _ContentSize.W256H512:
-                self.__width, self.__height, self.__cells = _format(256, 512)
-            case _:
-                self.__width, self.__height, self.__cells = _format(512, 512)
-        self.__size = size
     
     def __index(self, key:int|tuple[int, int]):
         if isinstance(key, int):
@@ -96,6 +80,26 @@ class ContentCells:
 
     #region methods
 
+    def format(self, size:_ContentSize):
+        """
+        Formats the map\n
+        NOTE: All cell data will be erased
+
+        :param size: New size
+        """
+        def _format(_width:int, _height:int):
+            return _width, _height, _np.zeros(_width * _height, dtype = _np.uint16)
+        match size:
+            case _ContentSize.W256H256:
+                self.__width, self.__height, self.__cells = _format(32, 32)
+            case _ContentSize.W512H256:
+                self.__width, self.__height, self.__cells = _format(64, 32)
+            case _ContentSize.W256H512:
+                self.__width, self.__height, self.__cells = _format(32, 64)
+            case _:
+                self.__width, self.__height, self.__cells = _format(64, 64)
+        self.__size = size
+
     def resize(self, size:_ContentSize, offset_x:int = 0, offset_y:int = 0):
         """
         Resizes the map
@@ -109,7 +113,7 @@ class ContentCells:
         prev_height = self.__height
         prev_cells = self.__cells
         # Format
-        self.__format_map(size)
+        self.format(size)
         # Copy data
         _beg_x = max(0, min(self.__width, offset_x))
         _beg_y = max(0, min(self.__height, offset_y))

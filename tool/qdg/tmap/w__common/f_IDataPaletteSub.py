@@ -17,24 +17,22 @@ class IDataPaletteSub:
 
     #region init
 
-    def __init__(self, colors:_Iterable[str]):
+    def __init__(self, colors:_Iterable[tuple[int, int, int, int]]):
         """
         Initializer for IDataPaletteSub
 
         :param colors:
-            Palette colors (ex: '#FF8040', '#80FF80')
-        :raise ValueError:
-            One or more colors are invalid
+            Palette colors
         """
-        self.__data:list[str] = []
+        self.__data:list[tuple[int, int, int, int]] = []
         # Get colors
         for _color in colors:
             if len(self.__data) == IDATAPALETTESUB_SIZE:
                 break
-            self.__data.append(self.__valid_color(_color))
+            self.__data.append(self.__fix_color(_color))
         # Pad colors
         while len(self.__data) < IDATAPALETTESUB_SIZE:
-            self.__data.append("#000000")
+            self.__data.append((0, 0, 0, 255))
 
     #endregion
 
@@ -67,22 +65,8 @@ class IDataPaletteSub:
     #region helper methods
 
     @classmethod
-    def __valid_color(cls, value:str):
-        def _invalid():
-            nonlocal value
-            return ValueError(f"\"{value}\" is not a valid color value.")
-        # Valid size?
-        if len(value) != 7: raise _invalid()
-        # Valid prefix?
-        if value[0] != '#': raise _invalid()
-        # Valid digits
-        for _i in range(1, len(value)):
-            _c = ord(value[_i])
-            if _c >= 0x30 and _c <= 0x39: continue
-            if _c >= 0x41 and _c <= 0x46: continue
-            if _c >= 0x61 and _c <= 0x66: continue
-            raise _invalid()
-        # Success!!!
-        return value
+    def __fix_color(cls, value:tuple[int, int, int, int]):
+        r, g, b, a = value
+        return (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)), max(0, min(255, a)))
 
     #endregion

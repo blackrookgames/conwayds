@@ -7,7 +7,7 @@ class ContentSize(_Enum):
     Represents a tilemap size
     """
 
-    W256H256 = _auto()
+    W256H256 = 0
     """ 256x256 pixels """
 
     W512H256 = _auto()
