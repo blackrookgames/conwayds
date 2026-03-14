@@ -13,6 +13,8 @@ from PIL import\
     Image as _Image,\
     ImageTk as _ImageTk
 
+import qdg.helper as _qdg_helper
+
 from .internal_ViewMap import *
 
 _VIEW_TILESRC_WIDTH = 2048
@@ -80,6 +82,7 @@ class _View(_ttk.Frame):
             highlightthickness = 0,\
             background = 'gray')
         self.__canvas.pack(fill = 'both', expand = True)
+        self.__canvas.bind("<Motion>", self.__r_canvas_motion)
         # tilecache
         self.__tilecache:dict[_np.uint16, _View.__TileCacheItem] = {}
         # map
@@ -87,13 +90,18 @@ class _View(_ttk.Frame):
         self.__map = _ViewMap(self, map_width, map_height)
         self._map_defined = True
         # tiles
-        self.__tiles:dict[tuple[int, int], int] = {}
+        self.__tiles:dict[_qdg_helper.IXY, int] = {}
         # cursor
-        self.__cursor:tuple[int, int] = (0, 0)
+        self.__cursor = _qdg_helper.IXY_ZERO
         self.__cursor_visual = self.__canvas.create_rectangle(\
             -1, -1, _VIEW_TILE_WIDTH, _VIEW_TILE_HEIGHT,\
             outline = "white", width = 1)
+        # mouse
+        self.__mouse = _qdg_helper.IXY_ZERO
+        self.__mouse_changed_h = _qdg_helper.SignalHandler[_View, _qdg_helper.IXY]()
+        self.__mouse_changed = _qdg_helper.Signal(self.__mouse_changed_h)
         # Post-init
+        self.__refresh_size()
         self.__refresh_tiles()
         # Success!!!
         self.__initializing = False
@@ -114,8 +122,34 @@ class _View(_ttk.Frame):
         """
         return self.__cursor
     @cursor.setter
-    def cursor(self, value:tuple[int, int]):
+    def cursor(self, value:_qdg_helper.IXY):
         self.__set_cursor(value)
+
+    @property
+    def mouse(self):
+        """
+        Cell position of mouse
+        """
+        return self.__mouse
+
+    #endregion
+
+    #region signals
+
+    @property
+    def mouse_changed(self):
+        """ Emitted when the mouse position changes """
+        return self.__mouse_changed
+
+    #endregion
+
+    #region receivers
+
+    def __r_canvas_motion(self, event = None):
+        if not isinstance(event, _tk.Event): return
+        prev = self.__mouse
+        self.__mouse = _qdg_helper.IXY(x = event.x // _VIEW_TILE_WIDTH, y = event.y // _VIEW_TILE_WIDTH)
+        if self.__mouse != prev: self.__mouse_changed_h.emit(self, self.__mouse)
 
     #endregion
 
@@ -142,10 +176,10 @@ class _View(_ttk.Frame):
             anchor = 'nw',\
             image = self.__tilecache[index].image)
         self.__canvas.tag_lower(_image, self.__cursor_visual)
-        self.__tiles[(x, y)] = _image
+        self.__tiles[_qdg_helper.IXY(x = x, y = y)] = _image
 
     def __tile_dec(self, x:int, y:int, index:_np.uint16):
-        xy = (x, y)
+        xy = _qdg_helper.IXY(x = x, y = y)
         # Delete old tile image
         if xy in self.__tiles:
             self.__canvas.delete(self.__tiles[xy])
@@ -155,6 +189,11 @@ class _View(_ttk.Frame):
             _item.refs -= 1
             if _item.refs <= 0: del self.__tilecache[index]
     
+    def __refresh_size(self):
+        self.__canvas.config(\
+            width = self.__map.width * _VIEW_TILE_WIDTH,\
+            height = self.__map.height * _VIEW_TILE_HEIGHT)
+
     def __refresh_tiles(self):
         # Clear cache
         self.__tilecache.clear()
@@ -167,21 +206,18 @@ class _View(_ttk.Frame):
             for _x in range(self.__map.width):
                 self.__tile_inc(_x, _y, self.__map[_x, _y])
     
-    def __set_cursor(self, value:None|tuple[int, int]):
+    def __set_cursor(self, value:None|_qdg_helper.IXY):
         if value is not None:
             if self.__cursor == value: return
             self.__cursor = value
         # Fix value
-        _cursor_x, _cursor_y = self.__cursor
-        if _cursor_x < 0: _cursor_x = 0
-        if _cursor_y < 0: _cursor_y = 0
-        if _cursor_x >= self.__map.width: _cursor_x = self.__map.width - 1
-        if _cursor_y >= self.__map.height: _cursor_y = self.__map.height - 1
-        self.__cursor = _cursor_x, _cursor_y
+        self.__cursor = _qdg_helper.IXY(\
+            x = max(0, min(self.__map.width - 1, self.__cursor.x)),\
+            y = max(0, min(self.__map.height - 1, self.__cursor.y)))
         # Update visual
         self.__canvas.moveto(self.__cursor_visual,\
-            x = self.__cursor[0] * _VIEW_TILE_WIDTH - 1,\
-            y = self.__cursor[1] * _VIEW_TILE_HEIGHT - 1)
+            x = self.__cursor.x * _VIEW_TILE_WIDTH - 2,\
+            y = self.__cursor.y * _VIEW_TILE_HEIGHT - 2)
         # Fix cursor
 
     #endregion
@@ -202,10 +238,11 @@ class _View(_ttk.Frame):
         """
         if old == new: return
         self.__tile_dec(x, y, old)
-        self.__tile_inc(x, y, old)
+        self.__tile_inc(x, y, new)
 
     def _map_formatted(self):
         """ Accessed by _ViewMap """
+        self.__refresh_size()
         self.__refresh_tiles()
         self.__set_cursor(None)
     
