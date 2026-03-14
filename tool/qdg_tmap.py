@@ -173,6 +173,7 @@ class qgd_tmap(cli.CLICommand):
         try:
             tilesrc = self.__load_tileset()
             content = self.__load_tilemap()
+            print("Press F1 for help")
             async_mainloop(qdg_tmap_main.Window(content, tilesrc))
         except cliutil.CLICommandError as e:
             print(f"ERROR: {e}", file = sys.stderr)

@@ -88,6 +88,11 @@ class _View(_ttk.Frame):
         self._map_defined = True
         # tiles
         self.__tiles:dict[tuple[int, int], int] = {}
+        # cursor
+        self.__cursor:tuple[int, int] = (0, 0)
+        self.__cursor_visual = self.__canvas.create_rectangle(\
+            -1, -1, _VIEW_TILE_WIDTH, _VIEW_TILE_HEIGHT,\
+            outline = "white", width = 1)
         # Post-init
         self.__refresh_tiles()
         # Success!!!
@@ -101,6 +106,16 @@ class _View(_ttk.Frame):
     def map(self):
         """ Tilemap """
         return self.__map
+
+    @property
+    def cursor(self):
+        """
+        Cell position of cursor. Cursor is a point of reference
+        """
+        return self.__cursor
+    @cursor.setter
+    def cursor(self, value:tuple[int, int]):
+        self.__set_cursor(value)
 
     #endregion
 
@@ -122,10 +137,12 @@ class _View(_ttk.Frame):
             self.__tilecache[index] = self.__TileCacheItem(self.__tileimg(int(index)), 1)
         else: self.__tilecache[index].refs += 1
         # Create new tile image
-        self.__tiles[(x, y)] = self.__canvas.create_image(\
+        _image = self.__canvas.create_image(\
             x * _VIEW_TILE_WIDTH, y * _VIEW_TILE_HEIGHT,\
             anchor = 'nw',\
             image = self.__tilecache[index].image)
+        self.__canvas.tag_lower(_image, self.__cursor_visual)
+        self.__tiles[(x, y)] = _image
 
     def __tile_dec(self, x:int, y:int, index:_np.uint16):
         xy = (x, y)
@@ -149,7 +166,24 @@ class _View(_ttk.Frame):
         for _y in range(self.__map.height):
             for _x in range(self.__map.width):
                 self.__tile_inc(_x, _y, self.__map[_x, _y])
-        
+    
+    def __set_cursor(self, value:None|tuple[int, int]):
+        if value is not None:
+            if self.__cursor == value: return
+            self.__cursor = value
+        # Fix value
+        _cursor_x, _cursor_y = self.__cursor
+        if _cursor_x < 0: _cursor_x = 0
+        if _cursor_y < 0: _cursor_y = 0
+        if _cursor_x >= self.__map.width: _cursor_x = self.__map.width - 1
+        if _cursor_y >= self.__map.height: _cursor_y = self.__map.height - 1
+        self.__cursor = _cursor_x, _cursor_y
+        # Update visual
+        self.__canvas.moveto(self.__cursor_visual,\
+            x = self.__cursor[0] * _VIEW_TILE_WIDTH - 1,\
+            y = self.__cursor[1] * _VIEW_TILE_HEIGHT - 1)
+        # Fix cursor
+
     #endregion
 
     #region helper methods 2
@@ -173,5 +207,6 @@ class _View(_ttk.Frame):
     def _map_formatted(self):
         """ Accessed by _ViewMap """
         self.__refresh_tiles()
-        
+        self.__set_cursor(None)
+    
     #endregion
