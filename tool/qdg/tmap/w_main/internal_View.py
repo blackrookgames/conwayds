@@ -1,7 +1,4 @@
-__all__ = [\
-    '_View',\
-    '_VIEW_TILESRC_WIDTH',\
-    '_VIEW_TILESRC_HEIGHT']
+__all__ = ['_View']
 
 import numpy as _np
 import tkinter as _tk
@@ -14,14 +11,9 @@ from PIL import\
     ImageTk as _ImageTk
 
 import qdg.helper as _qdg_helper
+import qdg.tmap.w__common as _tmap_common
 
 from .internal_ViewMap import *
-
-_VIEW_TILESRC_WIDTH = 2048
-_VIEW_TILESRC_HEIGHT = 2048
-_VIEW_TILE_WIDTH = 8
-_VIEW_TILE_HEIGHT = 8
-_VIEW_TILE_COLS = _VIEW_TILESRC_WIDTH // _VIEW_TILE_WIDTH
 
 class _View(_ttk.Frame):
     """
@@ -53,9 +45,9 @@ class _View(_ttk.Frame):
         :param map_height: Tilemap height (in cells)
 
         :raise ValueError:
-            tilesrc width is less than _VIEW_TILESRC_WIDTH\n
+            tilesrc width is less than _tmap_common.TILESET_WIDTH\n
             or\n
-            tilesrc height is less than _VIEW_TILESRC_HEIGHT
+            tilesrc height is less than _tmap_common.TILESET_HEIGHT
             or\n
             map_width is less than 1\n
             or\n
@@ -63,10 +55,10 @@ class _View(_ttk.Frame):
         """
         self.__initializing = True
         # Error check
-        if tilesrc.size[0] < _VIEW_TILESRC_WIDTH:
-            raise ValueError("Tileset width must be greater than or equal to _VIEW_TILESRC_WIDTH.")
-        if tilesrc.size[1] < _VIEW_TILESRC_HEIGHT:
-            raise ValueError("Tileset height must be greater than or equal to _VIEW_TILESRC_HEIGHT.")
+        if tilesrc.size[0] < _tmap_common.TILESET_WIDTH:
+            raise ValueError("Tileset width must be greater than or equal to _tmap_common.TILESET_WIDTH.")
+        if tilesrc.size[1] < _tmap_common.TILESET_HEIGHT:
+            raise ValueError("Tileset height must be greater than or equal to _tmap_common.TILESET_HEIGHT.")
         if map_width < 1:
             raise ValueError("map_width must be greater than or equal to 1.")
         if map_height < 1:
@@ -95,7 +87,7 @@ class _View(_ttk.Frame):
         # cursor
         self.__cursor = _qdg_helper.IXY_ZERO
         self.__cursor_visual = self.__canvas.create_rectangle(\
-            -1, -1, _VIEW_TILE_WIDTH, _VIEW_TILE_HEIGHT,\
+            -1, -1, _tmap_common.TILESET_TILE_WIDTH, _tmap_common.TILESET_TILE_HEIGHT,\
             outline = "white", width = 1)
         # mouse
         self.__mouse = _qdg_helper.IXY_ZERO
@@ -149,31 +141,30 @@ class _View(_ttk.Frame):
     def __r_canvas_motion(self, event = None):
         if not isinstance(event, _tk.Event): return
         prev = self.__mouse
-        self.__mouse = _qdg_helper.IXY(x = event.x // _VIEW_TILE_WIDTH, y = event.y // _VIEW_TILE_WIDTH)
+        self.__mouse = _qdg_helper.IXY(x = event.x // _tmap_common.TILESET_TILE_WIDTH, y = event.y // _tmap_common.TILESET_TILE_WIDTH)
         if self.__mouse != prev: self.__mouse_changed_h.emit(self, self.__mouse)
 
     #endregion
 
     #region helper methods 1
 
-    def __tileimg(self, index:int):
+    def __tileimg(self, index:_np.uint16):
         """
         Assume
         - index >= 0 and index < 0x10000
         """
-        _xx = (index % _VIEW_TILE_COLS) * _VIEW_TILE_WIDTH
-        _yy = (index // _VIEW_TILE_COLS) * _VIEW_TILE_HEIGHT
-        _box = (_xx, _yy, _xx + _VIEW_TILE_WIDTH, _yy + _VIEW_TILE_HEIGHT)
+        _xx, _yy = _tmap_common.Tileset.offset(index)
+        _box = (_xx, _yy, _xx + _tmap_common.TILESET_TILE_WIDTH, _yy + _tmap_common.TILESET_TILE_HEIGHT)
         return _ImageTk.PhotoImage(self.__tilesrc.crop(_box))
     
     def __tile_inc(self, x:int, y:int, index:_np.uint16):
         # Increment new
         if not (index in self.__tilecache):
-            self.__tilecache[index] = self.__TileCacheItem(self.__tileimg(int(index)), 1)
+            self.__tilecache[index] = self.__TileCacheItem(self.__tileimg(index), 1)
         else: self.__tilecache[index].refs += 1
         # Create new tile image
         _image = self.__canvas.create_image(\
-            x * _VIEW_TILE_WIDTH, y * _VIEW_TILE_HEIGHT,\
+            x * _tmap_common.TILESET_TILE_WIDTH, y * _tmap_common.TILESET_TILE_HEIGHT,\
             anchor = 'nw',\
             image = self.__tilecache[index].image)
         self.__canvas.tag_lower(_image, self.__cursor_visual)
@@ -192,8 +183,8 @@ class _View(_ttk.Frame):
     
     def __refresh_size(self):
         self.__canvas.config(\
-            width = self.__map.width * _VIEW_TILE_WIDTH,\
-            height = self.__map.height * _VIEW_TILE_HEIGHT)
+            width = self.__map.width * _tmap_common.TILESET_TILE_WIDTH,\
+            height = self.__map.height * _tmap_common.TILESET_TILE_HEIGHT)
 
     def __refresh_tiles(self):
         # Clear cache
@@ -217,8 +208,8 @@ class _View(_ttk.Frame):
             y = max(0, min(self.__map.height - 1, self.__cursor.y)))
         # Update visual
         self.__canvas.moveto(self.__cursor_visual,\
-            x = self.__cursor.x * _VIEW_TILE_WIDTH - 2,\
-            y = self.__cursor.y * _VIEW_TILE_HEIGHT - 2)
+            x = self.__cursor.x * _tmap_common.TILESET_TILE_WIDTH - 2,\
+            y = self.__cursor.y * _tmap_common.TILESET_TILE_HEIGHT - 2)
         # Fix cursor
 
     #endregion

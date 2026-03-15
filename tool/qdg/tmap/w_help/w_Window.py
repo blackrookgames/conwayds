@@ -28,6 +28,7 @@ class Window(_tk.Toplevel):
             return _start + len(_items)
         # Initialize
         super().__init__(*args, **kwargs)
+        self.title("Help")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
         self.geometry('250x250')
@@ -39,6 +40,7 @@ class Window(_tk.Toplevel):
             ( "F3", "Change Palette"),\
             ( "F4", "Change Orientation"),\
             ( "F5", "Set Size"),\
+            ( "F6", "Select Tile"),\
             ( "Ctrl+S", "Save"),)
         # Draw mode
         _label_draw = _ttk.Label(\

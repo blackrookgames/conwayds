@@ -16,6 +16,7 @@ import qdg.helper as _qdg_helper
 import qdg.tmap.w__common as _tmap_common
 import qdg.tmap.w_help as _tmap_help
 import qdg.tmap.w_size as _tmap_size
+import qdg.tmap.w_tileset as _tmap_tileset
 
 _PAD_X = 2
 _PAD_Y = 2
@@ -46,10 +47,10 @@ class Window(_tk.Tk):
         """
         self.__initializing = True
         # Error check
-        if tilesrc.size[0] < _VIEW_TILESRC_WIDTH:
-            raise ValueError(f"Tileset width must be greater than or equal to {_VIEW_TILESRC_WIDTH}.")
-        if tilesrc.size[1] < _VIEW_TILESRC_HEIGHT:
-            raise ValueError(f"Tileset height must be greater than or equal to {_VIEW_TILESRC_HEIGHT}.")
+        if tilesrc.size[0] < _tmap_common.TILESET_WIDTH:
+            raise ValueError(f"Tileset width must be greater than or equal to {_tmap_common.TILESET_WIDTH}.")
+        if tilesrc.size[1] < _tmap_common.TILESET_HEIGHT:
+            raise ValueError(f"Tileset height must be greater than or equal to {_tmap_common.TILESET_HEIGHT}.")
         # Initialize
         super().__init__(*args, **kwargs)
         self.resizable(width = False, height = False)
@@ -58,6 +59,8 @@ class Window(_tk.Tk):
         self.pack_propagate(True)
         # content
         self.__content = content
+        # tilesrc
+        self.__tilesrc = tilesrc
         # isdirty
         self.__isdirty:bool = False
         # textmode
@@ -73,7 +76,7 @@ class Window(_tk.Tk):
         self.__head = _Head(master = self.__container)
         self.__head.pack(fill = 'x', pady = (0, _PAD_X))
         # view
-        self.__view = _View(tilesrc, master = self.__container)
+        self.__view = _View(self.__tilesrc, master = self.__container)
         self.__view.mouse_changed.connect(self.__r_view_mouse_changed)
         self.__view.pack(fill = 'both', expand = True)
         # foot
@@ -83,7 +86,7 @@ class Window(_tk.Tk):
         self.__help = _ttk.Label(\
             master = self.__container,\
             text = "Press F1 for help",\
-            font = ("Small Fonts", 7))
+            font = _qdg_helper.FONT_SMALL)
         self.__help.pack(fill = 'x')
         # Input
         self.bind('<Key>', self.__r_input_any)
@@ -99,6 +102,7 @@ class Window(_tk.Tk):
         self.bind('<F3>', self.__r_input_palette)
         self.bind('<F4>', self.__r_input_orientation)
         self.bind('<F5>', self.__r_input_size)
+        self.bind('<F6>', self.__r_input_tileset)
         self.bind('<Control-s>', self.__r_input_save)
         self.bind('<Left>', self.__r_input_left)
         self.bind('<Right>', self.__r_input_right)
@@ -169,6 +173,7 @@ class Window(_tk.Tk):
 
     def __r_input_help(self, event = None):
         win = _tmap_help.Window(master = self)
+        self.__movedialog(win)
         win.transient(self)
         win.grab_set()
         win.focus_set()
@@ -180,16 +185,15 @@ class Window(_tk.Tk):
         if not self.__textmode: self.__set_cursor(self.__view.mouse)
 
     def __r_input_palette(self, event = None):
-        self.__palette = (self.__palette + 1) & 0b1111
-        self.__head.palette = self.__palette
+        self.__set_palette(self.__palette + 1)
 
     def __r_input_orientation(self, event = None):
-        self.__orientation = (self.__orientation + 1) & 0b11
-        self.__head.orientation = self.__orientation
+        self.__set_orientation(self.__orientation + 1)
 
     def __r_input_size(self, event = None):
         # Open Size window
         win = _tmap_size.Window(master = self, initsize = self.__content.cells.size)
+        self.__movedialog(win)
         win.transient(self)
         win.grab_set()
         win.focus_set()
@@ -247,6 +251,24 @@ class Window(_tk.Tk):
         self.__update_view()
         # Mark dirty
         self.__set_dirty(True)
+
+    def __r_input_tileset(self, event = None):
+        # Open Size window
+        win = _tmap_tileset.Window(\
+            self.__tilesrc,\
+            master = self,\
+            init_final = _tmap_common.finaltile_to(self.__tile, self.__palette, self.__orientation))
+        self.__movedialog(win)
+        win.transient(self)
+        win.grab_set()
+        win.focus_set()
+        win.wait_window()
+        if win.result != _qdg_helper.WinDialogResult.OK: return
+        # Set tile
+        tile, palette, orientation = _tmap_common.finaltile_from(win.final)
+        self.__set_tile(tile)
+        self.__set_palette(palette)
+        self.__set_orientation(orientation)
 
     def __r_input_save(self, event = None):
         # Save
@@ -341,9 +363,18 @@ class Window(_tk.Tk):
         self.__foot.cursor = self.__view.cursor
 
     def __set_tile(self, value:int):
+        _WRAP = _tmap_common.TILESET_SUB_COLS * _tmap_common.TILESET_SUB_ROWS
         if self.__tile == value: return
-        self.__tile = value % 1024
+        self.__tile = value % _WRAP
         self.__head.tile = self.__tile
+
+    def __set_palette(self, value:int):
+        self.__palette = value & 0b1111
+        self.__head.palette = self.__palette
+        
+    def __set_orientation(self, value:int):
+        self.__orientation = value & 0b11
+        self.__head.orientation = self.__orientation
 
     def __inc_cursor(self, inc:int):
         pos = self.__view.cursor.x + self.__view.cursor.y * self.__content.cells.width
@@ -351,12 +382,17 @@ class Window(_tk.Tk):
         self.__set_cursor(_qdg_helper.IXY(x = pos % self.__content.cells.width, y = pos // self.__content.cells.width))
 
     def __plot_tile(self, x:int, y:int, tile:int):
-        final = _np.uint16(tile | (self.__palette << 10) | (self.__orientation << 14))
+        final = _tmap_common.finaltile_to(tile, self.__palette, self.__orientation)
         # Plot tile
         self.__content.cells[x, y] = final
         self.__view.map[x, y] = final
         # Mark dirty
         self.__set_dirty(True)
+
+    def __movedialog(self, win:_tk.Toplevel):
+        x = self.winfo_x() + 30
+        y = self.winfo_y() + 30
+        win.geometry(f"+{x}+{y}")
 
     #endregion
 

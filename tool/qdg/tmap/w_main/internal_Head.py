@@ -18,7 +18,6 @@ class _Head(_ttk.Frame):
         Initializer for Head
         """
         # Const
-        _FONT = ("Small Fonts", 7)
         # Initialize
         super().__init__(**kwargs)
         # Text Mode
@@ -27,7 +26,7 @@ class _Head(_ttk.Frame):
             master = self,\
             width = 12,\
             text = "Draw Mode",\
-            font = _FONT)
+            font = _qdg_helper.FONT_SMALL)
         self.__widget_textmode.grid(column = 0, row = 0, sticky = 'w')
         # Tile
         self.__tile = 0
@@ -35,7 +34,7 @@ class _Head(_ttk.Frame):
             master = self,\
             width = 12,\
             text = "Tile: 0x000",\
-            font = _FONT)
+            font = _qdg_helper.FONT_SMALL)
         self.__widget_tile.grid(column = 0, row = 1, sticky = 'w')
         # Palette
         self.__palette = 0
@@ -43,7 +42,7 @@ class _Head(_ttk.Frame):
             master = self,\
             width = 12,\
             text = "Palette: 0x0",\
-            font = _FONT)
+            font = _qdg_helper.FONT_SMALL)
         self.__widget_palette.grid(column = 1, row = 1, sticky = 'w')
         # Orientation
         self.__orientation = 0
@@ -51,7 +50,7 @@ class _Head(_ttk.Frame):
             master = self,\
             width = 12,\
             text = "Orient: 0",\
-            font = _FONT)
+            font = _qdg_helper.FONT_SMALL)
         self.__widget_orientation.grid(column = 2, row = 1, sticky = 'w')
         
     #endregion

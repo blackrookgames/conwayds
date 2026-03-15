@@ -1,6 +1,6 @@
+import numpy as np
 import os
 import sys
-import tkinter as tk
 
 from async_tkinter_loop import async_mainloop
 from pathlib import Path
@@ -72,8 +72,6 @@ class qgd_tmap(cli.CLICommand):
         self_tileset = cast(None | str, self.tileset) # type: ignore
         _IMAGE_W = 2048
         _IMAGE_H = 2048
-        _TILE_COUNT = 0x10000
-        _TILE_COLS = _IMAGE_W // qdg_tmap_common.IDATATILESET_TILE_W
         _CACHE_PATH = CACHEDIR.joinpath("image.png")
         _CACHE_KEY = 'reference'
         # Is tileset source cached?
@@ -108,39 +106,36 @@ class qgd_tmap(cli.CLICommand):
         # Create image
         print("Processing tileset ", end = '', flush = True)
         image = Image.new('RGB', (_IMAGE_W, _IMAGE_H))
-        for _i in range(_TILE_COUNT):
+        for _i in range(qdg_tmap_common.TILESET_TILE_COUNT):
+            _finaltile = np.uint16(_i)
             # Properties
-            _tile_index = _i % qdg_tmap_common.IDATATILESET_SIZE
-            _tile_props = _i // qdg_tmap_common.IDATATILESET_SIZE
-            _tile_sub = _tile_props % qdg_tmap_common.IDATAPALETTE_SUBCOUNT # TODO: Update
-            _tile_flip = _tile_props // qdg_tmap_common.IDATAPALETTE_SUBCOUNT # TODO: Update
+            _tile_index, _tile_sub, _tile_flip = qdg_tmap_common.finaltile_from(_finaltile)
             _tile_flip_x = (_tile_flip & 0b01) != 0 # TODO: Update
             _tile_flip_y = (_tile_flip & 0b10) != 0 # TODO: Update
             # Input X-coordinates
             if _tile_flip_x:
-                _x_beg = qdg_tmap_common.IDATATILESET_TILE_W - 1
+                _x_beg = qdg_tmap_common.TILESET_TILE_WIDTH - 1
                 _x_inc = -1
             else:
                 _x_beg = 0
                 _x_inc = 1
             # Input Y-coordinates
             if _tile_flip_y:
-                _y_beg = qdg_tmap_common.IDATATILESET_TILE_H - 1
+                _y_beg = qdg_tmap_common.TILESET_TILE_HEIGHT - 1
                 _y_inc = -1
             else:
                 _y_beg = 0
                 _y_inc = 1
             # Tile
-            _off_x = (_i % _TILE_COLS) * qdg_tmap_common.IDATATILESET_TILE_W
-            _off_y = (_i // _TILE_COLS) * qdg_tmap_common.IDATATILESET_TILE_H
-            for _x in range(qdg_tmap_common.IDATATILESET_TILE_W):
-                for _y in range(qdg_tmap_common.IDATATILESET_TILE_H):
+            _off_x, _off_y = qdg_tmap_common.Tileset.offset(_finaltile)
+            for _x in range(qdg_tmap_common.TILESET_TILE_WIDTH):
+                for _y in range(qdg_tmap_common.TILESET_TILE_HEIGHT):
                     _in_x = _x_beg + _x * _x_inc
                     _in_y = _y_beg + _y * _y_inc
                     _color = tileset.palette[_tile_sub][tileset.tileset[_tile_index, _in_x, _in_y]]
                     image.putpixel((_off_x + _x, _off_y + _y), _color)
             # Next
-            _prog(100 * ((_i + 1) / _TILE_COUNT))
+            _prog(100 * ((_i + 1) / qdg_tmap_common.TILESET_TILE_COUNT))
         print()
         # Save image
         def _save():

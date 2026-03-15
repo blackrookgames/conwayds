@@ -1,7 +1,5 @@
 __all__ = [\
     'IDATATILESET_SIZE',\
-    'IDATATILESET_TILE_W',\
-    'IDATATILESET_TILE_H',\
     'IDATATILESET_BPP',\
     'IDataTileset',]
 
@@ -9,6 +7,10 @@ import numpy as _np
 import numpy.typing as _npt
 
 import src.img as _img
+
+from .m_Tileset import\
+    TILESET_TILE_WIDTH as _TILESET_TILE_WIDTH,\
+    TILESET_TILE_HEIGHT as _TILESET_TILE_HEIGHT
 
 #region helper const
 
@@ -92,16 +94,6 @@ IDATATILESET_SIZE = 1024
 Number of tiles within a tileset
 """
 
-IDATATILESET_TILE_W = 8
-"""
-Width of a tile
-"""
-
-IDATATILESET_TILE_H = 8
-"""
-Height of a tile
-"""
-
 IDATATILESET_BPP = 4
 """
 Bits-per-pixel
@@ -122,7 +114,7 @@ def _copy_default_data():
     # Create default data if needed
     if _default_data is None:
         _default_data = _np.zeros(\
-            [IDATATILESET_SIZE, IDATATILESET_TILE_W, IDATATILESET_TILE_H],\
+            [IDATATILESET_SIZE, _TILESET_TILE_WIDTH, _TILESET_TILE_HEIGHT],\
             dtype = _np.uint8)
         for _i in range(IDATATILESET_SIZE):
             _digit0 = (_i & 0b1111) | ((_i >> 4) & 0b10000)
@@ -167,18 +159,18 @@ class IDataTileset:
         self.__data = _copy_default_data()
         # Import tiles
         if src is not None:
-            tiles_cols = src.width // IDATATILESET_TILE_W
-            tiles_rows = src.height // IDATATILESET_TILE_H
+            tiles_cols = src.width // _TILESET_TILE_WIDTH
+            tiles_rows = src.height // _TILESET_TILE_HEIGHT
             tiles_total = tiles_cols * tiles_rows
             if tiles_total > 0:
                 for _i in range(min(IDATATILESET_SIZE, tiles_total)):
-                    _off_x = (_i % tiles_cols) * IDATATILESET_TILE_W
-                    _off_y = (_i // tiles_cols) * IDATATILESET_TILE_H
+                    _off_x = (_i % tiles_cols) * _TILESET_TILE_WIDTH
+                    _off_y = (_i // tiles_cols) * _TILESET_TILE_HEIGHT
                     # Copy pixels
                     _iy = _off_y
-                    for _oy in range(IDATATILESET_TILE_H):
+                    for _oy in range(_TILESET_TILE_HEIGHT):
                         _ix = _off_x
-                        for _ox in range(IDATATILESET_TILE_W):
+                        for _ox in range(_TILESET_TILE_WIDTH):
                             self.__data[_i, _ox, _oy] = src[_ix, _iy]
                             _ix += 1
                         _iy += 1
@@ -208,9 +200,9 @@ class IDataTileset:
         except Exception as _e:
             if i < 0 or i >= IDATATILESET_SIZE:
                 e = IndexError("Tile index is out of range.")
-            elif x < 0 or x >= IDATATILESET_TILE_W:
+            elif x < 0 or x >= _TILESET_TILE_WIDTH:
                 e = IndexError("X-coordinate is out of range.")
-            elif y < 0 or y >= IDATATILESET_TILE_H:
+            elif y < 0 or y >= _TILESET_TILE_HEIGHT:
                 e = IndexError("Y-coordinate is out of range.")
             else: e = _e
         raise e

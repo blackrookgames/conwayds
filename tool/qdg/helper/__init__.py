@@ -6,3 +6,5 @@ from .m_IXY import *
 from .m_Signal import *
 from .m_SignalHandler import *
 from .m_SignalReceiver import *
+
+FONT_SMALL = ("Small Fonts", 7)

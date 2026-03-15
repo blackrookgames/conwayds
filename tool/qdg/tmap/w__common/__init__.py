@@ -6,3 +6,5 @@ from .f_IFileTileset import *
 from .m_Content import *
 from .m_ContentCells import *
 from .m_ContentSize import *
+from .m_func import *
+from .m_Tileset import *
