@@ -1,3 +1,4 @@
+#include "engine/data/RLE.h"
 #include "engine/helper/ArrayUtil.h"
 #include "game/scns/sim/Scene.h"
 
@@ -9,8 +10,11 @@
 #include <__.h>
 #include "engine/data/Pattern.h"
 #include "game/assets/Palette.h"
+#include "game/assets/SimScreen.h"
 #include "game/assets/SimTileset.h"
 #include "game/assets/TextTileset.h"
+
+#include <sstream>
 
 using namespace game::scns::sim;
 
@@ -19,6 +23,21 @@ using namespace game::scns::sim;
 Scene::Scene()
 {
     f_Simulation = nullptr;
+
+    u16* test_data;
+    size_t test_len;
+    engine::data::RLE::extract(
+        game::assets::SimScreen::data, game::assets::SimScreen::size,
+        test_data, test_len);
+    NOCASHMESSAGE(test_len)
+    for (size_t i = 1; i < test_len; i += 32)
+    {
+        std::ostringstream test;
+        for (size_t j = 0; j < 32; ++j)
+            test << test_data[i + j] << ' ';
+        test << std::endl;
+        nocashMessage(test);
+    }
 }
 
 Scene::~Scene()
