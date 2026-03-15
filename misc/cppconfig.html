@@ -374,6 +374,15 @@
                             <tr><td>path</td><td>Path to input file</td></tr>
                         </table>
                     </p>
+                    <h3 class="mono">@load list <i>ovar</i> <i>path</i> <i>type</i></h3>
+                    <p>
+                        Creates a list by loading data from a binary file
+                        <table class="argdesc">
+                            <tr><td>ovar</td><td>Name of output variable; this is where the list will be stored</td></tr>
+                            <tr><td>path</td><td>Path to input file</td></tr>
+                            <tr><td>type</td><td>List type: uint8, int8, uint16, int16, uint32, int32, uint64, int64</td></tr>
+                        </table>
+                    </p>
                     <h3 class="mono">@load string <i>ovar</i> <i>path</i></h3>
                     <p>
                         Creates a string by loading from a file
@@ -419,6 +428,14 @@
                             <tr><td>path</td><td>Path to output file</td></tr>
                         </table>
                     </p>
+                    <h3 class="mono">@save <i>list</i> <i>path</i></h3>
+                    <p>
+                        Saves list data to a binary file
+                        <table class="argdesc">
+                            <tr><td>list</td><td>Name of input variable; this is where the list is stored</td></tr>
+                            <tr><td>path</td><td>Path to output file</td></tr>
+                        </table>
+                    </p>
                     <h3 class="mono">@save <i>string</i> <i>path</i></h3>
                     <p>
                         Saves string data to a file
@@ -460,6 +477,19 @@
                             <tr><td>databuffer</td><td>Name of input variable; this is where the DataBuffer is stored</td></tr>
                         </table>
                     </p>
+                    <h3 class="mono">cppdata <i>list</i></h3>
+                    <p>
+                        Returns a C++ representation of items within a list
+                        <table class="argdesc">
+                            <tr>
+                                <td>list</td>
+                                <td>
+                                    Name of input variable; this is where the list is stored<br/>
+                                    Compatible list types: uint8, int8, uint16, int16, uint32, int32, uint64, int64
+                                </td>
+                            </tr>
+                        </table>
+                    </p>
                 </div>
                 <div class="funcdef" id="s_func_height">
                     <h3 class="mono">height <i>dsbitmap</i></h3>
@@ -490,6 +520,13 @@
                         Returns the number of tiles within a DSTileset
                         <table class="argdesc">
                             <tr><td>dstileset</td><td>Name of input variable; this is where the DSTileset is stored</td></tr>
+                        </table>
+                    </p>
+                    <h3 class="mono">len <i>list</i></h3>
+                    <p>
+                        Returns the number of items within a list
+                        <table class="argdesc">
+                            <tr><td>list</td><td>Name of input variable; this is where the list is stored</td></tr>
                         </table>
                     </p>
                 </div>

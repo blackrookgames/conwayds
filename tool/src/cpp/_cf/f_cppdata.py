@@ -1,7 +1,5 @@
 all = []
 
-from io import\
-    StringIO as _StringIO
 from typing import\
     cast as _cast
 
@@ -13,40 +11,20 @@ from ...data.mod_DataBuffer import\
 from ..mod__call import _FuncDef
 from ..mod__CmdFuncError import _CmdFuncError
 from ..mod__Creator import _Creator
-from .f__HFunc import _HFunc
 
-class _HHFunc(_HFunc):
-    __varname = _CLIRequiredDef(name = "varname")
-    def _main(self, creator: _Creator):
-        self_varname = _cast(str, self.varname) # type: ignore
-        # Get data
-        data = creator.get_var(self_varname, types = _DataBuffer)
-        data = _cast(_DataBuffer, data)
-        # Create string
-        if len(data) == 0:
-            return "{ }"
-        with _StringIO() as _strio:
-            # Opening bracket
-            _strio.write("{\n")
-            # Data
-            _i = 0
-            while _i < len(data):
-                # Indent?
-                if (_i % 16) == 0:
-                    _strio.write("    ")
-                # Write byte
-                _strio.write(f"0x{data[_i]:02X}, ")
-                # Next
-                _i += 1
-                # Newline?
-                if _i == len(data) or (_i % 16) == 0:
-                    _strio.write('\n')
-            # Closing bracket (no newline)
-            _strio.write("}")
-            # Success!!!
-            return _strio.getvalue()
+from .f_cppdatas import __DICT
+from .h_helper import _tryfindtype
 
 def __func(creator:_Creator, argv:list[str]):
-    return _HHFunc().execute(creator, argv)
+    if len(argv) <= 1:
+        raise _CmdFuncError("Not enough arguments")
+    data = creator.get_var(argv[1])
+    dtype = type(data)
+    found, func = _tryfindtype(__DICT, dtype)
+    if not found:
+        raise _CmdFuncError(f"Cannot create C++ code out of {dtype.__name__} data.")
+    assert func is not None
+    savefunc = func(data)
+    return savefunc.execute(creator, [argv[_i] for _i in range(1, len(argv))])
 
 __def = _FuncDef(__func)

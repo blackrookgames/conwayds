@@ -9,3 +9,4 @@ bash "$shpath.hcmdconvert.sh" lifepattern
 bash "$shpath.hcmdconvert.sh" string
 bash "$shpath.loads.sh"
 bash "$shpath.saves.sh"
+bash "$shpath.cppdata.sh"
