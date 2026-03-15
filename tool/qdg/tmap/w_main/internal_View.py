@@ -82,6 +82,7 @@ class _View(_ttk.Frame):
             highlightthickness = 0,\
             background = 'gray')
         self.__canvas.pack(fill = 'both', expand = True)
+        self.__canvas.propagate(False)
         self.__canvas.bind("<Motion>", self.__r_canvas_motion)
         # tilecache
         self.__tilecache:dict[_np.uint16, _View.__TileCacheItem] = {}

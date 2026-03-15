@@ -119,11 +119,9 @@ class ContentCells:
         _beg_y = max(0, min(self.__height, offset_y))
         _end_x = max(0, min(self.__width, offset_x + prev_width))
         _end_y = max(0, min(self.__height, offset_y + prev_height))
-        _off_x = _beg_x - offset_x
-        _off_y = _beg_y - offset_y
         for _y in range(_beg_y, _end_y):
             for _x in range(_beg_x, _end_x):
-                _i = (_off_x + _x) + (_off_y + _y) * prev_width
+                _i = (_x - offset_x) + (_y - offset_y) * prev_width
                 _o = _x + _y * self.__width
                 self.__cells[_o] = prev_cells[_i]
 

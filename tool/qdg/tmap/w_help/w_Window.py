@@ -1,3 +1,5 @@
+__all__ = ['Window']
+
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
@@ -36,6 +38,7 @@ class Window(_tk.Toplevel):
             ( "F2", "Switch Edit Mode"),\
             ( "F3", "Change Palette"),\
             ( "F4", "Change Orientation"),\
+            ( "F5", "Set Size"),\
             ( "Ctrl+S", "Save"),)
         # Draw mode
         _label_draw = _ttk.Label(\

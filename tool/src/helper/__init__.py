@@ -1,5 +1,6 @@
 from .mod_BadOpError import *
 from .mod_const import *
+from .mod_DictUtil import *
 from .mod_ErrorUtil import *
 from .mod_funcs import *
 from .mod_LockedList import *

@@ -1,3 +1,5 @@
+__all__ = ['Window']
+
 import numpy as _np
 import tkinter as _tk
 import tkinter.ttk as _ttk
@@ -13,11 +15,12 @@ from .internal_View import *
 import qdg.helper as _qdg_helper
 import qdg.tmap.w__common as _tmap_common
 import qdg.tmap.w_help as _tmap_help
+import qdg.tmap.w_size as _tmap_size
 
-PAD_X = 2
-PAD_Y = 2
-TILE_W = 8
-TILE_H = 8
+_PAD_X = 2
+_PAD_Y = 2
+_TILE_W = 8
+_TILE_H = 8
 
 class Window(_tk.Tk):
     """
@@ -50,8 +53,9 @@ class Window(_tk.Tk):
         # Initialize
         super().__init__(*args, **kwargs)
         self.resizable(width = False, height = False)
-        self.config(padx = PAD_X, pady = PAD_Y)
+        self.config(padx = _PAD_X, pady = _PAD_Y)
         self.protocol("WM_DELETE_WINDOW", self.__r_wm_delete_window)
+        self.pack_propagate(True)
         # content
         self.__content = content
         # isdirty
@@ -64,11 +68,10 @@ class Window(_tk.Tk):
         self.__orientation:int = 0
         # container
         self.__container = _ttk.Frame(master = self)
-        self.__container.bind('<Configure>', self.__r_container_configure)
-        self.__container.pack(fill = 'both', expand = True)
+        self.__container.pack()
         # head
         self.__head = _Head(master = self.__container)
-        self.__head.pack(fill = 'x', pady = (0, PAD_X))
+        self.__head.pack(fill = 'x', pady = (0, _PAD_X))
         # view
         self.__view = _View(tilesrc, master = self.__container)
         self.__view.mouse_changed.connect(self.__r_view_mouse_changed)
@@ -95,6 +98,7 @@ class Window(_tk.Tk):
         self.bind('<F2>', self.__r_input_switch)
         self.bind('<F3>', self.__r_input_palette)
         self.bind('<F4>', self.__r_input_orientation)
+        self.bind('<F5>', self.__r_input_size)
         self.bind('<Control-s>', self.__r_input_save)
         self.bind('<Left>', self.__r_input_left)
         self.bind('<Right>', self.__r_input_right)
@@ -117,11 +121,6 @@ class Window(_tk.Tk):
 
     def __r_wm_delete_window(self):
         self.__quit()
-
-    def __r_container_configure(self, event = None):
-        w = self.__container.winfo_width() + PAD_X * 2
-        h = self.__container.winfo_height() + PAD_Y * 2
-        self.geometry(f"{w}x{h}")
 
     def __r_view_mouse_changed(self, emitter:_View, value:_qdg_helper.IXY):
         if not self.__textmode: self.__set_cursor(value)
@@ -172,6 +171,7 @@ class Window(_tk.Tk):
         win = _tmap_help.Window(master = self)
         win.transient(self)
         win.grab_set()
+        win.focus_set()
         win.wait_window()
 
     def __r_input_switch(self, event = None):
@@ -186,6 +186,67 @@ class Window(_tk.Tk):
     def __r_input_orientation(self, event = None):
         self.__orientation = (self.__orientation + 1) & 0b11
         self.__head.orientation = self.__orientation
+
+    def __r_input_size(self, event = None):
+        # Open Size window
+        win = _tmap_size.Window(master = self, initsize = self.__content.cells.size)
+        win.transient(self)
+        win.grab_set()
+        win.focus_set()
+        win.wait_window()
+        if win.result != _qdg_helper.WinDialogResult.OK: return
+        # Resize
+        match win.size:
+            case _tmap_common.ContentSize.W256H256:
+                _new_width = 32
+                _new_height = 32
+            case _tmap_common.ContentSize.W512H256:
+                _new_width = 64
+                _new_height = 32
+            case _tmap_common.ContentSize.W256H512:
+                _new_width = 32
+                _new_height = 64
+            case _tmap_common.ContentSize.W512H512:
+                _new_width = 64
+                _new_height = 64
+            case _: # Should never happen
+                _new_width = 0
+                _new_height = 0
+        match win.anchor:
+            case _tmap_size.Anchor.TOPLEFT:
+                _offset_x = 0
+                _offset_y = 0
+            case _tmap_size.Anchor.TOP:
+                _offset_x = (_new_width - self.__content.cells.width) // 2
+                _offset_y = 0
+            case _tmap_size.Anchor.TOPRIGHT:
+                _offset_x = _new_width - self.__content.cells.width
+                _offset_y = 0
+            case _tmap_size.Anchor.LEFT:
+                _offset_x = 0
+                _offset_y = (_new_height - self.__content.cells.height) // 2
+            case _tmap_size.Anchor.CENTER:
+                _offset_x = (_new_width - self.__content.cells.width) // 2
+                _offset_y = (_new_height - self.__content.cells.height) // 2
+            case _tmap_size.Anchor.RIGHT:
+                _offset_x = _new_width - self.__content.cells.width
+                _offset_y = (_new_height - self.__content.cells.height) // 2
+            case _tmap_size.Anchor.BOTTOMLEFT:
+                _offset_x = 0
+                _offset_y = _new_height - self.__content.cells.height
+            case _tmap_size.Anchor.BOTTOM:
+                _offset_x = (_new_width - self.__content.cells.width) // 2
+                _offset_y = _new_height - self.__content.cells.height
+            case _tmap_size.Anchor.BOTTOMRIGHT:
+                _offset_x = _new_width - self.__content.cells.width
+                _offset_y = _new_height - self.__content.cells.height
+            case _: # Should never happen
+                _offset_x = 0
+                _offset_y = 0
+        self.__content.cells.resize(size = win.size, offset_x = _offset_x, offset_y = _offset_y)
+        self.__update_view()
+        # Mark dirty
+        self.__set_dirty(True)
 
     def __r_input_save(self, event = None):
         # Save
