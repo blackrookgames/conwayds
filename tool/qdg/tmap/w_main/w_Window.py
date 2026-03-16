@@ -9,6 +9,7 @@ from PIL import\
     Image as _Image,\
     ImageTk as _ImageTk
 
+from .internal_EditMode import *
 from .internal_Foot import *
 from .internal_Head import *
 from .internal_View import *
@@ -22,6 +23,17 @@ _PAD_X = 2
 _PAD_Y = 2
 _TILE_W = 8
 _TILE_H = 8
+
+def _editmode_next():
+    # Get possible values
+    posvalues = [_value for _value in _EditMode]
+    # Create dictionary of next values
+    nextvalues:dict[_EditMode, _EditMode] = {}
+    for _i in range(len(posvalues)):
+        nextvalues[posvalues[_i]] = posvalues[(_i + 1) % len(posvalues)]
+    # Success!!!
+    return nextvalues
+_EDITMODE_NEXT = _editmode_next()
 
 class Window(_tk.Tk):
     """
@@ -63,8 +75,15 @@ class Window(_tk.Tk):
         self.__tilesrc = tilesrc
         # isdirty
         self.__isdirty:bool = False
-        # textmode
-        self.__textmode:bool = False
+        # editmode
+        self.__editmode = _EditMode.DRAW
+        self.__editmode_locked = False
+        # select
+        self.__select_pasting = False
+        self.__select_pos = _qdg_helper.IXY_ZERO
+        self.__select_size = _qdg_helper.IXY_ZERO
+        # cursor
+        self.__cursor = _qdg_helper.IXY_ZERO
         # tile/palette/orientation
         self.__tile:int = 0
         self.__palette:int = 0
@@ -77,7 +96,8 @@ class Window(_tk.Tk):
         self.__head.pack(fill = 'x', pady = (0, _PAD_X))
         # view
         self.__view = _View(self.__tilesrc, master = self.__container)
-        self.__view.mouse_changed.connect(self.__r_view_mouse_changed)
+        self.__view.mouse_cell_changed.connect(self.__r_view_mouse_cell_changed)
+        self.__view.mouse_snap_changed.connect(self.__r_view_mouse_snap_changed)
         self.__view.pack(fill = 'both', expand = True)
         # foot
         self.__foot = _Foot(master = self.__container)
@@ -90,10 +110,12 @@ class Window(_tk.Tk):
         self.__help.pack(fill = 'x')
         # Input
         self.bind('<Key>', self.__r_input_any)
-        self.bind('<Button-1>', self.__r_input_draw)
-        self.bind('<B1-Motion>', self.__r_input_draw)
-        self.bind('<Button-3>', self.__r_input_pick)
-        self.bind('<B3-Motion>', self.__r_input_pick)
+        self.bind('<Button-1>', self.__r_input_left_press)
+        self.bind('<ButtonRelease-1>', self.__r_input_left_release)
+        self.bind('<B1-Motion>', self.__r_input_left_drag)
+        self.bind('<Button-3>', self.__r_input_right_press)
+        self.bind('<ButtonRelease-3>', self.__r_input_right_release)
+        self.bind('<B3-Motion>', self.__r_input_right_drag)
         self.bind("<MouseWheel>", self.__r_input_scroll)
         self.bind("<Button-4>", self.__r_input_scroll_up)
         self.bind("<Button-5>", self.__r_input_scroll_down)
@@ -126,8 +148,18 @@ class Window(_tk.Tk):
     def __r_wm_delete_window(self):
         self.__quit()
 
-    def __r_view_mouse_changed(self, emitter:_View, value:_qdg_helper.IXY):
-        if not self.__textmode: self.__set_cursor(value)
+    def __r_view_mouse_cell_changed(self, emitter:_View, value:_qdg_helper.IXY):
+        if self.__editmode == _EditMode.DRAW:
+            self.__set_cursor(value)
+        
+    def __r_view_mouse_snap_changed(self, emitter:_View, value:_qdg_helper.IXY):
+        if self.__editmode == _EditMode.SELECT:
+            self.__set_cursor(value)
+            if self.__editmode_locked:
+                self.__view.ref_c.pnt1 = self.__cursor
+            elif self.__select_pasting:
+                self.__view.ref_c.pnt0 = self.__cursor
+                self.__view.ref_c.pnt1 = self.__cursor + self.__select_size
 
     #endregion
 
@@ -136,23 +168,61 @@ class Window(_tk.Tk):
     def __r_input_any(self, event = None):
         if not isinstance(event, _tk.Event): return 
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             # Make sure key is a character key
             if len(event.char) != 1: return
             char = ord(event.char)
             if char < 0x20 or char >= 0x7F: return
             # Plot tile
-            self.__plot_tile(self.__view.cursor.x, self.__view.cursor.y, char)
+            self.__plot_tile(self.__view.ref_a.position.x, self.__view.ref_a.position.y, char)
             # Increment cursor
             self.__inc_cursor(1)
 
-    def __r_input_draw(self, event = None):
-        if not self.__textmode:
-            self.__plot_tile(self.__view.cursor.x, self.__view.cursor.y, self.__tile)
+    def __r_input_left_press(self, event = None):
+        match self.__editmode:
+            case _EditMode.DRAW: self.__draw_draw()
+            case _EditMode.SELECT: self.__select_paste()
 
-    def __r_input_pick(self, event = None):
-        if not self.__textmode:
-            self.__set_tile(int(self.__content.cells[self.__view.cursor.x, self.__view.cursor.y]))
+    def __r_input_left_release(self, event = None):
+        pass
+
+    def __r_input_left_drag(self, event = None):
+        match self.__editmode:
+            case _EditMode.DRAW: self.__draw_draw()
+            case _EditMode.SELECT: self.__select_paste()
+    
+    def __r_input_right_press(self, event = None):
+        match self.__editmode:
+            case _EditMode.DRAW:
+                self.__draw_pick()
+            case _EditMode.SELECT:
+                # Prevent switching edit mode
+                self.__editmode_locked = True
+                # Setup input region
+                self.__view.ref_c.visible = True
+                self.__view.ref_c.pnt0 = self.__cursor
+                self.__view.ref_c.pnt1 = self.__cursor
+    
+    def __r_input_right_release(self, event = None):
+        if self.__editmode == _EditMode.SELECT:
+            if self.__editmode_locked:
+                # Allow switching edit mode
+                self.__editmode_locked = False
+                # Setup paste region
+                self.__select_pos = _qdg_helper.IXY(\
+                    x = min(self.__view.ref_c.pnt0.x, self.__view.ref_c.pnt1.x),\
+                    y = min(self.__view.ref_c.pnt0.y, self.__view.ref_c.pnt1.y))
+                self.__select_size = _qdg_helper.IXY(\
+                    x = max(self.__view.ref_c.pnt0.x, self.__view.ref_c.pnt1.x),\
+                    y = max(self.__view.ref_c.pnt0.y, self.__view.ref_c.pnt1.y))\
+                    - self.__select_pos
+                self.__view.ref_c.pnt0 = self.__cursor
+                self.__view.ref_c.pnt1 = self.__cursor + self.__select_size
+                # Allow pasting
+                self.__select_pasting = True
+
+    def __r_input_right_drag(self, event = None):
+        if self.__editmode ==_EditMode.DRAW: self.__draw_pick()
 
     def __r_input_scroll(self, event = None):
         if not isinstance(event, _tk.Event): return
@@ -161,13 +231,13 @@ class Window(_tk.Tk):
 
     def __r_input_scroll_up(self, event = None):
         if not isinstance(event, _tk.Event): return
-        if not self.__textmode:
+        if self.__editmode != _EditMode.TEXT:
             shift = 8 if (event.state == 5) else (4 if (event.state == 4) else 0)
             self.__set_tile(self.__tile - (1 << shift))
 
     def __r_input_scroll_down(self, event = None):
         if not isinstance(event, _tk.Event): return 
-        if not self.__textmode:
+        if self.__editmode != _EditMode.TEXT:
             shift = 8 if (event.state == 5) else (4 if (event.state == 4) else 0)
             self.__set_tile(self.__tile + (1 << shift))
 
@@ -180,9 +250,20 @@ class Window(_tk.Tk):
         win.wait_window()
 
     def __r_input_switch(self, event = None):
-        self.__textmode = not self.__textmode
-        self.__head.textmode = self.__textmode
-        if not self.__textmode: self.__set_cursor(self.__view.mouse)
+        if self.__editmode_locked: return
+        # Reset select state
+        self.__select_pasting = False
+        self.__view.ref_c.visible = False
+        # Go to next mode
+        self.__editmode = _EDITMODE_NEXT[self.__editmode]
+        self.__head.editmode = self.__editmode
+        # Update reference
+        self.__view.ref_a.visible = self.__editmode != _EditMode.SELECT
+        self.__view.ref_b.visible = not self.__view.ref_a.visible
+        # Update cursor
+        match self.__editmode:
+            case _EditMode.DRAW: self.__set_cursor(self.__view.mouse_cell)
+            case _EditMode.SELECT: self.__set_cursor(self.__view.mouse_snap)
 
     def __r_input_palette(self, event = None):
         self.__set_palette(self.__palette + 1)
@@ -279,53 +360,53 @@ class Window(_tk.Tk):
 
     def __r_input_left(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             mul = 8 if mod_ctrl else 1
             self.__inc_cursor(-mul)
 
     def __r_input_right(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             mul = 8 if mod_ctrl else 1
             self.__inc_cursor(mul)
 
     def __r_input_up(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             mul = 8 if mod_ctrl else 1
             self.__inc_cursor(-self.__content.cells.width * mul)
 
     def __r_input_down(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             mul = 8 if mod_ctrl else 1
             self.__inc_cursor(self.__content.cells.width * mul)
 
     def __r_input_home(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             x = 0
-            y = 0 if mod_ctrl else self.__view.cursor.y
+            y = 0 if mod_ctrl else self.__view.ref_a.position.y
             self.__set_cursor(_qdg_helper.IXY(x = x, y = y))
 
     def __r_input_end(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             mod_ctrl = event is not None and (event.state & 0x0004) != 0
             x = self.__content.cells.width - 1
-            y = (self.__content.cells.height - 1) if mod_ctrl else self.__view.cursor.y
+            y = (self.__content.cells.height - 1) if mod_ctrl else self.__view.ref_a.position.y
             self.__set_cursor(_qdg_helper.IXY(x = x, y = y))
 
     def __r_input_backspace(self, event = None):
         # Is this text mode?
-        if self.__textmode:
+        if self.__editmode == _EditMode.TEXT:
             self.__inc_cursor(-1)
-            self.__plot_tile(self.__view.cursor.x, self.__view.cursor.y, 0x20)
+            self.__plot_tile(self.__view.ref_a.position.x, self.__view.ref_a.position.y, 0x20)
 
     #endregion
 
@@ -358,9 +439,17 @@ class Window(_tk.Tk):
         self.__update_title()
 
     def __set_cursor(self, value:_qdg_helper.IXY):
-        if self.__view.cursor == value: return
-        self.__view.cursor = value
-        self.__foot.cursor = self.__view.cursor
+        if self.__cursor == value: return
+        self.__cursor = value
+        match self.__editmode:
+            case _EditMode.DRAW:
+                self.__view.ref_a.position = self.__cursor
+            case _EditMode.TEXT:
+                self.__view.ref_a.position = self.__cursor
+            case _EditMode.SELECT:
+                self.__view.ref_b.position = self.__cursor
+                self.__view.ref_c.pnt1 = self.__cursor
+        self.__foot.cursor = self.__cursor
 
     def __set_tile(self, value:int):
         _WRAP = _tmap_common.TILESET_SUB_COLS * _tmap_common.TILESET_SUB_ROWS
@@ -377,7 +466,7 @@ class Window(_tk.Tk):
         self.__head.orientation = self.__orientation
 
     def __inc_cursor(self, inc:int):
-        pos = self.__view.cursor.x + self.__view.cursor.y * self.__content.cells.width
+        pos = self.__view.ref_a.position.x + self.__view.ref_a.position.y * self.__content.cells.width
         pos = max(0, min(len(self.__content.cells) - 1, pos + inc))
         self.__set_cursor(_qdg_helper.IXY(x = pos % self.__content.cells.width, y = pos // self.__content.cells.width))
 
@@ -393,6 +482,26 @@ class Window(_tk.Tk):
         x = self.winfo_x() + 30
         y = self.winfo_y() + 30
         win.geometry(f"+{x}+{y}")
+
+    def __draw_draw(self):
+        self.__plot_tile(self.__view.ref_a.position.x, self.__view.ref_a.position.y, self.__tile)
+
+    def __draw_pick(self):
+        self.__set_tile(int(self.__content.cells[self.__view.ref_a.position.x, self.__view.ref_a.position.y]))
+
+    def __select_paste(self):
+        if self.__editmode_locked: return
+        if not self.__select_pasting: return
+        # Paste tiles
+        for _y in range(self.__select_size.y):
+            for _x in range(self.__select_size.x):
+                _tile = self.__content.cells[self.__select_pos.x + _x, self.__select_pos.y + _y]
+                _out_x = self.__cursor.x + _x
+                _out_y = self.__cursor.y + _y
+                self.__content.cells[_out_x, _out_y] = _tile
+                self.__view.map[_out_x, _out_y] = _tile
+        # Mark dirty
+        self.__set_dirty(True)
 
     #endregion
 

@@ -4,7 +4,13 @@ __all__ = [\
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+from .internal_EditMode import *
 import qdg.helper as _qdg_helper
+
+_EDITMODES = {\
+    _EditMode.DRAW: "Draw",\
+    _EditMode.TEXT: "Text",\
+    _EditMode.SELECT: "Select",}
 
 class _Head(_ttk.Frame):
     """
@@ -20,14 +26,14 @@ class _Head(_ttk.Frame):
         # Const
         # Initialize
         super().__init__(**kwargs)
-        # Text Mode
-        self.__textmode = False
-        self.__widget_textmode = _ttk.Label(\
+        # Edit Mode
+        self.__editmode = _EditMode.DRAW
+        self.__widget_editmode = _ttk.Label(\
             master = self,\
             width = 12,\
             text = "Draw Mode",\
             font = _qdg_helper.FONT_SMALL)
-        self.__widget_textmode.grid(column = 0, row = 0, sticky = 'w')
+        self.__widget_editmode.grid(column = 0, row = 0, sticky = 'w')
         # Tile
         self.__tile = 0
         self.__widget_tile = _ttk.Label(\
@@ -58,14 +64,15 @@ class _Head(_ttk.Frame):
     #region properties
 
     @property
-    def textmode(self):
-        """ Whether or not editor is in text mode """
-        return self.__textmode
-    @textmode.setter
-    def textmode(self, value:bool):
-        if self.__textmode == value: return
-        self.__textmode = value
-        self.__widget_textmode.config(text = "Text Mode" if self.__textmode else "Draw Mode")
+    def editmode(self):
+        """ Edit mode of editor """
+        return self.__editmode
+    @editmode.setter
+    def editmode(self, value:_EditMode):
+        if self.__editmode == value: return
+        self.__editmode = value
+        name = _EDITMODES[self.__editmode] if (self.__editmode in _EDITMODES) else str(self.__editmode)
+        self.__widget_editmode.config(text = f"{name} Mode")
 
     @property
     def tile(self):

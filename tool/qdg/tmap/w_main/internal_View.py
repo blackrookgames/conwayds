@@ -14,6 +14,8 @@ import qdg.helper as _qdg_helper
 import qdg.tmap.w__common as _tmap_common
 
 from .internal_ViewMap import *
+from .internal_ViewRefArea import *
+from .internal_ViewRefPnt import *
 
 class _View(_ttk.Frame):
     """
@@ -84,15 +86,36 @@ class _View(_ttk.Frame):
         self._map_defined = True
         # tiles
         self.__tiles:dict[_qdg_helper.IXY, int] = {}
-        # cursor
-        self.__cursor = _qdg_helper.IXY_ZERO
-        self.__cursor_visual = self.__canvas.create_rectangle(\
+        # ref_a
+        self.__ref_a_visual = self.__canvas.create_rectangle(\
             -1, -1, _tmap_common.TILESET_TILE_WIDTH, _tmap_common.TILESET_TILE_HEIGHT,\
             outline = "white", width = 1)
-        # mouse
-        self.__mouse = _qdg_helper.IXY_ZERO
-        self.__mouse_changed_h = _qdg_helper.SignalHandler[_View, _qdg_helper.IXY]()
-        self.__mouse_changed = _qdg_helper.Signal(self.__mouse_changed_h)
+        self.__ref_a = _ViewRefPnt(self,\
+            lambda view: 0, lambda view: 0, lambda view: view.__map.width - 1, lambda view: view.__map.height - 1,\
+            self.__redraw_ref_a)
+        self.__ref_a.visible = True
+        # ref_b
+        self.__ref_b_visual = self.__canvas.create_rectangle(\
+            0, 0, 3, 3,\
+            outline = "white", width = 1)
+        self.__ref_b = _ViewRefPnt(self,\
+            lambda view: 0, lambda view: 0, lambda view: view.__map.width, lambda view: view.__map.height,\
+            self.__redraw_ref_b)
+        # ref_c
+        self.__ref_c_visual = self.__canvas.create_rectangle(\
+            0, 0, 3, 3,\
+            outline = "white", width = 1)
+        self.__ref_c = _ViewRefArea(self,\
+            lambda view: 0, lambda view: 0, lambda view: view.__map.width, lambda view: view.__map.height,\
+            self.__redraw_ref_c)
+        # mouse_cell
+        self.__mouse_cell = _qdg_helper.IXY_ZERO
+        self.__mouse_cell_changed_h = _qdg_helper.SignalHandler[_View, _qdg_helper.IXY]()
+        self.__mouse_cell_changed = _qdg_helper.Signal(self.__mouse_cell_changed_h)
+        # mouse_snap
+        self.__mouse_snap = _qdg_helper.IXY_ZERO
+        self.__mouse_snap_changed_h = _qdg_helper.SignalHandler[_View, _qdg_helper.IXY]()
+        self.__mouse_snap_changed = _qdg_helper.Signal(self.__mouse_snap_changed_h)
         # Post-init
         self.__refresh_size()
         self.__refresh_tiles()
@@ -109,30 +132,53 @@ class _View(_ttk.Frame):
         return self.__map
 
     @property
-    def cursor(self):
+    def ref_a(self):
         """
-        Cell position of cursor. Cursor is a point of reference
+        Reference A
         """
-        return self.__cursor
-    @cursor.setter
-    def cursor(self, value:_qdg_helper.IXY):
-        self.__set_cursor(value)
+        return self.__ref_a
 
     @property
-    def mouse(self):
+    def ref_b(self):
+        """
+        Reference B
+        """
+        return self.__ref_b
+
+    @property
+    def ref_c(self):
+        """
+        Reference C
+        """
+        return self.__ref_c
+
+    @property
+    def mouse_snap(self):
+        """
+        Snap position of mouse
+        """
+        return self.__mouse_snap
+    
+    @property
+    def mouse_cell(self):
         """
         Cell position of mouse
         """
-        return self.__mouse
+        return self.__mouse_cell
 
     #endregion
 
     #region signals
 
     @property
-    def mouse_changed(self):
-        """ Emitted when the mouse position changes """
-        return self.__mouse_changed
+    def mouse_cell_changed(self):
+        """ Emitted when the cell position of the mouse changes """
+        return self.__mouse_cell_changed
+
+    @property
+    def mouse_snap_changed(self):
+        """ Emitted when the snap position of the mouse changes """
+        return self.__mouse_snap_changed
 
     #endregion
 
@@ -140,9 +186,18 @@ class _View(_ttk.Frame):
 
     def __r_canvas_motion(self, event = None):
         if not isinstance(event, _tk.Event): return
-        prev = self.__mouse
-        self.__mouse = _qdg_helper.IXY(x = event.x // _tmap_common.TILESET_TILE_WIDTH, y = event.y // _tmap_common.TILESET_TILE_WIDTH)
-        if self.__mouse != prev: self.__mouse_changed_h.emit(self, self.__mouse)
+        # Update cell position
+        prev = self.__mouse_cell
+        self.__mouse_cell = _qdg_helper.IXY(\
+            x = event.x // _tmap_common.TILESET_TILE_WIDTH,\
+            y = event.y // _tmap_common.TILESET_TILE_WIDTH)
+        if self.__mouse_cell != prev: self.__mouse_cell_changed_h.emit(self, self.__mouse_cell)
+        # Update snap position
+        prev = self.__mouse_snap
+        self.__mouse_snap = _qdg_helper.IXY(\
+            x = round(event.x / _tmap_common.TILESET_TILE_WIDTH),\
+            y = round(event.y / _tmap_common.TILESET_TILE_WIDTH))
+        if self.__mouse_snap != prev: self.__mouse_snap_changed_h.emit(self, self.__mouse_snap)
 
     #endregion
 
@@ -167,7 +222,7 @@ class _View(_ttk.Frame):
             x * _tmap_common.TILESET_TILE_WIDTH, y * _tmap_common.TILESET_TILE_HEIGHT,\
             anchor = 'nw',\
             image = self.__tilecache[index].image)
-        self.__canvas.tag_lower(_image, self.__cursor_visual)
+        self.__canvas.tag_lower(_image, self.__ref_a_visual)
         self.__tiles[_qdg_helper.IXY(x = x, y = y)] = _image
 
     def __tile_dec(self, x:int, y:int, index:_np.uint16):
@@ -198,19 +253,36 @@ class _View(_ttk.Frame):
             for _x in range(self.__map.width):
                 self.__tile_inc(_x, _y, self.__map[_x, _y])
     
-    def __set_cursor(self, value:None|_qdg_helper.IXY):
-        if value is not None:
-            if self.__cursor == value: return
-            self.__cursor = value
-        # Fix value
-        self.__cursor = _qdg_helper.IXY(\
-            x = max(0, min(self.__map.width - 1, self.__cursor.x)),\
-            y = max(0, min(self.__map.height - 1, self.__cursor.y)))
-        # Update visual
-        self.__canvas.moveto(self.__cursor_visual,\
-            x = self.__cursor.x * _tmap_common.TILESET_TILE_WIDTH - 2,\
-            y = self.__cursor.y * _tmap_common.TILESET_TILE_HEIGHT - 2)
-        # Fix cursor
+    def __redraw_ref_a(self, ref:_ViewRefPnt):
+        if ref.visible:
+            x = ref.position.x * _tmap_common.TILESET_TILE_WIDTH - 2
+            y = ref.position.y * _tmap_common.TILESET_TILE_HEIGHT - 2
+        else:
+            x = -_tmap_common.TILESET_TILE_WIDTH * 2
+            y = -_tmap_common.TILESET_TILE_WIDTH * 2
+        self.__canvas.moveto(self.__ref_a_visual, x, y)
+
+    def __redraw_ref_b(self, ref:_ViewRefPnt):
+        if ref.visible:
+            x = ref.position.x * _tmap_common.TILESET_TILE_WIDTH - 3
+            y = ref.position.y * _tmap_common.TILESET_TILE_HEIGHT - 3
+        else:
+            x = -_tmap_common.TILESET_TILE_WIDTH
+            y = -_tmap_common.TILESET_TILE_HEIGHT
+        self.__canvas.moveto(self.__ref_b_visual, x, y)
+
+    def __redraw_ref_c(self, ref:_ViewRefArea):
+        if ref.visible:
+            x0 = ref.pnt0.x * _tmap_common.TILESET_TILE_WIDTH
+            y0 = ref.pnt0.y * _tmap_common.TILESET_TILE_HEIGHT
+            x1 = ref.pnt1.x * _tmap_common.TILESET_TILE_WIDTH - 1
+            y1 = ref.pnt1.y * _tmap_common.TILESET_TILE_HEIGHT - 1
+        else:
+            x0 = -2
+            y0 = -2
+            x1 = -1
+            y1 = -1
+        self.__canvas.coords(self.__ref_c_visual, x0, y0, x1, y1)
 
     #endregion
 
@@ -236,6 +308,8 @@ class _View(_ttk.Frame):
         """ Accessed by _ViewMap """
         self.__refresh_size()
         self.__refresh_tiles()
-        self.__set_cursor(None)
+        self.__ref_a._update_position()
+        self.__ref_b._update_position()
+        self.__ref_c._update_pnts()
     
     #endregion

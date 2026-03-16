@@ -31,7 +31,7 @@ class Window(_tk.Toplevel):
         self.title("Help")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        self.geometry('250x250')
+        self.geometry('250x300')
         self.grid_columnconfigure(1, weight = 1)
         # General
         start = _items(0,\
@@ -51,5 +51,13 @@ class Window(_tk.Toplevel):
             ( "Left Mouse", "Draw Tile"),\
             ( "Right Mouse", "Pick Tile"),\
             ( "Scroll", "Change Tile"),)
+        # Select mode
+        _label_select = _ttk.Label(\
+            master = self, justify = 'left', padding = (5, 5, 5, 0),\
+            text = "Select Mode:")
+        _label_select.grid(column = 0, row = start, sticky='w')
+        start = _items(start + 1,\
+            ( "Left Mouse", "Paste"),\
+            ( "Right Mouse", "Select Source Region"),)
 
     #endregion
