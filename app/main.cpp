@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "engine/scenes/__.h"
-#include "game/scns/sim/Scene.h"
+#include "game/scns/edit/Scene.h"
 
 int main(void)
 {
@@ -11,7 +11,7 @@ int main(void)
     {
         engine::scenes::initialize();
 
-        game::scns::sim::Scene* scene = new game::scns::sim::Scene();
+        game::scns::edit::Scene* scene = new game::scns::edit::Scene();
         scene->deleteOnExit(true);
         engine::scenes::gotoScene(scene);
 

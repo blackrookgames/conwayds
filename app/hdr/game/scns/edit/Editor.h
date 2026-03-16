@@ -2,41 +2,29 @@
 
 #include "engine/helper/_macros.h"
 
-#ifndef GAME_SCNS_SIM_SIMULATION_H
-#define GAME_SCNS_SIM_SIMULATION_H
+#ifndef GAME_SCNS_EDIT_EDITOR_H
+#define GAME_SCNS_EDIT_EDITOR_H
 
-namespace game::scns::sim
+namespace game::scns::edit
 {
-    /// @brief Represents a simulation
-    class Simulation
+    /// @brief Represents an editor
+    class Editor
     {
         #pragma region init
 
         public: 
 
-        /// @brief Constructor for Simulation
+        /// @brief Constructor for Editor
         /// @param layer Background hardware layer to initialize and use
         /// @param mapBase 2K offset (within VRAM) for tile map
         /// @param tileBase 16K offset (within VRAM) of tile graphics data
         /// @param priority Priority of background layer
-        Simulation(int layer, int mapBase, int tileBase, unsigned int priority);
+        Editor(int layer, int mapBase, int tileBase, unsigned int priority);
 
-        /// @brief Destructor for Simulation
-        virtual ~Simulation();
+        /// @brief Destructor for Editor
+        virtual ~Editor();
 
-        INIT_NODEFCOPYMOVE(Simulation)
-
-        #pragma endregion
-
-        #pragma region const
-
-        public:
-
-        /// @brief Minimum simulation speed (in generations per 4 seconds (roughly))
-        static constexpr u32 speed_Min = 1;
-
-        /// @brief Maximum simulation speed (in generations per 4 seconds (roughly))
-        static constexpr u32 speed_Max = 128;
+        INIT_NODEFCOPYMOVE(Editor)
 
         #pragma endregion
 
@@ -64,13 +52,6 @@ namespace game::scns::sim
         u8* f_Map_A;
         u8* f_Map_B;
         u8* f_Map_Ptr;
-
-        u32 f_Speed;
-        u32 f_Gen_Length;
-        u32 f_Gen_Progress;
-
-        u32 f_Sim_Live;
-        u32 f_Sim_Gen;
 
         #pragma endregion
 
@@ -115,17 +96,6 @@ namespace game::scns::sim
         /// @brief Maximum Y-coordinate of view
         s32 view_Max_Y() const;
 
-        /// @brief Simulation speed (in generations per 4 seconds (roughly))
-        u32 speed() const;
-        /// @brief Simulation speed (in generations per 4 seconds (roughly))
-        void speed(u32 value);
-
-        /// @brief Number of live cells
-        u32 sim_Live() const;
-
-        /// @brief Current generation
-        u32 sim_Gen() const;
-
         #pragma endregion
 
         #pragma region helper functions
@@ -144,10 +114,6 @@ namespace game::scns::sim
 
         /// @brief Marks the visuals as "dirty", forcing an update during the next vertical blanking
         void markDirty();
-
-        /// @brief Updates the simulation
-        /// @param delta Delta time (in ticks)
-        void update(u16 delta);
 
         /// @brief Call this during the vertical blanking
         void vblank();

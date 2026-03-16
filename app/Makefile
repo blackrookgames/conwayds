@@ -38,8 +38,15 @@ SCRNAMES += \
 	src/game/assets/Palette.cpp \
 	src/game/assets/SimScreen.cpp \
 	src/game/assets/SimScreenPause.cpp \
+	src/game/assets/SimScreenStart.cpp \
 	src/game/assets/SimTileset.cpp \
-	src/game/assets/TextTileset.cpp \
+	src/game/assets/TextTileset.cpp
+
+SCRNAMES += \
+	src/game/scns/edit/Editor.cpp \
+	src/game/scns/edit/Scene.cpp
+
+SCRNAMES += \
 	src/game/scns/sim/Scene.cpp \
 	src/game/scns/sim/Simulation.cpp
 

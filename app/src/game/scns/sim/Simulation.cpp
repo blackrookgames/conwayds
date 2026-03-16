@@ -32,48 +32,58 @@ using namespace game::scns::sim;
 
 #pragma region helper functions
 
-void map_InitEmpty(u8* output)
+namespace game::scns::sim
 {
-    u8* optr = output;
-    // Top
-    *(optr++) = 0x10;
-    for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x70;
-    *(optr++) = 0x20;
-    // Top
-    for (u16 y = 2; y < BG_TILE_ROWS; ++y)
+    void map_InitEmpty(u8* output)
     {
-        *(optr++) = 0x50;
-        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x00;
-        *(optr++) = 0x60;
-    }
-    // Bottom
-    *(optr++) = 0x30;
-    for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x80;
-    *(optr++) = 0x40;
-}
-
-void map_Load(const char* path, const u8* empty, u8* output)
-{
-    // Open pattern
-    engine::data::Pattern pattern;
-    pattern.load_file(path);
-    // Clear first row
-    std::copy(empty, empty + BG_TILE_COLS, output);
-    // Clear first column
-    engine::helper::ArrayUtil::copy(empty, empty + BG_TILE_COUNT, output, BG_TILE_COLS);
-    // Plot rows
-    u8* optr = output;
-    for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
-    {
-        for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
+        u8* optr = output;
+        // Top
+        *(optr++) = 0x10;
+        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x70;
+        *(optr++) = 0x20;
+        // Top
+        for (u16 y = 2; y < BG_TILE_ROWS; ++y)
         {
-            if (pattern.getcell(ix, iy)) *optr |= 0b1000;
-            if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
-            if (pattern.getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
-            optr[BG_TILE_COLS + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
-            ++optr;
+            *(optr++) = 0x50;
+            for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x00;
+            *(optr++) = 0x60;
         }
-        ++optr;
+        // Bottom
+        *(optr++) = 0x30;
+        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x80;
+        *(optr++) = 0x40;
+    }
+
+    void map_Load(const char* path, const u8* empty, u8* output)
+    {
+        // Open pattern
+        engine::data::Pattern pattern;
+        pattern.load_file(path);
+        // Clear first row
+        std::copy(empty, empty + BG_TILE_COLS, output);
+        // Clear first column
+        engine::helper::ArrayUtil::copy(empty, empty + BG_TILE_COUNT, output, BG_TILE_COLS);
+        // Plot rows
+        u8* optr = output;
+        const u8* eptr = empty;
+        for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
+        {
+            for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
+            {
+                // Top-left
+                if (pattern.getcell(ix, iy)) *optr |= 0b1000;
+                // Top-right
+                if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
+                // Bottom-left
+                if (pattern.getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
+                // Bottom-right
+                optr[BG_TILE_COLS + 1] = eptr[BG_TILE_COLS + 1];
+                if (pattern.getcell(ix + 1, iy + 1)) optr[BG_TILE_COLS + 1] |= 0b0001;
+                // Next
+                ++optr; ++eptr;
+            }
+            ++optr; ++eptr;
+        }
     }
 }
 

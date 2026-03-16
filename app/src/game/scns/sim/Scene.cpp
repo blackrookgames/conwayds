@@ -1,5 +1,3 @@
-#include "engine/data/RLE.h"
-#include "engine/helper/ArrayUtil.h"
 #include "game/scns/sim/Scene.h"
 
 #include <cstdio>
@@ -9,17 +7,23 @@
 
 #include <__.h>
 #include "engine/data/Pattern.h"
+#include "engine/data/RLE.h"
+#include "engine/helper/ArrayUtil.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimScreen.h"
 #include "game/assets/SimScreenPause.h"
+#include "game/assets/SimScreenStart.h"
 #include "game/assets/SimTileset.h"
 #include "game/assets/TextTileset.h"
+#include "game/scns/edit/Scene.h"
 
 using namespace game::scns::sim;
 
 #pragma region helper functions
 
-void loadScreenData(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
+namespace game::scns::sim
+{
+    void loadScreenData(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
 {
     static constexpr size_t offset = 1;
     // Extract
@@ -32,6 +36,7 @@ void loadScreenData(const u16* in_data, size_t in_len, u16*& out_data, size_t& o
     out_data = new u16[out_len];
     std::copy(temp_data + offset, temp_data + temp_len, out_data);
     delete[] temp_data;
+}
 }
 
 #pragma endregion
@@ -47,10 +52,7 @@ Scene::Scene()
     f_Simulation = nullptr;
 }
 
-Scene::~Scene()
-{
-    if (f_Simulation) delete[] f_Simulation;
-}
+Scene::~Scene() { }
 
 #pragma endregion
 
@@ -62,7 +64,7 @@ void Scene::m_enter()
     // Turn off screen
     DS_SCREEN_OFF
     // Initialize pause indicater
-    f_Paused = false;
+    f_Paused = true;
     // Initialize video
 	videoSetMode(MODE_2_2D);
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
@@ -78,7 +80,15 @@ void Scene::m_enter()
     // Initialize text graphics
     f_TextGFX = new engine::gfx::TextGFX(true, 0, 8, 0, 0);
     f_TextStream = new std::ostream(f_TextGFX);
-    std::copy(f_Screen_Main, f_Screen_Main + f_Screen_Main_Len, f_TextGFX->bg_Buffer());
+    {
+        u16* screen;
+        size_t screen_len;
+        loadScreenData(\
+            game::assets::SimScreenStart::data, game::assets::SimScreenStart::size,\
+            screen, screen_len);
+        std::copy(screen, screen + screen_len, f_TextGFX->bg_Buffer());
+        delete[] screen;
+    }
     // Initialize simulation
     f_Simulation = new Simulation(3, 9, 0, 2);
     // Initialize main palette
@@ -125,7 +135,8 @@ void Scene::m_update()
     // Scan input
     touchRead(&f_TouchPos);
     scanKeys();
-    if (keysDown() & KEY_START)
+    u32 inputDown = keysDown();
+    if (inputDown & KEY_START)
     {
         if (f_Paused)
         {
@@ -173,10 +184,22 @@ void Scene::m_update()
         {
             f_Simulation->view_Y(f_Simulation->view_Y() + inc);
         }
-        // Speed
-        static constexpr u32 speedStep = 8;
-        if (!f_Paused)
+        // Paused
+        if (f_Paused)
         {
+            // Stop
+            if (inputDown & KEY_SELECT)
+            {
+                game::scns::edit::Scene* scene = new game::scns::edit::Scene();
+                scene->deleteOnExit(true);
+                engine::scenes::gotoScene(scene);
+            }
+        }
+        // Unpaused
+        else
+        {
+            // Speed
+            static constexpr u32 speedStep = 8;
             if (keysDown() & KEY_X)
             {
                 f_Simulation->speed(f_Simulation->speed() + speedStep);
@@ -186,18 +209,15 @@ void Scene::m_update()
                 if (f_Simulation->speed() < speedStep) f_Simulation->speed(Simulation::speed_Min);
                 else f_Simulation->speed(f_Simulation->speed() - speedStep);
             }
-        }
-        // Touch
-        if (keysHeld() & KEY_TOUCH)
-        {
-            u32 touch_x = f_TouchPos.px;
-            u32 touch_y = f_TouchPos.py;
-            if (!f_Paused)
+            // Touch
+            if (keysHeld() & KEY_TOUCH)
             {
                 static constexpr u32 speed_x0 = (u32)game::assets::SimScreen::speed_x0 * 8;
                 static constexpr u32 speed_y0 = (u32)game::assets::SimScreen::speed_y0 * 8;
                 static constexpr u32 speed_x1 = (u32)game::assets::SimScreen::speed_x1 * 8;
                 static constexpr u32 speed_y1 = (u32)game::assets::SimScreen::speed_y1 * 8;
+                u32 touch_x = f_TouchPos.px;
+                u32 touch_y = f_TouchPos.py;
                 // Speed
                 if (touch_y >= speed_y0 && touch_y < speed_y1)
                 {
