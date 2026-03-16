@@ -495,9 +495,11 @@ class Window(_tk.Tk):
         # Paste tiles
         for _y in range(self.__select_size.y):
             for _x in range(self.__select_size.x):
-                _tile = self.__content.cells[self.__select_pos.x + _x, self.__select_pos.y + _y]
                 _out_x = self.__cursor.x + _x
                 _out_y = self.__cursor.y + _y
+                if _out_x >= self.__content.cells.width: continue
+                if _out_y >= self.__content.cells.height: continue
+                _tile = self.__content.cells[self.__select_pos.x + _x, self.__select_pos.y + _y]
                 self.__content.cells[_out_x, _out_y] = _tile
                 self.__view.map[_out_x, _out_y] = _tile
         # Mark dirty
