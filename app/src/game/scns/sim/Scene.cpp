@@ -58,7 +58,7 @@ void Scene::m_enter()
     }
     // Initialize simulation
     f_Simulation = new Simulation(3, 9, 0, 2);
-    f_RegLen = f_Simulation->cycle_Length();
+    f_RegSpeed = f_Simulation->speed();
     // Initialize main palette
     DC_FlushRange(assets::Palette::data, assets::Palette::size);
     dmaCopy(assets::Palette::data, BG_PALETTE, assets::Palette::size);
@@ -136,8 +136,8 @@ void Scene::m_update()
             f_Simulation->view_Y(f_Simulation->view_Y() + inc);
         }
         // Fast forward
-        if (keysCurrent() & KEY_X) f_Simulation->cycle_Length(1000);
-        else f_Simulation->cycle_Length(f_RegLen);
+        if (keysCurrent() & KEY_X) f_Simulation->speed(Simulation::speed_Max);
+        else f_Simulation->speed(f_RegSpeed);
     }
     // Update text
     f_TextGFX->setCursor(game::assets::SimScreen::gen_x, game::assets::SimScreen::gen_y);
@@ -149,8 +149,8 @@ void Scene::m_update()
     // Update speed bar
     {
         // Compute speed value
-        static constexpr u32 ilen = Simulation::cycle_Length_Max - Simulation::cycle_Length_Min;
-        u32 speed = ilen - (f_Simulation->cycle_Length() - Simulation::cycle_Length_Min);
+        static constexpr u32 ilen = Simulation::speed_Max - Simulation::speed_Min;
+        u32 speed = f_Simulation->speed() - Simulation::speed_Min;
         // Compute display value
         static constexpr u8 olen_raw = game::assets::SimScreen::speed_x1 - game::assets::SimScreen::speed_x0;
         static constexpr u32 olen = (u32)olen_raw * 8;

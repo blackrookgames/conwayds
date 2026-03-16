@@ -34,7 +34,7 @@ namespace game::scns::sim
         engine::gfx::TextGFX* f_TextGFX;
         std::ostream* f_TextStream;
         Simulation* f_Simulation;
-        u32 f_RegLen; // TODO: Remove
+        u32 f_RegSpeed; // TODO: Remove
 
         #pragma endregion
 

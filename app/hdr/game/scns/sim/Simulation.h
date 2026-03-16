@@ -32,11 +32,11 @@ namespace game::scns::sim
 
         public:
 
-        /// @brief Minimum length of the update cycle
-        static constexpr u32 cycle_Length_Min = 1000;
+        /// @brief Minimum simulation speed (in generations per 4 seconds (roughly))
+        static constexpr u32 speed_Min = 1;
 
-        /// @brief Maximum length of the update cycle
-        static constexpr u32 cycle_Length_Max = 50000;
+        /// @brief Maximum simulation speed (in generations per 4 seconds (roughly))
+        static constexpr u32 speed_Max = 128;
 
         #pragma endregion
 
@@ -65,8 +65,9 @@ namespace game::scns::sim
         u8* f_Map_B;
         u8* f_Map_Ptr;
 
-        u32 f_Cycle_Length;
-        u32 f_Cycle_Progress;
+        u32 f_Speed;
+        u32 f_Gen_Length;
+        u32 f_Gen_Progress;
 
         u32 f_Sim_Live;
         u32 f_Sim_Gen;
@@ -114,10 +115,10 @@ namespace game::scns::sim
         /// @brief Maximum Y-coordinate of view
         s32 view_Max_Y() const;
 
-        /// @brief Length of the update cycle
-        u32 cycle_Length() const;
-        /// @brief Length of the update cycle
-        void cycle_Length(u32 value);
+        /// @brief Simulation speed (in generations per 4 seconds (roughly))
+        u32 speed() const;
+        /// @brief Simulation speed (in generations per 4 seconds (roughly))
+        void speed(u32 value);
 
         /// @brief Number of live cells
         u32 sim_Live() const;

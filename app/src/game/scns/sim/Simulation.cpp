@@ -13,6 +13,8 @@ using namespace game::scns::sim;
 
 #pragma region macros
 
+#define ROUGHSECOND 32768
+
 #define BG_WIDTH 1024
 #define BG_HEIGHT 1024
 #define BG_TILE_COLS (BG_WIDTH / 8)
@@ -23,6 +25,8 @@ using namespace game::scns::sim;
 #define VIEW_W_MAX BG_WIDTH
 #define VIEW_ZOOM_MIN 0
 #define VIEW_ZOOM_MAX (VIEW_W_MAX - VIEW_W_MIN)
+
+#define GEN_LENGTH(speed) ((ROUGHSECOND * 4) / speed)
 
 #pragma endregion
 
@@ -99,8 +103,10 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     map_InitEmpty(f_Map_Empty);
     map_Load("nitro:/samples/sample0.bin", f_Map_Empty, f_Map_Ptr);
     // Cycle
-    f_Cycle_Length = 25500;
-    f_Cycle_Progress = 0;
+    f_Speed = 16;
+    f_Gen_Length = GEN_LENGTH(f_Speed);
+    NOCASHMESSAGE(f_Gen_Length)
+    f_Gen_Progress = 0;
     // Simulation details
     f_Sim_Live = 0;
     f_Sim_Gen = 0;
@@ -153,14 +159,17 @@ void Simulation::view_Y(s32 value)
     m_View_FixPosition();
 }
 
-u32 Simulation::cycle_Length() const { return f_Cycle_Length; }
-void Simulation::cycle_Length(u32 value)
+u32 Simulation::speed() const { return f_Speed; }
+void Simulation::speed(u32 value)
 {
-    if (value < cycle_Length_Min)
-        f_Cycle_Length = cycle_Length_Min;
-    else if (value > cycle_Length_Max)
-        f_Cycle_Length = cycle_Length_Max;
-    else f_Cycle_Length = value;
+    if (f_Speed == value) return;
+    if (value < speed_Min)
+        f_Speed = speed_Min;
+    else if (value > speed_Max)
+        f_Speed = speed_Max;
+    else f_Speed = value;
+    f_Gen_Length = GEN_LENGTH(f_Speed);
+    NOCASHMESSAGE(f_Gen_Length)
 }
 
 u32 Simulation::sim_Live() const { return f_Sim_Live; }
@@ -221,8 +230,8 @@ void Simulation::update(u16 delta)
 {
     if (delta > 0) // If zero, assume program is paused
     {
-        f_Cycle_Progress += delta;
-        if (f_Cycle_Progress >= f_Cycle_Length)
+        f_Gen_Progress += delta;
+        if (f_Gen_Progress >= f_Gen_Length)
         {
             // Next generation
             ++f_Sim_Gen;
@@ -316,7 +325,7 @@ void Simulation::update(u16 delta)
             // Mark as dirty
             f_IsDirty = true;
             // Wrap progress
-            f_Cycle_Progress = f_Cycle_Progress % f_Cycle_Length;
+            f_Gen_Progress = f_Gen_Progress % f_Gen_Length;
         }
     }
 }
