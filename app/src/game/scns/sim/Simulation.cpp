@@ -105,7 +105,6 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     // Cycle
     f_Speed = 16;
     f_Gen_Length = GEN_LENGTH(f_Speed);
-    NOCASHMESSAGE(f_Gen_Length)
     f_Gen_Progress = 0;
     // Simulation details
     f_Sim_Live = 0;
@@ -162,14 +161,12 @@ void Simulation::view_Y(s32 value)
 u32 Simulation::speed() const { return f_Speed; }
 void Simulation::speed(u32 value)
 {
-    if (f_Speed == value) return;
     if (value < speed_Min)
         f_Speed = speed_Min;
     else if (value > speed_Max)
         f_Speed = speed_Max;
     else f_Speed = value;
     f_Gen_Length = GEN_LENGTH(f_Speed);
-    NOCASHMESSAGE(f_Gen_Length)
 }
 
 u32 Simulation::sim_Live() const { return f_Sim_Live; }

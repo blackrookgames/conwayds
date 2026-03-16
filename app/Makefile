@@ -24,13 +24,24 @@ ELFPATH := $(BINDIR)/$(EXENAME).elf
 MAPPATH := $(BINDIR)/$(EXENAME).map
 LSTPATH := $(BINDIR)/$(EXENAME).lst
 
-SCRNAMES := main.cpp \
+SCRNAMES := main.cpp
+
+SCRNAMES += \
 	src/__.cpp \
-	src/engine/data/Pattern.cpp src/engine/data/Serial.cpp \
+	src/engine/data/Pattern.cpp\
+	src/engine/data/Serial.cpp \
 	src/engine/gfx/TextGFX.cpp \
-	src/engine/scenes/__.cpp src/engine/scenes/Scene.cpp \
-	src/game/assets/Palette.cpp src/game/assets/SimScreen.cpp src/game/assets/SimTileset.cpp src/game/assets/TextTileset.cpp \
-	src/game/scns/sim/Scene.cpp src/game/scns/sim/Simulation.cpp
+	src/engine/scenes/__.cpp \
+	src/engine/scenes/Scene.cpp
+
+SCRNAMES += \
+	src/game/assets/Palette.cpp \
+	src/game/assets/SimScreen.cpp \
+	src/game/assets/SimScreenPause.cpp \
+	src/game/assets/SimTileset.cpp \
+	src/game/assets/TextTileset.cpp \
+	src/game/scns/sim/Scene.cpp \
+	src/game/scns/sim/Simulation.cpp
 
 OBJPATHS := $(foreach path,$(SCRNAMES),$(OBJDIR)/$(path:.cpp=.o))
 

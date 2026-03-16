@@ -31,10 +31,15 @@ namespace game::scns::sim
 
         bool f_Paused;
 
+        u16* f_Screen_Main;
+        size_t f_Screen_Main_Len;
+        u16* f_Screen_Pause;
+        size_t f_Screen_Pause_Len;
+
         engine::gfx::TextGFX* f_TextGFX;
         std::ostream* f_TextStream;
         Simulation* f_Simulation;
-        u32 f_RegSpeed; // TODO: Remove
+        touchPosition f_TouchPos;
 
         #pragma endregion
 

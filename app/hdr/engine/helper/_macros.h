@@ -60,4 +60,29 @@
 
 #pragma endregion
 
+#pragma region MATH
+
+#define MATH_MIN(v0, v1) \
+    ((v0 < v1) ? (v0) : (v1))
+#define MATH_MAX(v0, v1) \
+    ((v0 > v1) ? (v0) : (v1))
+#define MATH_CLAMP(min, max, value) \
+    (MATH_MAX(min, MATH_MIN(max, value)))
+#define MATH_SCALE(in_scale, out_scale, value) \
+    (((value) * (out_scale)) / (in_scale))
+#define MATH_SCALE2(in_min, in_max, out_min, out_max, value) \
+    ((out_min) + MATH_SCALE((in_max) - (in_min), (out_max) - (out_min), (value) - (in_min)))
+
+#pragma endregion
+
+#pragma region DELETE
+
+#define DELETE_OBJECT(obj) \
+    if (obj) delete obj; obj = nullptr;
+    
+#define DELETE_ARRAY(array) \
+    if (array) delete[] array; array = nullptr;
+
+#pragma endregion
+
 #endif

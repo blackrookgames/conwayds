@@ -53,6 +53,11 @@ class qgd_tmap(cli.CLICommand):
         desc = "Path of tileset bitmap file (must be paletted)",\
         default = None)
 
+    __reload = cli.CLIOptionFlagDef(\
+        name = "reload",\
+        short = 'r',\
+        desc = "Force a reload, ignoring cached data")
+
     #endregion
 
     #region helper methods
@@ -70,12 +75,13 @@ class qgd_tmap(cli.CLICommand):
 
     def __load_tileset(self):
         self_tileset = cast(None | str, self.tileset) # type: ignore
+        self_reload = cast(bool, self.reload) # type: ignore
         _IMAGE_W = 2048
         _IMAGE_H = 2048
         _CACHE_PATH = CACHEDIR.joinpath("image.png")
         _CACHE_KEY = 'reference'
         # Is tileset source cached?
-        if _CACHE_PATH.exists():
+        if (not self_reload) and _CACHE_PATH.exists():
             # Open cached image
             cache_img = cliutil.CLIPILUtil.image_from_file(str(_CACHE_PATH))
             # Do the sources match?
