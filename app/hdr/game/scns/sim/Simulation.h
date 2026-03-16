@@ -28,6 +28,18 @@ namespace game::scns::sim
 
         #pragma endregion
 
+        #pragma region const
+
+        public:
+
+        /// @brief Minimum length of the update cycle
+        static constexpr u32 cycle_Length_Min = 1000;
+
+        /// @brief Maximum length of the update cycle
+        static constexpr u32 cycle_Length_Max = 50000;
+
+        #pragma endregion
+
         #pragma region fields
 
         private:
@@ -102,9 +114,9 @@ namespace game::scns::sim
         /// @brief Maximum Y-coordinate of view
         s32 view_Max_Y() const;
 
-        /// @brief Length of a single cycle
+        /// @brief Length of the update cycle
         u32 cycle_Length() const;
-        /// @brief Length of a single cycle
+        /// @brief Length of the update cycle
         void cycle_Length(u32 value);
 
         /// @brief Number of live cells

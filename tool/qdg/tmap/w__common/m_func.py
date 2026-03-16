@@ -7,9 +7,9 @@ import numpy as _np
 _TILE_MASK = 0b1111111111
 _TILE_SHIFT = 0
 _PALETTE_MASK = 0b1111
-_PALETTE_SHIFT = 10
+_PALETTE_SHIFT = 12
 _ORIENT_MASK = 0b11
-_ORIENT_SHIFT = 14
+_ORIENT_SHIFT = 10
 
 def finaltile_to(tile:int, palette:int, orientation:int):
     """

@@ -15,17 +15,14 @@ using namespace game::scns::sim;
 
 #define BG_WIDTH 1024
 #define BG_HEIGHT 1024
-#define BG_TILEW (BG_WIDTH / 8)
-#define BG_TILEH (BG_HEIGHT / 8)
-#define BG_TILEAREA (BG_TILEW * BG_TILEH)
+#define BG_TILE_COLS (BG_WIDTH / 8)
+#define BG_TILE_ROWS (BG_HEIGHT / 8)
+#define BG_TILE_COUNT (BG_TILE_COLS * BG_TILE_ROWS)
 
 #define VIEW_W_MIN 64
 #define VIEW_W_MAX BG_WIDTH
 #define VIEW_ZOOM_MIN 0
 #define VIEW_ZOOM_MAX (VIEW_W_MAX - VIEW_W_MIN)
-
-#define CYCLE_LENGTH_MIN 1000
-#define CYCLE_LENGTH_MAX 100000
 
 #pragma endregion
 
@@ -36,18 +33,18 @@ void map_InitEmpty(u8* output)
     u8* optr = output;
     // Top
     *(optr++) = 0x10;
-    for (u16 x = 2; x < BG_TILEW; ++x) *(optr++) = 0x70;
+    for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x70;
     *(optr++) = 0x20;
     // Top
-    for (u16 y = 2; y < BG_TILEH; ++y)
+    for (u16 y = 2; y < BG_TILE_ROWS; ++y)
     {
         *(optr++) = 0x50;
-        for (u16 x = 2; x < BG_TILEW; ++x) *(optr++) = 0x00;
+        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x00;
         *(optr++) = 0x60;
     }
     // Bottom
     *(optr++) = 0x30;
-    for (u16 x = 2; x < BG_TILEW; ++x) *(optr++) = 0x80;
+    for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x80;
     *(optr++) = 0x40;
 }
 
@@ -57,9 +54,9 @@ void map_Load(const char* path, const u8* empty, u8* output)
     engine::data::Pattern pattern;
     pattern.load_file(path);
     // Clear first row
-    std::copy(empty, empty + BG_TILEW, output);
+    std::copy(empty, empty + BG_TILE_COLS, output);
     // Clear first column
-    engine::helper::ArrayUtil::copy(empty, empty + BG_TILEAREA, output, BG_TILEW);
+    engine::helper::ArrayUtil::copy(empty, empty + BG_TILE_COUNT, output, BG_TILE_COLS);
     // Plot rows
     u8* optr = output;
     for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
@@ -68,8 +65,8 @@ void map_Load(const char* path, const u8* empty, u8* output)
         {
             if (pattern.getcell(ix, iy)) *optr |= 0b1000;
             if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
-            if (pattern.getcell(ix, iy + 1)) optr[BG_TILEW] |= 0b0010;
-            optr[BG_TILEW + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
+            if (pattern.getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
+            optr[BG_TILE_COLS + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
             ++optr;
         }
         ++optr;
@@ -95,14 +92,14 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     f_View_Y = BG_HEIGHT / 2;
     m_View_FixSize();
     // Map
-    f_Map_Empty = new u8[BG_TILEAREA];
-    f_Map_A = new u8[BG_TILEAREA];
-    f_Map_B = new u8[BG_TILEAREA];
+    f_Map_Empty = new u8[BG_TILE_COUNT];
+    f_Map_A = new u8[BG_TILE_COUNT];
+    f_Map_B = new u8[BG_TILE_COUNT];
     f_Map_Ptr = f_Map_A;
     map_InitEmpty(f_Map_Empty);
     map_Load("nitro:/samples/sample0.bin", f_Map_Empty, f_Map_Ptr);
     // Cycle
-    f_Cycle_Length = 5000;
+    f_Cycle_Length = 25500;
     f_Cycle_Progress = 0;
     // Simulation details
     f_Sim_Live = 0;
@@ -159,10 +156,10 @@ void Simulation::view_Y(s32 value)
 u32 Simulation::cycle_Length() const { return f_Cycle_Length; }
 void Simulation::cycle_Length(u32 value)
 {
-    if (value < CYCLE_LENGTH_MIN)
-        f_Cycle_Length = CYCLE_LENGTH_MIN;
-    else if (value > CYCLE_LENGTH_MAX)
-        f_Cycle_Length = CYCLE_LENGTH_MAX;
+    if (value < cycle_Length_Min)
+        f_Cycle_Length = cycle_Length_Min;
+    else if (value > cycle_Length_Max)
+        f_Cycle_Length = cycle_Length_Max;
     else f_Cycle_Length = value;
 }
 
@@ -235,21 +232,21 @@ void Simulation::update(u16 delta)
             u8* prev_ptr = f_Map_Ptr;
             f_Map_Ptr = (f_Map_Ptr == f_Map_A) ? f_Map_B : f_Map_A;
             // Clear first row
-            std::copy(f_Map_Empty, f_Map_Empty + BG_TILEW, f_Map_Ptr);
+            std::copy(f_Map_Empty, f_Map_Empty + BG_TILE_COLS, f_Map_Ptr);
             // Clear first column
-            engine::helper::ArrayUtil::copy(f_Map_Empty, f_Map_Empty + BG_TILEAREA, f_Map_Ptr, BG_TILEW);
+            engine::helper::ArrayUtil::copy(f_Map_Empty, f_Map_Empty + BG_TILE_COUNT, f_Map_Ptr, BG_TILE_COLS);
             // Plot rows
             const u8* iptr = prev_ptr;
             const u8* eptr = f_Map_Empty;
             u8* optr = f_Map_Ptr;
-            for (u16 y = 1; y < BG_TILEH; ++y)
+            for (u16 y = 1; y < BG_TILE_ROWS; ++y)
             {
-                for (u16 x = 1; x < BG_TILEW; ++x)
+                for (u16 x = 1; x < BG_TILE_COLS; ++x)
                 {
                     u8 tl = *iptr & 0x0F;
                     u8 tr = iptr[1] & 0x0F;
-                    u8 bl = iptr[BG_TILEW] & 0x0F;
-                    u8 br = iptr[BG_TILEW + 1] & 0x0F;
+                    u8 bl = iptr[BG_TILE_COLS] & 0x0F;
+                    u8 br = iptr[BG_TILE_COLS + 1] & 0x0F;
                     ++iptr;
                     if (tl != 0 || tr != 0 || bl != 0 || br != 0)
                     {
@@ -281,8 +278,8 @@ void Simulation::update(u16 delta)
                         if (x0y2) ++neighbors; if (x1y2) ++neighbors; if (x2y2) ++neighbors; if (x2y1) ++neighbors;
                         if (x1y1) live = (neighbors >= 2 && neighbors <= 3); else live = neighbors == 3;
                         if (live) { *optr |= 0b1000; ++f_Sim_Live; }
-                        eptr += BG_TILEW;
-                        optr += BG_TILEW;
+                        eptr += BG_TILE_COLS;
+                        optr += BG_TILE_COLS;
                         // Set BL
                         neighbors = 0;
                         if (x0y1) ++neighbors; if (x1y1) ++neighbors; if (x2y1) ++neighbors; if (x0y2) ++neighbors;
@@ -299,8 +296,8 @@ void Simulation::update(u16 delta)
                         *optr = *eptr;
                         if (live) { *optr |= 0b0001; ++f_Sim_Live; }
                         *optr = *eptr | (live ? 0b0001 : 0b0000);
-                        eptr -= BG_TILEW;
-                        optr -= BG_TILEW;
+                        eptr -= BG_TILE_COLS;
+                        optr -= BG_TILE_COLS;
                         // Set TR
                         neighbors = 0;
                         if (x1y0) ++neighbors; if (x2y0) ++neighbors; if (x3y0) ++neighbors; if (x1y1) ++neighbors;
@@ -310,7 +307,7 @@ void Simulation::update(u16 delta)
                     }
                     else
                     {
-                        optr[BG_TILEW + 1] = eptr[BG_TILEW + 1];
+                        optr[BG_TILE_COLS + 1] = eptr[BG_TILE_COLS + 1];
                         ++eptr; ++optr;
                     }
                 }
@@ -330,8 +327,8 @@ void Simulation::vblank()
     if (!f_IsDirty) return;
     f_IsDirty = false;
     // Update background
-    DC_FlushRange(f_Map_Ptr, BG_TILEAREA);
-    dmaCopy(f_Map_Ptr, f_BG_Map, BG_TILEAREA);
+    DC_FlushRange(f_Map_Ptr, BG_TILE_COUNT);
+    dmaCopy(f_Map_Ptr, f_BG_Map, BG_TILE_COUNT);
 }
 
 #pragma endregion

@@ -5,6 +5,8 @@
 
 #include "engine/helper/_macros.h"
 
+#include "./TextFlags.h"
+
 #ifndef ENGINE_GFX_TEXTGFX_H
 #define ENGINE_GFX_TEXTGFX_H
 
@@ -41,11 +43,13 @@ namespace engine::gfx
         int f_BG;
         u16* f_BG_GFX;
         u16* f_BG_Map;
-        u8* f_BG_Buffer_Beg;
-        u8* f_BG_Buffer_End;
-        u8* f_BG_Buffer_Ptr;
+        u16* f_BG_Buffer_Beg;
+        u16* f_BG_Buffer_End;
+        u16* f_BG_Buffer_Ptr;
 
         char* f_Stream_Base;
+
+        TextFlags f_Flags;
 
         #pragma endregion
 
@@ -64,9 +68,14 @@ namespace engine::gfx
         u16* bg_Map();
 
         /// @brief Background buffer
-        u8* bg_Buffer() const;
+        u16* bg_Buffer() const;
         /// @brief Background buffer
-        u8* bg_Buffer();
+        u16* bg_Buffer();
+
+        /// @brief Flags for printing text
+        TextFlags flags() const;
+        /// @brief Flags for printing text
+        void flags(TextFlags value);
 
         #pragma endregion
         

@@ -23,6 +23,15 @@
 @line         
 @line         static const size_t size;
 @line         static const u16 data[];
+@line         
+@line         static constexpr u8 gen_x = 14;
+@line         static constexpr u8 gen_y = 2;
+@line         static constexpr u8 live_x = 14;
+@line         static constexpr u8 live_y = 4;
+@line         static constexpr u8 speed_x0 = 1;
+@line         static constexpr u8 speed_y0 = 8;
+@line         static constexpr u8 speed_x1 = 31;
+@line         static constexpr u8 speed_y1 = 10;
 @line     };
 @line }
 @line 

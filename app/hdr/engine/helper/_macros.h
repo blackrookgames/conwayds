@@ -42,4 +42,22 @@
 
 #pragma endregion
 
+#pragma region ENUMFLAGS
+
+#define ENUMFLAGS_OP1(type, under, op) \
+    inline type operator op(type v) \
+    { return static_cast<type>(op static_cast<under>(v)); }
+
+#define ENUMFLAGS_OP2(type, under, op) \
+    inline type operator op(type v0, type v1) \
+    { return static_cast<type>(static_cast<under>(v0) op static_cast<under>(v1)); }
+
+#define ENUMFLAGS_OPS(type, under) \
+    ENUMFLAGS_OP2(type, under, |) \
+    ENUMFLAGS_OP2(type, under, &) \
+    ENUMFLAGS_OP2(type, under, ^) \
+    ENUMFLAGS_OP1(type, under, ~)
+
+#pragma endregion
+
 #endif

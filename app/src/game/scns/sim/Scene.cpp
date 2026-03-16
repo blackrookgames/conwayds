@@ -14,8 +14,6 @@
 #include "game/assets/SimTileset.h"
 #include "game/assets/TextTileset.h"
 
-#include <sstream>
-
 using namespace game::scns::sim;
 
 #pragma region init
@@ -23,21 +21,6 @@ using namespace game::scns::sim;
 Scene::Scene()
 {
     f_Simulation = nullptr;
-
-    u16* test_data;
-    size_t test_len;
-    engine::data::RLE::extract(
-        game::assets::SimScreen::data, game::assets::SimScreen::size,
-        test_data, test_len);
-    NOCASHMESSAGE(test_len)
-    for (size_t i = 1; i < test_len; i += 32)
-    {
-        std::ostringstream test;
-        for (size_t j = 0; j < 32; ++j)
-            test << test_data[i + j] << ' ';
-        test << std::endl;
-        nocashMessage(test);
-    }
 }
 
 Scene::~Scene()
@@ -65,13 +48,13 @@ void Scene::m_enter()
     f_TextGFX = new engine::gfx::TextGFX(true, 0, 8, 0, 0);
     f_TextStream = new std::ostream(f_TextGFX);
     {
-        f_TextGFX->clear();
-        f_TextGFX->setCursor(1, 1);
-        *f_TextStream << "Live:";
-        f_TextStream->flush();
-        f_TextGFX->setCursor(1, 3);
-        *f_TextStream << "Gen:";
-        f_TextStream->flush();
+        u16* map_data;
+        size_t map_len;
+        engine::data::RLE::extract(
+            game::assets::SimScreen::data, game::assets::SimScreen::size,
+            map_data, map_len);
+        std::copy(map_data + 1, map_data + map_len, f_TextGFX->bg_Buffer());
+        delete[] map_data;
     }
     // Initialize simulation
     f_Simulation = new Simulation(3, 9, 0, 2);
@@ -157,12 +140,38 @@ void Scene::m_update()
         else f_Simulation->cycle_Length(f_RegLen);
     }
     // Update text
-    f_TextGFX->setCursor(10, 1);
-    *f_TextStream << std::left << std::setw(12) << f_Simulation->sim_Live();
-    f_TextStream->flush();
-    f_TextGFX->setCursor(10, 3);
+    f_TextGFX->setCursor(game::assets::SimScreen::gen_x, game::assets::SimScreen::gen_y);
     *f_TextStream << std::left << std::setw(12) << f_Simulation->sim_Gen();
     f_TextStream->flush();
+    f_TextGFX->setCursor(game::assets::SimScreen::live_x, game::assets::SimScreen::live_y);
+    *f_TextStream << std::left << std::setw(12) << f_Simulation->sim_Live();
+    f_TextStream->flush();
+    // Update speed bar
+    {
+        // Compute speed value
+        static constexpr u32 ilen = Simulation::cycle_Length_Max - Simulation::cycle_Length_Min;
+        u32 speed = ilen - (f_Simulation->cycle_Length() - Simulation::cycle_Length_Min);
+        // Compute display value
+        static constexpr u8 olen_raw = game::assets::SimScreen::speed_x1 - game::assets::SimScreen::speed_x0;
+        static constexpr u32 olen = (u32)olen_raw * 8;
+        u32 value = (speed * olen) / ilen;
+        u32 value_lo = value % 8;
+        u32 value_hi = value / 8;
+        // Draw value
+        u16* optr0 = f_TextGFX->bg_Buffer() + game::assets::SimScreen::speed_x0 + game::assets::SimScreen::speed_y0 * 32;
+        u16* optr1 = optr0 + 32;
+        for (u8 i = 0; i < olen_raw; ++i)
+        {
+            // Draw tile
+            if (i < value_hi) *optr0 = 0x88;
+            else if (i > value_hi) *optr0 = 0x80;
+            else *optr0 = 0x80 + value_lo;
+            *optr1 = *optr0;
+            // Next
+            ++optr0;
+            ++optr1;
+        }
+    }
     // VBlank
     swiWaitForVBlank();
     f_Simulation->vblank();
