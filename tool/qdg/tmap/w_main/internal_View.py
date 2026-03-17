@@ -86,6 +86,15 @@ class _View(_ttk.Frame):
         self._map_defined = True
         # tiles
         self.__tiles:dict[_qdg_helper.IXY, int] = {}
+        # grid
+        self.__grid:list[int] = []
+        for _x in range(0, 512, _tmap_common.TILESET_TILE_WIDTH):
+            self.__grid.append(self.__canvas.create_line(\
+                _x, 0, _x, 512, fill = "gray"))
+        for _y in range(0, 512, _tmap_common.TILESET_TILE_HEIGHT):
+            self.__grid.append(self.__canvas.create_line(\
+                0, _y, 512, _y, fill = "gray"))
+        self.__showgrid = True
         # ref_a
         self.__ref_a_visual = self.__canvas.create_rectangle(\
             -1, -1, _tmap_common.TILESET_TILE_WIDTH, _tmap_common.TILESET_TILE_HEIGHT,\
@@ -130,6 +139,20 @@ class _View(_ttk.Frame):
     def map(self):
         """ Tilemap """
         return self.__map
+
+    @property
+    def showgrid(self):
+        """ Whether or not to display the grid"""
+        return self.__showgrid
+    @showgrid.setter
+    def showgrid(self, value:bool):
+        if self.__showgrid == value: return
+        # Set value
+        self.__showgrid = value
+        # Update
+        state = 'normal' if self.__showgrid else 'hidden'
+        for _line in self.__grid:
+            self.__canvas.itemconfigure(_line, state = state)
 
     @property
     def ref_a(self):
@@ -222,7 +245,7 @@ class _View(_ttk.Frame):
             x * _tmap_common.TILESET_TILE_WIDTH, y * _tmap_common.TILESET_TILE_HEIGHT,\
             anchor = 'nw',\
             image = self.__tilecache[index].image)
-        self.__canvas.tag_lower(_image, self.__ref_a_visual)
+        self.__canvas.tag_lower(_image, self.__grid[0])
         self.__tiles[_qdg_helper.IXY(x = x, y = y)] = _image
 
     def __tile_dec(self, x:int, y:int, index:_np.uint16):

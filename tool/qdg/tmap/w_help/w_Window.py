@@ -31,7 +31,7 @@ class Window(_tk.Toplevel):
         self.title("Help")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        self.geometry('250x300')
+        self.geometry('250x350')
         self.grid_columnconfigure(1, weight = 1)
         # General
         start = _items(0,\
@@ -41,6 +41,7 @@ class Window(_tk.Toplevel):
             ( "F4", "Change Orientation"),\
             ( "F5", "Set Size"),\
             ( "F6", "Select Tile"),\
+            ( "F9", "Toggle Grid"),\
             ( "Ctrl+S", "Save"),)
         # Draw mode
         _label_draw = _ttk.Label(\

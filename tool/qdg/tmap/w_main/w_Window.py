@@ -82,6 +82,7 @@ class Window(_tk.Tk):
         self.__select_pasting = False
         self.__select_pos = _qdg_helper.IXY_ZERO
         self.__select_size = _qdg_helper.IXY_ZERO
+        self.__select_tiles = _np.empty((0, 0), dtype = _np.uint16)
         # cursor
         self.__cursor = _qdg_helper.IXY_ZERO
         # tile/palette/orientation
@@ -125,6 +126,7 @@ class Window(_tk.Tk):
         self.bind('<F4>', self.__r_input_orientation)
         self.bind('<F5>', self.__r_input_size)
         self.bind('<F6>', self.__r_input_tileset)
+        self.bind('<F9>', self.__r_input_grid)
         self.bind('<Control-s>', self.__r_input_save)
         self.bind('<Left>', self.__r_input_left)
         self.bind('<Right>', self.__r_input_right)
@@ -216,6 +218,12 @@ class Window(_tk.Tk):
                     x = max(self.__view.ref_c.pnt0.x, self.__view.ref_c.pnt1.x),\
                     y = max(self.__view.ref_c.pnt0.y, self.__view.ref_c.pnt1.y))\
                     - self.__select_pos
+                self.__select_tiles = _np.empty((self.__select_size.x, self.__select_size.y), dtype = _np.uint16)
+                for _y in range(self.__select_size.y):
+                    for _x in range(self.__select_size.x):
+                        _xx = self.__select_pos.x + _x
+                        _yy = self.__select_pos.y + _y
+                        self.__select_tiles[_x, _y] = self.__content.cells[_xx, _yy]
                 self.__view.ref_c.pnt0 = self.__cursor
                 self.__view.ref_c.pnt1 = self.__cursor + self.__select_size
                 # Allow pasting
@@ -350,6 +358,9 @@ class Window(_tk.Tk):
         self.__set_tile(tile)
         self.__set_palette(palette)
         self.__set_orientation(orientation)
+
+    def __r_input_grid(self, event = None):
+        self.__view.showgrid = not self.__view.showgrid
 
     def __r_input_save(self, event = None):
         # Save
@@ -499,7 +510,7 @@ class Window(_tk.Tk):
                 _out_y = self.__cursor.y + _y
                 if _out_x >= self.__content.cells.width: continue
                 if _out_y >= self.__content.cells.height: continue
-                _tile = self.__content.cells[self.__select_pos.x + _x, self.__select_pos.y + _y]
+                _tile = self.__select_tiles[_x, _y]
                 self.__content.cells[_out_x, _out_y] = _tile
                 self.__view.map[_out_x, _out_y] = _tile
         # Mark dirty
