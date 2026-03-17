@@ -9,10 +9,10 @@
 #include "engine/data/Pattern.h"
 #include "engine/data/RLE.h"
 #include "engine/helper/ArrayUtil.h"
+#include "game/assets/EditTileset.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimScreen.h"
 #include "game/assets/SimScreenPause.h"
-#include "game/assets/SimTileset.h"
 #include "game/assets/TextTileset.h"
 
 #include "game/scns/sim/Scene.h"
@@ -93,8 +93,8 @@ void Scene::m_enter()
     dmaCopy(assets::Palette::data, BG_PALETTE_SUB, assets::Palette::size);
     *BG_PALETTE_SUB = 0;
     // Initialize sub tileset
-	DC_FlushRange(assets::SimTileset::data, assets::SimTileset::size);
-    dmaCopy(assets::SimTileset::data, f_Editor->bg_GFX(), assets::SimTileset::size);
+	DC_FlushRange(assets::EditTileset::data, assets::EditTileset::size);
+    dmaCopy(assets::EditTileset::data, f_Editor->bg_GFX(), assets::EditTileset::size);
     // Start timer
     timerStart(0, ClockDivider_1024, 0, nullptr);
     // Turn on screen
