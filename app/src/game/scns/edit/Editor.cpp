@@ -4,8 +4,8 @@
 #include <cstring>
 
 #include <__.h>
-#include "engine/data/Pattern.h"
 #include "engine/helper/ArrayUtil.h"
+#include "game/Global.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
 
@@ -21,64 +21,19 @@ using namespace game::scns::edit;
 #define BG_TILE_ROWS (BG_HEIGHT / 8)
 #define BG_TILE_COUNT (BG_TILE_COLS * BG_TILE_ROWS)
 
+#define SAND_TILE_COLS (PATTERN_WIDTH / 2)
+#define SAND_TILE_ROWS (PATTERN_HEIGHT / 2)
+#define SAND_TILE_COUNT (SAND_TILE_COLS * SAND_TILE_ROWS)
+#define SAND_WIDTH (SAND_TILE_COLS * 8)
+#define SAND_HEIGHT (SAND_TILE_ROWS * 8)
+
 #define VIEW_W_MIN 64
-#define VIEW_W_MAX BG_WIDTH
+#define VIEW_W_MAX SAND_WIDTH
 #define VIEW_ZOOM_MIN 0
 #define VIEW_ZOOM_MAX (VIEW_W_MAX - VIEW_W_MIN)
+#define VIEW_ZOOM_GRID 832
 
 #define GEN_LENGTH(speed) ((ROUGHSECOND * 4) / speed)
-
-#pragma endregion
-
-#pragma region helper functions
-
-namespace game::scns::edit
-{
-    void map_InitEmpty(u8* output)
-    {
-        u8* optr = output;
-        // Top
-        *(optr++) = 0x10;
-        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x70;
-        *(optr++) = 0x20;
-        // Top
-        for (u16 y = 2; y < BG_TILE_ROWS; ++y)
-        {
-            *(optr++) = 0x50;
-            for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x00;
-            *(optr++) = 0x60;
-        }
-        // Bottom
-        *(optr++) = 0x30;
-        for (u16 x = 2; x < BG_TILE_COLS; ++x) *(optr++) = 0x80;
-        *(optr++) = 0x40;
-    }
-
-    void map_Load(const char* path, const u8* empty, u8* output)
-    {
-        // Open pattern
-        engine::data::Pattern pattern;
-        pattern.load_file(path);
-        // Clear first row
-        std::copy(empty, empty + BG_TILE_COLS, output);
-        // Clear first column
-        engine::helper::ArrayUtil::copy(empty, empty + BG_TILE_COUNT, output, BG_TILE_COLS);
-        // Plot rows
-        u8* optr = output;
-        for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
-        {
-            for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
-            {
-                if (pattern.getcell(ix, iy)) *optr |= 0b1000;
-                if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
-                if (pattern.getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
-                optr[BG_TILE_COLS + 1] = pattern.getcell(ix + 1, iy + 1) ? 0b0001 : 0b0000;
-                ++optr;
-            }
-            ++optr;
-        }
-    }
-}
 
 #pragma endregion
 
@@ -92,27 +47,30 @@ Editor::Editor(int layer, int mapBase, int tileBase, unsigned int priority)
     f_BG = bgInitSub(layer, BgType_Rotation, BgSize_R_1024x1024, mapBase, tileBase);
 	f_BG_GFX = bgGetGfxPtr(f_BG);
     f_BG_Map = bgGetMapPtr(f_BG);
+    f_BG_Buffer_A = new u8[BG_TILE_COUNT];
+    f_BG_Buffer_B = new u8[BG_TILE_COUNT];
+    f_BG_Buffer_Ptr = f_BG_Buffer_A;
     bgSetPriority(f_BG, priority);
     // View
     f_View_Zoom = 896;
-    f_View_X = BG_WIDTH / 2;
-    f_View_Y = BG_HEIGHT / 2;
-    m_View_FixSize();
-    // Map
-    f_Map_Empty = new u8[BG_TILE_COUNT];
-    f_Map_A = new u8[BG_TILE_COUNT];
-    f_Map_B = new u8[BG_TILE_COUNT];
-    f_Map_Ptr = f_Map_A;
-    map_InitEmpty(f_Map_Empty);
-    map_Load("nitro:/samples/sample0.bin", f_Map_Empty, f_Map_Ptr);
+    f_View_X = SAND_WIDTH / 2;
+    f_View_Y = SAND_HEIGHT / 2;
+    // Pattern
+    game::Global::pattern_To(f_Pattern);
+    f_Pattern.load_file("nitro:/samples/sample0.bin"); // TODO: Remove
+    // Grid
+    f_Grid = true;
+    // Post-init
+    m_Refresh_View();
+    m_Refresh_Buffer_Ptr();
+    m_Redraw_Buffer();
 }
 
 Editor::~Editor()
 {
-    // Map
-    delete[] f_Map_B;
-    delete[] f_Map_A;
-    delete[] f_Map_Empty;
+    // Buffer
+    delete[] f_BG_Buffer_B;
+    delete[] f_BG_Buffer_A;
 }
 
 #pragma endregion
@@ -128,8 +86,9 @@ u16* Editor::bg_Map() { return f_BG_Map; }
 s32 Editor::view_Zoom() const { return f_View_Zoom; }
 void Editor::view_Zoom(s32 value)
 {
+    if (f_View_Zoom == value) return;
     f_View_Zoom = value;
-    m_View_FixSize();
+    m_Refresh_View();
 }
 
 s32 Editor::view_W() const { return f_View_W; }
@@ -143,56 +102,91 @@ s32 Editor::view_Max_Y() const { return f_View_Max_Y; }
 s32 Editor::view_X() const  { return f_View_X; }
 void Editor::view_X(s32 value)
 {
+    if (f_View_X == value) return;
     f_View_X = value;
-    m_View_FixPosition();
+    m_Refresh_View();
 }
 
 s32 Editor::view_Y() const { return f_View_Y; }
 void Editor::view_Y(s32 value)
 {
+    if (f_View_Y == value) return;
     f_View_Y = value;
-    m_View_FixPosition();
+    m_Refresh_View();
+}
+
+bool Editor::grid() const { return f_Grid; }
+void Editor::grid(bool value)
+{
+    if (f_Grid == value) return;
+    f_Grid = value;
+    m_Refresh_Buffer_Ptr();
 }
 
 #pragma endregion
 
 #pragma region helper functions
 
-void Editor::m_View_FixSize()
+void Editor::m_Refresh_View()
 {
     // Clamp zoom value
-    if (f_View_Zoom < VIEW_ZOOM_MIN)
-        f_View_Zoom = VIEW_ZOOM_MIN;
-    if (f_View_Zoom > VIEW_ZOOM_MAX)
-        f_View_Zoom = VIEW_ZOOM_MAX;
+    if (f_View_Zoom < VIEW_ZOOM_MIN) f_View_Zoom = VIEW_ZOOM_MIN;
+    if (f_View_Zoom > VIEW_ZOOM_MAX) f_View_Zoom = VIEW_ZOOM_MAX;
     // Compute size
-    f_View_W = BG_WIDTH - f_View_Zoom;
+    f_View_W = SAND_WIDTH - f_View_Zoom;
     f_View_H = (f_View_W * DS_SCREEN_HEIGHT + DS_SCREEN_WIDTH - 1) / DS_SCREEN_WIDTH;
     // Compute min/max
     f_View_Min_X = f_View_W / 2;
     f_View_Min_Y = f_View_H / 2;
-    f_View_Max_X = BG_WIDTH - f_View_Min_X;
-    f_View_Max_Y = BG_HEIGHT - f_View_Min_Y;
+    f_View_Max_X = SAND_WIDTH - f_View_Min_X;
+    f_View_Max_Y = SAND_HEIGHT - f_View_Min_Y;
     // Update background
     bgSetScale(f_BG, f_View_W, f_View_W); // f_View_W is the scale for both axes
-    // Fix position
-    m_View_FixPosition();
-}
-
-void Editor::m_View_FixPosition()
-{
     // Clamp X
-    if (f_View_X < f_View_Min_X)
-        f_View_X = f_View_Min_X;
-    if (f_View_X > f_View_Max_X)
-        f_View_X = f_View_Max_X;
+    if (f_View_X < f_View_Min_X) f_View_X = f_View_Min_X;
+    if (f_View_X > f_View_Max_X) f_View_X = f_View_Max_X;
     // Clamp Y
-    if (f_View_Y < f_View_Min_Y)
-        f_View_Y = f_View_Min_Y;
-    if (f_View_Y > f_View_Max_Y)
-        f_View_Y = f_View_Max_Y;
+    if (f_View_Y < f_View_Min_Y) f_View_Y = f_View_Min_Y;
+    if (f_View_Y > f_View_Max_Y) f_View_Y = f_View_Max_Y;
     // Update background
     bgSetScroll(f_BG, f_View_X - f_View_W / 2, f_View_Y - f_View_H / 2);
+    // Update map pointer
+    m_Refresh_Buffer_Ptr();
+}
+
+void Editor::m_Refresh_Buffer_Ptr()
+{
+    u8* prev = f_BG_Buffer_Ptr;
+    f_BG_Buffer_Ptr = (f_Grid && f_View_Zoom < VIEW_ZOOM_GRID) ? f_BG_Buffer_A : f_BG_Buffer_B;
+    if (f_BG_Buffer_Ptr != prev) markDirty();
+}
+
+void Editor::m_Redraw_Buffer()
+{
+    // Clear
+    std::fill(f_BG_Buffer_A, f_BG_Buffer_A + BG_TILE_COUNT, 0x00);
+    std::fill(f_BG_Buffer_B, f_BG_Buffer_B + BG_TILE_COUNT, 0x10);
+    // Plot rows
+    bool* iptr = f_Pattern.cells();
+    u8* optr0 = f_BG_Buffer_A;
+    u8* optr1 = f_BG_Buffer_B;
+    for (u16 iy = 0; iy < PATTERN_HEIGHT; iy += 2)
+    {
+        for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
+        {
+            if (*iptr) *optr0 |= 0b0001;
+            if (iptr[1]) *optr0 |= 0b0010;
+            if (iptr[PATTERN_WIDTH]) *optr0 |= 0b0100;
+            if (iptr[PATTERN_WIDTH + 1]) *optr0 |= 0b1000;
+            *optr1 |= *optr0;
+            iptr += 2; ++optr0; ++optr1;
+        }
+        iptr += PATTERN_WIDTH;
+        optr0 += (BG_TILE_COLS - SAND_TILE_COLS);
+        optr1 += (BG_TILE_COLS - SAND_TILE_COLS);
+    }
+    // Mark dirty
+    markDirty();
 }
 
 #pragma endregion
@@ -210,8 +204,13 @@ void Editor::vblank()
     if (!f_IsDirty) return;
     f_IsDirty = false;
     // Update background
-    DC_FlushRange(f_Map_Ptr, BG_TILE_COUNT);
-    dmaCopy(f_Map_Ptr, f_BG_Map, BG_TILE_COUNT);
+    DC_FlushRange(f_BG_Buffer_Ptr, BG_TILE_COUNT);
+    dmaCopy(f_BG_Buffer_Ptr, f_BG_Map, BG_TILE_COUNT);
+}
+
+void Editor::savePattern()
+{
+    Global::pattern_From(f_Pattern);
 }
 
 #pragma endregion

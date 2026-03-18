@@ -1,5 +1,6 @@
 #include <nds.h>
 
+#include "engine/data/Pattern.h"
 #include "engine/helper/_macros.h"
 
 #ifndef GAME_SCNS_EDIT_EDITOR_H
@@ -37,6 +38,9 @@ namespace game::scns::edit
         int f_BG;
         u16* f_BG_GFX;
         u16* f_BG_Map;
+        u8* f_BG_Buffer_A;
+        u8* f_BG_Buffer_B;
+        u8* f_BG_Buffer_Ptr;
 
         s32 f_View_Zoom;
         s32 f_View_X;
@@ -48,10 +52,9 @@ namespace game::scns::edit
         s32 f_View_Max_X;
         s32 f_View_Max_Y;
 
-        u8* f_Map_Empty;
-        u8* f_Map_A;
-        u8* f_Map_B;
-        u8* f_Map_Ptr;
+        engine::data::Pattern f_Pattern;
+
+        bool f_Grid;
 
         #pragma endregion
 
@@ -96,15 +99,22 @@ namespace game::scns::edit
         /// @brief Maximum Y-coordinate of view
         s32 view_Max_Y() const;
 
+        /// @brief Whether or not the grid is enabled
+        bool grid() const;
+        /// @brief Whether or not the grid is enabled
+        void grid(bool value);
+
         #pragma endregion
 
         #pragma region helper functions
 
         private:
 
-        void m_View_FixSize();
-        
-        void m_View_FixPosition();
+        void m_Refresh_View();
+
+        void m_Refresh_Buffer_Ptr();
+
+        void m_Redraw_Buffer();
 
         #pragma endregion
 
@@ -117,6 +127,9 @@ namespace game::scns::edit
 
         /// @brief Call this during the vertical blanking
         void vblank();
+
+        /// @brief Saves the current pattern
+        void savePattern();
 
         #pragma endregion
     };

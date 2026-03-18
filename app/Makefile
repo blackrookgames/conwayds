@@ -44,6 +44,9 @@ SCRNAMES += \
 	src/game/assets/TextTileset.cpp
 
 SCRNAMES += \
+	src/game/Global.cpp
+
+SCRNAMES += \
 	src/game/scns/edit/Editor.cpp \
 	src/game/scns/edit/Scene.cpp
 

@@ -6,6 +6,7 @@
 #include <__.h>
 #include "engine/data/Pattern.h"
 #include "engine/helper/ArrayUtil.h"
+#include "game/Global.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
 
@@ -54,11 +55,8 @@ namespace game::scns::sim
         *(optr++) = 0x40;
     }
 
-    void map_Load(const char* path, const u8* empty, u8* output)
+    void map_Load(const u8* empty, u8* output)
     {
-        // Open pattern
-        engine::data::Pattern pattern;
-        pattern.load_file(path);
         // Clear first row
         std::copy(empty, empty + BG_TILE_COLS, output);
         // Clear first column
@@ -71,14 +69,14 @@ namespace game::scns::sim
             for (u16 ix = 0; ix < PATTERN_WIDTH; ix += 2)
             {
                 // Top-left
-                if (pattern.getcell(ix, iy)) *optr |= 0b1000;
+                if (game::Global::pattern()->getcell(ix, iy)) *optr |= 0b1000;
                 // Top-right
-                if (pattern.getcell(ix + 1, iy)) optr[1] |= 0b0100;
+                if (game::Global::pattern()->getcell(ix + 1, iy)) optr[1] |= 0b0100;
                 // Bottom-left
-                if (pattern.getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
+                if (game::Global::pattern()->getcell(ix, iy + 1)) optr[BG_TILE_COLS] |= 0b0010;
                 // Bottom-right
                 optr[BG_TILE_COLS + 1] = eptr[BG_TILE_COLS + 1];
-                if (pattern.getcell(ix + 1, iy + 1)) optr[BG_TILE_COLS + 1] |= 0b0001;
+                if (game::Global::pattern()->getcell(ix + 1, iy + 1)) optr[BG_TILE_COLS + 1] |= 0b0001;
                 // Next
                 ++optr; ++eptr;
             }
@@ -111,7 +109,7 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     f_Map_B = new u8[BG_TILE_COUNT];
     f_Map_Ptr = f_Map_A;
     map_InitEmpty(f_Map_Empty);
-    map_Load("nitro:/samples/sample0.bin", f_Map_Empty, f_Map_Ptr);
+    map_Load(f_Map_Empty, f_Map_Ptr);
     // Cycle
     f_Speed = 16;
     f_Gen_Length = GEN_LENGTH(f_Speed);

@@ -125,6 +125,9 @@ void Scene::m_update()
     scanKeys();
     if (keysDown() & KEY_START)
     {
+        // Save pattern
+        f_Editor->savePattern();
+        // Goto simulation scene
         game::scns::sim::Scene* scene = new game::scns::sim::Scene();
         scene->deleteOnExit(true);
         engine::scenes::gotoScene(scene);
