@@ -18,6 +18,7 @@
 #include "game/scns/edit/Scene.h"
 
 using namespace game::scns::sim;
+namespace ass = game::assets;
 
 #pragma region helper functions
 
@@ -72,10 +73,10 @@ void Scene::m_enter()
     vramSetBankC(VRAM_C_SUB_BG_0x06200000);
     // Initialize screen data
     loadScreenData(\
-        game::assets::SimScreen::data, game::assets::SimScreen::size,\
+        ass::SimScreen::data, ass::SimScreen::size,\
         f_Screen_Main, f_Screen_Main_Len);
     loadScreenData(\
-        game::assets::SimScreenPause::data, game::assets::SimScreenPause::size,\
+        ass::SimScreenPause::data, ass::SimScreenPause::size,\
         f_Screen_Pause, f_Screen_Pause_Len);
     // Initialize text graphics
     f_TextGFX = new engine::gfx::TextGFX(true, 0, 8, 0, 0);
@@ -84,7 +85,7 @@ void Scene::m_enter()
         u16* screen;
         size_t screen_len;
         loadScreenData(\
-            game::assets::SimScreenStart::data, game::assets::SimScreenStart::size,\
+            ass::SimScreenStart::data, ass::SimScreenStart::size,\
             screen, screen_len);
         std::copy(screen, screen + screen_len, f_TextGFX->bg_Buffer());
         delete[] screen;
@@ -212,10 +213,10 @@ void Scene::m_update()
             // Touch
             if (keysHeld() & KEY_TOUCH)
             {
-                static constexpr u32 speed_x0 = (u32)game::assets::SimScreen::speed_x0 * 8;
-                static constexpr u32 speed_y0 = (u32)game::assets::SimScreen::speed_y0 * 8;
-                static constexpr u32 speed_x1 = (u32)game::assets::SimScreen::speed_x1 * 8;
-                static constexpr u32 speed_y1 = (u32)game::assets::SimScreen::speed_y1 * 8;
+                static constexpr u32 speed_x0 = (u32)ass::SimScreen::speed_x0 * 8;
+                static constexpr u32 speed_y0 = (u32)ass::SimScreen::speed_y0 * 8;
+                static constexpr u32 speed_x1 = (u32)ass::SimScreen::speed_x1 * 8;
+                static constexpr u32 speed_y1 = (u32)ass::SimScreen::speed_y1 * 8;
                 u32 touch_x = f_TouchPos.px;
                 u32 touch_y = f_TouchPos.py;
                 // Speed
@@ -231,11 +232,11 @@ void Scene::m_update()
     if (!f_Paused)
     {
         // Update text
-        f_TextGFX->setCursor(game::assets::SimScreen::gen_x, game::assets::SimScreen::gen_y);
-        *f_TextStream << std::left << std::setw(12) << f_Simulation->sim_Gen();
+        f_TextGFX->setCursor(ass::SimScreen::gen_x, ass::SimScreen::gen_y);
+        *f_TextStream << STREAM_ALIGN_L(12) << f_Simulation->sim_Gen();
         f_TextStream->flush();
-        f_TextGFX->setCursor(game::assets::SimScreen::live_x, game::assets::SimScreen::live_y);
-        *f_TextStream << std::left << std::setw(12) << f_Simulation->sim_Live();
+        f_TextGFX->setCursor(ass::SimScreen::live_x, ass::SimScreen::live_y);
+        *f_TextStream << STREAM_ALIGN_L(12) << f_Simulation->sim_Live();
         f_TextStream->flush();
         // Update speed bar
         {
@@ -243,13 +244,13 @@ void Scene::m_update()
             static constexpr u32 ilen = Simulation::speed_Max - Simulation::speed_Min;
             u32 speed = f_Simulation->speed() - Simulation::speed_Min;
             // Compute display value
-            static constexpr u8 olen_raw = game::assets::SimScreen::speed_x1 - game::assets::SimScreen::speed_x0;
+            static constexpr u8 olen_raw = ass::SimScreen::speed_x1 - ass::SimScreen::speed_x0;
             static constexpr u32 olen = (u32)olen_raw * 8;
             u32 value = (speed * olen) / ilen;
             u32 value_lo = value % 8;
             u32 value_hi = value / 8;
             // Draw value
-            u16* optr0 = f_TextGFX->bg_Buffer() + game::assets::SimScreen::speed_x0 + game::assets::SimScreen::speed_y0 * 32;
+            u16* optr0 = f_TextGFX->bg_Buffer() + ass::SimScreen::speed_x0 + ass::SimScreen::speed_y0 * 32;
             u16* optr1 = optr0 + 32;
             for (u8 i = 0; i < olen_raw; ++i)
             {

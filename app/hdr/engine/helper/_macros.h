@@ -75,6 +75,16 @@
 
 #pragma endregion
 
+#pragma region STREAM
+
+#define STREAM_STRING(variable, content) \
+    std::ostringstream variable; variable << content;
+
+#define STREAM_ALIGN_L(width) \
+    std::left << std::setw(width)
+
+#pragma endregion
+
 #pragma region DELETE
 
 #define DELETE_OBJECT(obj) \

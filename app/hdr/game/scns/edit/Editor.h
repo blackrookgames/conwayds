@@ -47,6 +47,10 @@ namespace game::scns::edit
         s32 f_View_Y;
         s32 f_View_W;
         s32 f_View_H;
+        s32 f_View_X1;
+        s32 f_View_Y1;
+        s32 f_View_X2;
+        s32 f_View_Y2;
         s32 f_View_Min_X;
         s32 f_View_Min_Y;
         s32 f_View_Max_X;
@@ -55,6 +59,8 @@ namespace game::scns::edit
         engine::data::Pattern f_Pattern;
 
         bool f_Grid;
+
+        u32 f_NumLive;
 
         #pragma endregion
 
@@ -93,6 +99,18 @@ namespace game::scns::edit
         /// @brief View height
         s32 view_H() const;
 
+        /// @brief X-coordinate of top-left corner of view
+        s32 view_X1() const;
+        
+        /// @brief Y-coordinate of top-left corner of view
+        s32 view_Y1() const;
+
+        /// @brief X-coordinate of bottom-right corner of view
+        s32 view_X2() const;
+        
+        /// @brief Y-coordinate of bottom-right corner of view
+        s32 view_Y2() const;
+
         /// @brief Maximum X-coordinate of view
         s32 view_Max_X() const;
 
@@ -104,6 +122,9 @@ namespace game::scns::edit
         /// @brief Whether or not the grid is enabled
         void grid(bool value);
 
+        /// @brief Number of live cells
+        u32 numLive() const;
+
         #pragma endregion
 
         #pragma region helper functions
@@ -114,7 +135,9 @@ namespace game::scns::edit
 
         void m_Refresh_Buffer_Ptr();
 
-        void m_Redraw_Buffer();
+        void m_Force_NumLive();
+
+        void m_Force_Buffer();
 
         #pragma endregion
 
@@ -130,6 +153,18 @@ namespace game::scns::edit
 
         /// @brief Saves the current pattern
         void savePattern();
+
+        /// @brief Gets the cell at the specified coordinates
+        /// @param x X-coordinate
+        /// @param y Y-coordinate
+        /// @return Cell at the specified coordinates
+        bool getcell(u16 x, u16 y) const;
+
+        /// @brief Sets the cell at the specified coordinates
+        /// @param x X-coordinate
+        /// @param y Y-coordinate
+        /// @param live Whether or not the cell is alive
+        void setcell(u16 x, u16 y, bool live);
 
         #pragma endregion
     };

@@ -57,13 +57,13 @@ Editor::Editor(int layer, int mapBase, int tileBase, unsigned int priority)
     f_View_Y = SAND_HEIGHT / 2;
     // Pattern
     game::Global::pattern_To(f_Pattern);
-    f_Pattern.load_file("nitro:/samples/sample0.bin"); // TODO: Remove
     // Grid
     f_Grid = true;
     // Post-init
     m_Refresh_View();
     m_Refresh_Buffer_Ptr();
-    m_Redraw_Buffer();
+    m_Force_NumLive();
+    m_Force_Buffer();
 }
 
 Editor::~Editor()
@@ -95,6 +95,14 @@ s32 Editor::view_W() const { return f_View_W; }
 
 s32 Editor::view_H() const { return f_View_H; }
 
+s32 Editor::view_X1() const { return f_View_X1; }
+
+s32 Editor::view_Y1() const { return f_View_Y1; }
+
+s32 Editor::view_X2() const { return f_View_X2; }
+
+s32 Editor::view_Y2() const { return f_View_Y2; }
+
 s32 Editor::view_Max_X() const { return f_View_Max_X; }
 
 s32 Editor::view_Max_Y() const { return f_View_Max_Y; }
@@ -123,6 +131,8 @@ void Editor::grid(bool value)
     m_Refresh_Buffer_Ptr();
 }
 
+u32 Editor::numLive() const { return f_NumLive; }
+
 #pragma endregion
 
 #pragma region helper functions
@@ -148,8 +158,13 @@ void Editor::m_Refresh_View()
     // Clamp Y
     if (f_View_Y < f_View_Min_Y) f_View_Y = f_View_Min_Y;
     if (f_View_Y > f_View_Max_Y) f_View_Y = f_View_Max_Y;
+    // Compute positions
+    f_View_X1 = f_View_X - f_View_W / 2;
+    f_View_Y1 = f_View_Y - f_View_H / 2;
+    f_View_X2 = f_View_X1 + f_View_W;
+    f_View_Y2 = f_View_Y1 + f_View_H;
     // Update background
-    bgSetScroll(f_BG, f_View_X - f_View_W / 2, f_View_Y - f_View_H / 2);
+    bgSetScroll(f_BG, f_View_X1, f_View_Y1);
     // Update map pointer
     m_Refresh_Buffer_Ptr();
 }
@@ -161,7 +176,15 @@ void Editor::m_Refresh_Buffer_Ptr()
     if (f_BG_Buffer_Ptr != prev) markDirty();
 }
 
-void Editor::m_Redraw_Buffer()
+void Editor::m_Force_NumLive()
+{
+    f_NumLive = 0;
+    const bool* ptr = f_Pattern.cells();
+    const bool* end = ptr + PATTERN_AREA;
+    while (ptr < end) { if (*(ptr++)) ++f_NumLive; }
+}
+
+void Editor::m_Force_Buffer()
 {
     // Clear
     std::fill(f_BG_Buffer_A, f_BG_Buffer_A + BG_TILE_COUNT, 0x00);
@@ -211,6 +234,31 @@ void Editor::vblank()
 void Editor::savePattern()
 {
     Global::pattern_From(f_Pattern);
+}
+
+bool Editor::getcell(u16 x, u16 y) const
+{
+    return f_Pattern.getcell(x, y);
+}
+
+void Editor::setcell(u16 x, u16 y, bool live)
+{
+    if (x >= PATTERN_WIDTH || y >= PATTERN_HEIGHT) return;
+    // Update pattern
+    bool prev = f_Pattern.getcell(x, y);
+    f_Pattern.setcell(x, y, live);
+    // Update buffer
+    size_t index = (x / 2) + (y / 2) * BG_TILE_COLS;
+    u8 mask = 1 << ((x % 2) + (y % 2) * 2);
+    u8* ptrA = f_BG_Buffer_A + index;
+    u8* ptrB = f_BG_Buffer_B + index;
+    if (!live) { *ptrA ^= 0xFF; *ptrB ^= 0xFF; }
+    *ptrA |= mask; *ptrB |= mask;
+    if (!live) { *ptrA ^= 0xFF; *ptrB ^= 0xFF; }
+    // Update number of live cells
+    if (live != prev) { if (live) ++f_NumLive; else --f_NumLive; }
+    // Mark dirty
+    markDirty();
 }
 
 #pragma endregion

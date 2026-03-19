@@ -35,6 +35,7 @@ SCRNAMES += \
 	src/engine/scenes/Scene.cpp
 
 SCRNAMES += \
+	src/game/assets/EditScreen.cpp \
 	src/game/assets/EditTileset.cpp \
 	src/game/assets/Palette.cpp \
 	src/game/assets/SimScreen.cpp \

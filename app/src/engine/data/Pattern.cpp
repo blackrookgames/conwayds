@@ -9,8 +9,8 @@ using namespace engine::data;
 
 #pragma region macros
 
-#define INDEX(x, y) (x + y * PATTERN_WIDTH)
-#define OUTOFRANGE(x, y) ((x >= PATTERN_WIDTH) || (y >= PATTERN_HEIGHT))
+#define INDEX(x, y) ((x) + (y) * PATTERN_WIDTH)
+#define OUTOFRANGE(x, y) ((x) >= PATTERN_WIDTH || (y) >= PATTERN_HEIGHT)
 
 #pragma endregion
 
