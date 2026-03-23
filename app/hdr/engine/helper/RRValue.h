@@ -175,7 +175,7 @@ namespace engine::helper
         /// @brief Equality
         /// @param other Other value
         /// @return this == other
-        bool equ(const RRValue32& other) const
+        bool equ(const RRValue& other) const
         {
             return f_Raw == other.f_Raw;
         }
