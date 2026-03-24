@@ -29,6 +29,30 @@ namespace engine::view
 
         #pragma endregion
 
+        #pragma region helper const
+
+        private:
+
+        static const engine::helper::RRValue32 f_2;
+
+        static const engine::helper::RRValue32 f_Zoom_Min;
+        static const engine::helper::RRValue32 f_Zoom_Max;
+        static const engine::helper::RRValue32 f_DS_Width;
+        static const engine::helper::RRValue32 f_DS_Height;
+        
+        #pragma endregion
+
+        #pragma region const
+
+        public:
+
+        /// @brief Horizontal span at 100%
+        static const engine::helper::RRValue32 hSpan_100;
+        /// @brief Zoom value of 100%
+        static const engine::helper::RRValue32 zoom_100;
+        
+        #pragma endregion
+
         #pragma region fields
 
         private:
@@ -43,7 +67,13 @@ namespace engine::view
         engine::helper::RRValue32 f_Cam_Y;
         engine::helper::RRValue32 f_Cam_Zoom;
 
-        engine::helper::RRValue32 f_Cam_Size;
+        engine::helper::RRValue32 f_Cam_HSpan;
+        engine::helper::RRValue32 f_Cam_VSpan;
+
+        engine::helper::RRValue32 f_Cam_X0;
+        engine::helper::RRValue32 f_Cam_Y0;
+        engine::helper::RRValue32 f_Cam_X1;
+        engine::helper::RRValue32 f_Cam_Y1;
         
         #pragma endregion
 
@@ -61,18 +91,40 @@ namespace engine::view
         /// @brief Camera Y-coordinate
         void cam_Y(engine::helper::RRValue32 value);
         
-        /// @brief Camera zoom percentage (x256)
+        /// @brief Camera zoom percentage
         engine::helper::RRValue32 cam_Zoom() const;
-        /// @brief Camera zoom percentage (x256)
+        /// @brief Camera zoom percentage
         void cam_Zoom(engine::helper::RRValue32 value);
-        
+
+        /// @brief Camera horizontal span
+        engine::helper::RRValue32 cam_HSpan() const;
+
+        /// @brief Camera vertical span
+        engine::helper::RRValue32 cam_VSpan() const;
+
+        /// @brief X-coordinate of top-left edge of a camera
+        engine::helper::RRValue32 cam_X0() const;
+
+        /// @brief Y-coordinate of top-left edge of a camera
+        engine::helper::RRValue32 cam_Y0() const;
+
+        /// @brief X-coordinate of bottom-right edge of a camera
+        engine::helper::RRValue32 cam_X1() const;
+
+        /// @brief Y-coordinate of bottom-right edge of a camera
+        engine::helper::RRValue32 cam_Y1() const;
+
         #pragma endregion
 
         #pragma region helper functions
 
         private:
 
+        void m_Refresh();
+
         void m_Refresh_Size();
+
+        void m_Refresh_Position();
         
         #pragma endregion
 

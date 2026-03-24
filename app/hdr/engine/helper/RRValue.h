@@ -1,4 +1,5 @@
 #include <nds.h>
+#include <string.h>
 
 #include <__.h>
 
@@ -13,12 +14,21 @@ namespace engine::helper
     template<typename TRaw, typename TBig>
     class RRValue
     {
-        static constexpr u8 totalSize = sizeof(TRaw) * 8;
-        static constexpr u8 fracSize = totalSize / 4;
-        static constexpr u8 wholeSize = totalSize - fracSize;
-        static constexpr TRaw fractMask = ((TRaw)1 << fracSize) - 1;
-        static constexpr size_t wholeBufLen = (wholeSize < 1) ? 1 : wholeSize;
-        static constexpr size_t fractBufLen = (fracSize < 1) ? 1 : fracSize;
+        #pragma region const
+
+        private:
+
+        static constexpr u8 f_TotalSize = sizeof(TRaw) * 8;
+        static constexpr u8 f_FracSize = f_TotalSize / 4;
+        static constexpr u8 f_WholeSize = f_TotalSize - f_FracSize;
+        static constexpr TRaw f_FractVals = (TRaw)1 << f_FracSize;
+        static constexpr TRaw f_FractMask = f_FractVals - 1;
+        static constexpr TRaw f_FractMask_Inv = ~f_FractMask;
+        static constexpr size_t f_WholeBufLen = (f_WholeSize < 1) ? 1 : f_WholeSize;
+        static constexpr size_t f_FractBufLen = (f_FracSize < 1) ? 1 : f_FracSize;
+        static constexpr TRaw f_FractHalf = f_FractVals / 2;
+
+        #pragma endregion
 
         #pragma region init
 
@@ -34,7 +44,7 @@ namespace engine::helper
         /// @brief Constructor for RRValue
         /// @param whole Whole part
         /// @param fract Fractional part
-        RRValue(TRaw whole, TRaw fract) { f_Raw = (whole << fracSize) | fract; }
+        RRValue(TRaw whole, TRaw fract) { f_Raw = (whole << f_FracSize) | fract; }
 
         /// @brief Copy constructor for RRValue
         /// @param src Source
@@ -70,8 +80,8 @@ namespace engine::helper
         public:
 
         /// @brief Creates a string representation of the value
-        /// @return Null-terminated string (can be deleted with delete[])
-        char* toStr() const
+        /// @return Created string
+        std::string toStr() const
         {
             char* iptr;
             char* optr;
@@ -79,10 +89,10 @@ namespace engine::helper
             bool isneg = f_Raw < 0;
             TRaw abs = isneg ? (-f_Raw) : f_Raw;
             // Whole number
-            TRaw whole = abs >> fracSize;
+            TRaw whole = abs >> f_FracSize;
             u8 whole_Len = 0;
-            char whole_Chars[wholeBufLen];
-            optr = whole_Chars + wholeBufLen;
+            char whole_Chars[f_WholeBufLen];
+            optr = whole_Chars + f_WholeBufLen;
             while (true)
             {
                 *(--optr) = 0x30 + (char)(whole % 10);
@@ -91,26 +101,26 @@ namespace engine::helper
                 if (whole == 0) break;
             }
             // Fractional number
-            TRaw fract = abs & fractMask;
+            TRaw fract = abs & f_FractMask;
             u8 fract_Len = 0;
-            char fract_Chars[fractBufLen];
+            char fract_Chars[f_FractBufLen];
             optr = fract_Chars;
-            while (fract_Len < fractBufLen)
+            while (fract_Len < f_FractBufLen)
             {
                 fract *= 10;
-                *(optr++) = 0x30 + (char)(fract >> fracSize);
+                *(optr++) = 0x30 + (char)(fract >> f_FracSize);
                 ++fract_Len;
-                fract &= fractMask;
+                fract &= f_FractMask;
                 if (fract == 0) break;
             }
             // Create final string
-            char* str = new char[(isneg ? 1 : 0) + whole_Len + 1 + fract_Len + 1];
+            char cstr[(isneg ? 1 : 0) + whole_Len + 1 + fract_Len + 1];
             {
-                optr = str;
+                optr = cstr;
                 // Negative
                 if (isneg) *(optr++) = '-';
                 // Whole
-                iptr = whole_Chars + wholeBufLen - whole_Len;
+                iptr = whole_Chars + f_WholeBufLen - whole_Len;
                 for (u8 i = 0; i < whole_Len; ++i) *(optr++) = *(iptr++);
                 // Period
                 *(optr++) = '.';
@@ -120,7 +130,8 @@ namespace engine::helper
                 // Null
                 *optr = 0;
             }
-            return str;
+            // Success!!!
+            return std::string(cstr);
         }
 
         /// @brief Addition
@@ -147,7 +158,7 @@ namespace engine::helper
             // Cast
             TBig v0 = f_Raw; TBig v1 = other.f_Raw;
             // Operate
-            TBig ans = (v0 * v1) >> fracSize;
+            TBig ans = (v0 * v1) >> f_FracSize;
             // Create final
             return RRValue((TRaw)ans);
         }
@@ -160,7 +171,7 @@ namespace engine::helper
             // Cast
             TBig v0 = f_Raw; TBig v1 = other.f_Raw;
             // Operate
-            TBig ans = ((v0 << fracSize) / v1);
+            TBig ans = ((v0 << f_FracSize) / v1);
             // Create final
             return RRValue((TRaw)ans);
         }
@@ -180,6 +191,46 @@ namespace engine::helper
             return f_Raw == other.f_Raw;
         }
 
+        /// @brief Inequality
+        /// @param other Other value
+        /// @return this != other
+        bool neq(const RRValue& other) const
+        {
+            return f_Raw != other.f_Raw;
+        }
+
+        /// @brief Greater than
+        /// @param other Other value
+        /// @return this > other
+        bool gt(const RRValue& other) const
+        {
+            return f_Raw > other.f_Raw;
+        }
+
+        /// @brief Greater than or equal to
+        /// @param other Other value
+        /// @return this >= other
+        bool ge(const RRValue& other) const
+        {
+            return f_Raw >= other.f_Raw;
+        }
+
+        /// @brief Less than
+        /// @param other Other value
+        /// @return this < other
+        bool lt(const RRValue& other) const
+        {
+            return f_Raw < other.f_Raw;
+        }
+
+        /// @brief Less than or equal to
+        /// @param other Other value
+        /// @return this <= other
+        bool le(const RRValue& other) const
+        {
+            return f_Raw <= other.f_Raw;
+        }
+
         /// @brief Copy assignment for RRValue
         /// @param src Source
         RRValue& copyass(const RRValue &src)
@@ -195,6 +246,38 @@ namespace engine::helper
             if (&src != this) f_Raw = src.f_Raw;
             return *this;
         }
+
+        /// @brief Returns the whole part of the value
+        /// @return Whole part of the value
+        TRaw get_Whole() const { return f_Raw >> f_FracSize; }
+        
+        /// @brief Returns the fractional part of the value
+        /// @return Fractional part of the value
+        TRaw get_Fract() const { return f_Raw & f_FractMask; }
+
+        /// @brief Rounds down to the nearest whole number
+        /// @return Nearest whole number that's <= this
+        RRValue floorNearest() const { return RRValue(f_Raw & f_FractMask_Inv); }
+
+        /// @brief Rounds up to the nearest whole number
+        /// @return Nearest whole number that's >= this
+        RRValue ceilNearest() const { return RRValue((f_Raw + f_FractMask) & f_FractMask_Inv); }
+
+        /// @brief Rounds to the nearest whole number
+        /// @return Nearest whole number
+        RRValue roundNearest() const { return RRValue((f_Raw + f_FractHalf) & f_FractMask_Inv); }
+
+        /// @brief Rounds down to the nearest whole number
+        /// @return Nearest whole number that's <= this
+        TRaw floorToWhole() const { return f_Raw >> f_FracSize; }
+
+        /// @brief Rounds up to the nearest whole number
+        /// @return Nearest whole number that's >= this
+        TRaw ceilToWhole() const { return (f_Raw + f_FractMask) >> f_FracSize; }
+
+        /// @brief Rounds to the nearest whole number
+        /// @return Nearest whole number
+        TRaw roundToWhole() const { return (f_Raw + f_FractHalf) >> f_FracSize; }
 
         #pragma endregion
     };

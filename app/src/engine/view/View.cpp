@@ -1,18 +1,27 @@
 #include "engine/view/View.h"
 
+#include <__.h>
+
 using namespace engine::view;
+
+#pragma region macros
+
+#define ZOOM_100 256
+
+#pragma endregion
 
 #pragma region init
 
 View::View(int bg, engine::helper::RRValue32 bg_X, engine::helper::RRValue32 bg_Y)
 {
-    f_IsDirty = false;
+    f_IsDirty = true;
     f_BG = bg;
     f_BG_X = bg_X;
     f_BG_Y = bg_Y;
-    f_Cam_X = 0;
-    f_Cam_Y = 0;
-    f_Cam_Zoom = 100 << 8;
+    f_Cam_X = engine::helper::RRValue32(0);
+    f_Cam_Y = engine::helper::RRValue32(0);
+    f_Cam_Zoom = engine::helper::RRValue32(100, 0);
+    m_Refresh();
 }
 
 View::~View()
@@ -22,14 +31,33 @@ View::~View()
 
 #pragma endregion
 
+#pragma region const
+
+const engine::helper::RRValue32 View::f_2 = engine::helper::RRValue32(2, 0);
+
+const engine::helper::RRValue32 View::f_Zoom_Min = engine::helper::RRValue32(1, 0);
+const engine::helper::RRValue32 View::f_Zoom_Max = engine::helper::RRValue32(400, 0);
+const engine::helper::RRValue32 View::f_DS_Width = engine::helper::RRValue32(256, 0);
+const engine::helper::RRValue32 View::f_DS_Height = engine::helper::RRValue32(192, 0);
+
+#pragma endregion
+
+#pragma region const
+
+const engine::helper::RRValue32 View::hSpan_100 = engine::helper::RRValue32(256, 0);
+const engine::helper::RRValue32 View::zoom_100 = engine::helper::RRValue32(100, 0);
+
+#pragma endregion
+
 #pragma region properties
 
 engine::helper::RRValue32 View::cam_X() const { return f_Cam_X; }
 void View::cam_X(engine::helper::RRValue32 value)
 {
-    if (f_Cam_X.equ(value)) return;
+    if (f_Cam_X == value) return;
     // Set X-coordinate
     f_Cam_X = value;
+    m_Refresh_Position();
     // Mark dirty
     f_IsDirty = true;
     // TODO: Notify
@@ -38,9 +66,10 @@ void View::cam_X(engine::helper::RRValue32 value)
 engine::helper::RRValue32 View::cam_Y() const { return f_Cam_Y; }
 void View::cam_Y(engine::helper::RRValue32 value)
 {
-    if (f_Cam_Y.equ(value)) return;
+    if (f_Cam_Y == value) return;
     // Set Y-coordinate
     f_Cam_Y = value;
+    m_Refresh_Position();
     // Mark dirty
     f_IsDirty = true;
     // TODO: Notify
@@ -49,7 +78,7 @@ void View::cam_Y(engine::helper::RRValue32 value)
 engine::helper::RRValue32 View::cam_Zoom() const { return f_Cam_Zoom; }
 void View::cam_Zoom(engine::helper::RRValue32 value)
 {
-    if (f_Cam_Zoom.equ(value)) return;
+    if (f_Cam_Zoom == value) return;
     // Set Zoom
     f_Cam_Zoom = value;
     m_Refresh_Size();
@@ -58,13 +87,45 @@ void View::cam_Zoom(engine::helper::RRValue32 value)
     // TODO: Notify
 }
 
+engine::helper::RRValue32 View::cam_HSpan() const { return f_Cam_HSpan; }
+
+engine::helper::RRValue32 View::cam_VSpan() const { return f_Cam_VSpan; }
+
+engine::helper::RRValue32 View::cam_X0() const { return f_Cam_X0; }
+
+engine::helper::RRValue32 View::cam_Y0() const { return f_Cam_Y0; }
+
+engine::helper::RRValue32 View::cam_X1() const { return f_Cam_X1; }
+
+engine::helper::RRValue32 View::cam_Y1() const { return f_Cam_Y1; }
+
 #pragma endregion
 
 #pragma region helper functions
 
+void View::m_Refresh()
+{
+    m_Refresh_Size();
+}
+
 void View::m_Refresh_Size()
 {
-    // f_Cam_Size = 
+    // Compute span
+    engine::helper::RRValue32 finalZoom = MATH_CLAMP(f_Zoom_Min, f_Zoom_Max, f_Cam_Zoom);
+    f_Cam_HSpan = (hSpan_100 * zoom_100) / finalZoom;
+    f_Cam_VSpan = MATH_SCALE(f_DS_Width, f_DS_Height, f_Cam_HSpan);
+    // Refresh position
+    m_Refresh_Position();
+}
+
+void View::m_Refresh_Position()
+{
+    // Compute edges
+    f_Cam_X0 = f_Cam_X - f_Cam_HSpan / f_2;
+    f_Cam_Y0 = f_Cam_Y - f_Cam_VSpan / f_2;
+    f_Cam_X1 = f_Cam_X0 + f_Cam_HSpan;
+    f_Cam_Y1 = f_Cam_Y0 + f_Cam_VSpan;
+    NOCASHMESSAGE(f_Cam_X0 << " " << f_Cam_Y0 << " " << f_Cam_X1 << " " << f_Cam_Y1)
 }
 
 #pragma endregion
@@ -76,8 +137,11 @@ void View::vblank()
     if (!f_IsDirty) return;
     f_IsDirty = false;
     // Update background
-    // bgScalef()
-    // bgScrollf()
+    s32 bg_Scale = f_Cam_HSpan.roundToWhole();
+    s32 bg_Scroll_X = (f_Cam_X0 - f_BG_X).roundNearest().raw();
+    s32 bg_Scroll_Y = (f_Cam_Y0 - f_BG_Y).roundNearest().raw();
+    bgSetScrollf(f_BG, bg_Scroll_X, bg_Scroll_Y);
+    bgSetScale(f_BG, bg_Scale, bg_Scale);
 }
 
 #pragma endregion

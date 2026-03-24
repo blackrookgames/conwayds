@@ -5,6 +5,7 @@
 
 #include "engine/helper/_macros.h"
 #include "engine/helper/RRValue32.h"
+#include "engine/view/View.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
 
@@ -73,47 +74,41 @@ int main()
 
     setBackdropColor(RGB15(31, 0, 0));
 
-    engine::helper::RRValue32 v0(1, 64);
-    engine::helper::RRValue32 v1(0, 128);
-    char* test = v0.mul(v1).toStr();
-    nocashMessage(test);
-    delete[] test;
-
+    engine::view::View view(bg, engine::helper::RRValue32(0, 0), engine::helper::RRValue32(0, 0));
     
     while (pmMainLoop())
     {
+        engine::helper::RRValue32 inc(4, 0);
+        engine::helper::RRValue32 zoom(5, 0);
         scanKeys();
         if (keysCurrent() & KEY_LEFT)
         {
-            
+            view.cam_X(view.cam_X() - inc);
         }
         if (keysCurrent() & KEY_RIGHT)
         {
-            
+            view.cam_X(view.cam_X() + inc);
         }
         if (keysCurrent() & KEY_UP)
         {
-            
+            view.cam_Y(view.cam_Y() - inc);
         }
         if (keysCurrent() & KEY_DOWN)
         {
-            
+            view.cam_Y(view.cam_Y() + inc);
         }
         if (keysCurrent() & KEY_L)
         {
-            
+            view.cam_Zoom(view.cam_Zoom() - zoom);
         }
         if (keysCurrent() & KEY_R)
         {
-            
+            view.cam_Zoom(view.cam_Zoom() + zoom);
         }
         // VBlank
         swiWaitForVBlank();
-        // f_Simulation->vblank();
-        // f_TextGFX->vblank();
+        view.vblank();
         // Update backgrounds
-        
-        bgSetScroll(bg, -16, -16);
         bgUpdate();
     }
 

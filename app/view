@@ -32,7 +32,8 @@ SCRNAMES += \
 	src/engine/gfx/TextGFX.cpp \
 	src/engine/helper/RRValue32.cpp \
 	src/engine/scenes/__.cpp \
-	src/engine/scenes/Scene.cpp
+	src/engine/scenes/Scene.cpp \
+	src/engine/view/View.cpp
 
 SCRNAMES += \
 	src/game/assets/EditScreen.cpp \
