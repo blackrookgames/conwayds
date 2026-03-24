@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "engine/helper/_macros.h"
-#include "engine/helper/RRValue32.h"
+#include "engine/helper/RRValue48p16.h"
 #include "engine/view/View.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimTileset.h"
@@ -74,12 +74,12 @@ int main()
 
     setBackdropColor(RGB15(31, 0, 0));
 
-    engine::view::View view(bg, engine::helper::RRValue32(0, 0), engine::helper::RRValue32(0, 0));
+    engine::view::View view(bg, engine::helper::RRValue48p16(0, 0), engine::helper::RRValue48p16(0, 0));
     
     while (pmMainLoop())
     {
-        engine::helper::RRValue32 inc(4, 0);
-        engine::helper::RRValue32 zoom(5, 0);
+        engine::helper::RRValue48p16 inc(4, 0);
+        engine::helper::RRValue48p16 zoom(5, 0);
         scanKeys();
         if (keysCurrent() & KEY_LEFT)
         {

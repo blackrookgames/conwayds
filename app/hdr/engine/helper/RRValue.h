@@ -10,8 +10,8 @@ namespace engine::helper
 {
     /// @brief Represents a fixed-point value with crude operators
     /// @tparam TRaw Raw data type
-    /// @tparam TBig Data type to use when multiplying and dividing
-    template<typename TRaw, typename TBig>
+    /// @tparam TFrac Number of bits to represent the fraction
+    template<typename TRaw, int TFrac>
     class RRValue
     {
         #pragma region const
@@ -19,13 +19,12 @@ namespace engine::helper
         private:
 
         static constexpr u8 f_TotalSize = sizeof(TRaw) * 8;
-        static constexpr u8 f_FracSize = f_TotalSize / 4;
-        static constexpr u8 f_WholeSize = f_TotalSize - f_FracSize;
-        static constexpr TRaw f_FractVals = (TRaw)1 << f_FracSize;
+        static constexpr u8 f_WholeSize = f_TotalSize - TFrac;
+        static constexpr TRaw f_FractVals = (TRaw)1 << TFrac;
         static constexpr TRaw f_FractMask = f_FractVals - 1;
         static constexpr TRaw f_FractMask_Inv = ~f_FractMask;
         static constexpr size_t f_WholeBufLen = (f_WholeSize < 1) ? 1 : f_WholeSize;
-        static constexpr size_t f_FractBufLen = (f_FracSize < 1) ? 1 : f_FracSize;
+        static constexpr size_t f_FractBufLen = (TFrac < 1) ? 1 : TFrac;
         static constexpr TRaw f_FractHalf = f_FractVals / 2;
 
         #pragma endregion
@@ -44,7 +43,7 @@ namespace engine::helper
         /// @brief Constructor for RRValue
         /// @param whole Whole part
         /// @param fract Fractional part
-        RRValue(TRaw whole, TRaw fract) { f_Raw = (whole << f_FracSize) | fract; }
+        RRValue(TRaw whole, TRaw fract) { f_Raw = (whole << TFrac) | fract; }
 
         /// @brief Copy constructor for RRValue
         /// @param src Source
@@ -89,7 +88,7 @@ namespace engine::helper
             bool isneg = f_Raw < 0;
             TRaw abs = isneg ? (-f_Raw) : f_Raw;
             // Whole number
-            TRaw whole = abs >> f_FracSize;
+            TRaw whole = abs >> TFrac;
             u8 whole_Len = 0;
             char whole_Chars[f_WholeBufLen];
             optr = whole_Chars + f_WholeBufLen;
@@ -108,7 +107,7 @@ namespace engine::helper
             while (fract_Len < f_FractBufLen)
             {
                 fract *= 10;
-                *(optr++) = 0x30 + (char)(fract >> f_FracSize);
+                *(optr++) = 0x30 + (char)(fract >> TFrac);
                 ++fract_Len;
                 fract &= f_FractMask;
                 if (fract == 0) break;
@@ -155,12 +154,16 @@ namespace engine::helper
         /// @return this * other
         RRValue mul(const RRValue& other) const
         {
-            // Cast
-            TBig v0 = f_Raw; TBig v1 = other.f_Raw;
-            // Operate
-            TBig ans = (v0 * v1) >> f_FracSize;
-            // Create final
-            return RRValue((TRaw)ans);
+            if (f_Raw == 0 || other.f_Raw == 0) return RRValue(0);
+            TRaw v0 = MATH_ABS(f_Raw);
+            TRaw v1 = MATH_ABS(other.f_Raw);
+            TRaw sign = (f_Raw / v0) * (other.f_Raw / v1);
+            // Calculate whole
+            TRaw w = v0 * (v1 >> TFrac);
+            // Calculate fraction
+            TRaw f = (v0 * (v1 & f_FractMask)) >> TFrac;
+            // Calculate final
+            return RRValue(sign * (w + f));
         }
 
         /// @brief Division
@@ -168,12 +171,17 @@ namespace engine::helper
         /// @return this / other
         RRValue div(const RRValue& other) const
         {
-            // Cast
-            TBig v0 = f_Raw; TBig v1 = other.f_Raw;
-            // Operate
-            TBig ans = ((v0 << f_FracSize) / v1);
-            // Create final
-            return RRValue((TRaw)ans);
+            if (f_Raw == 0 || other.f_Raw == 0) return RRValue(0);
+            TRaw v0 = MATH_ABS(f_Raw);
+            TRaw v1 = MATH_ABS(other.f_Raw);
+            TRaw sign = (f_Raw / v0) * (other.f_Raw / v1);
+            // Calculate whole
+            TRaw w = v0 / v1;
+            v0 -= w * v1;
+            // Calculate fraction
+            TRaw f = (v0 << TFrac) / v1;
+            // Calculate final
+            return RRValue(sign * ((w << TFrac) + f));
         }
 
         /// @brief Negation
@@ -249,7 +257,7 @@ namespace engine::helper
 
         /// @brief Returns the whole part of the value
         /// @return Whole part of the value
-        TRaw get_Whole() const { return f_Raw >> f_FracSize; }
+        TRaw get_Whole() const { return f_Raw >> TFrac; }
         
         /// @brief Returns the fractional part of the value
         /// @return Fractional part of the value
@@ -269,15 +277,15 @@ namespace engine::helper
 
         /// @brief Rounds down to the nearest whole number
         /// @return Nearest whole number that's <= this
-        TRaw floorToWhole() const { return f_Raw >> f_FracSize; }
+        TRaw floorToWhole() const { return f_Raw >> TFrac; }
 
         /// @brief Rounds up to the nearest whole number
         /// @return Nearest whole number that's >= this
-        TRaw ceilToWhole() const { return (f_Raw + f_FractMask) >> f_FracSize; }
+        TRaw ceilToWhole() const { return (f_Raw + f_FractMask) >> TFrac; }
 
         /// @brief Rounds to the nearest whole number
         /// @return Nearest whole number
-        TRaw roundToWhole() const { return (f_Raw + f_FractHalf) >> f_FracSize; }
+        TRaw roundToWhole() const { return (f_Raw + f_FractHalf) >> TFrac; }
 
         #pragma endregion
     };
