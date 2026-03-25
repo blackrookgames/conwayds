@@ -25,6 +25,16 @@ namespace game::scns::sim
 
         #pragma endregion
 
+        #pragma region helper const
+
+        static const engine::helper::RRValue48p16 f_0;
+        static const engine::helper::RRValue48p16 f_1;
+
+        static const engine::helper::RRValue48p16 f_Inc_Pos;
+        static const engine::helper::RRValue48p16 f_Inc_Zoom;
+
+        #pragma endregion
+
         #pragma region fields
 
         private:

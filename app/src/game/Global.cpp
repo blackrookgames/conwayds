@@ -12,11 +12,33 @@ using namespace game;
 
 engine::data::Pattern Global::f_Pattern;
 
+engine::helper::RRValue48p16 Global::f_View_X = engine::helper::RRValue48p16(0, 0);
+engine::helper::RRValue48p16 Global::f_View_Y = engine::helper::RRValue48p16(0, 0);
+engine::helper::RRValue48p16 Global::f_View_Zoom = engine::helper::RRValue48p16(100, 0);
+
+game::scns::edit::Tool Global::f_Edit_Tool = game::scns::edit::Tool::DRAW;
+bool Global::f_Edit_Grid = true;
+
 #pragma endregion
 
 #pragma region properties
 
 engine::data::Pattern* Global::pattern() { return &f_Pattern; }
+
+engine::helper::RRValue48p16 Global::view_X() { return f_View_X; }
+void Global::view_X(engine::helper::RRValue48p16 value) { f_View_X = value; }
+
+engine::helper::RRValue48p16 Global::view_Y() { return f_View_Y; }
+void Global::view_Y(engine::helper::RRValue48p16 value) { f_View_Y = value; }
+
+engine::helper::RRValue48p16 Global::view_Zoom() { return f_View_Zoom; }
+void Global::view_Zoom(engine::helper::RRValue48p16 value) { f_View_Zoom = value; }
+
+game::scns::edit::Tool Global::edit_Tool() { return f_Edit_Tool; }
+void Global::edit_Tool(game::scns::edit::Tool value) { f_Edit_Tool = value; }
+
+bool Global::edit_Grid() { return f_Edit_Grid; }
+void Global::edit_Grid(bool value) { f_Edit_Grid = value; }
 
 #pragma endregion
 

@@ -99,10 +99,10 @@ Simulation::Simulation(int layer, int mapBase, int tileBase, unsigned int priori
     f_BG_Map = bgGetMapPtr(f_BG);
     bgSetPriority(f_BG, priority);
     // View
-    f_View_Zoom = 896;
-    f_View_X = BG_WIDTH / 2;
-    f_View_Y = BG_HEIGHT / 2;
-    m_View_FixSize();
+    f_View = new engine::view::View(f_BG, f_BG_X, f_BG_Y);
+    f_View->cam_Zoom(Global::view_Zoom()); // Set zoom first
+    f_View->cam_X(Global::view_X());
+    f_View->cam_Y(Global::view_Y());
     // Map
     f_Map_Empty = new u8[BG_TILE_COUNT];
     f_Map_A = new u8[BG_TILE_COUNT];
@@ -125,7 +125,19 @@ Simulation::~Simulation()
     delete[] f_Map_B;
     delete[] f_Map_A;
     delete[] f_Map_Empty;
+    // View
+    Global::view_X(f_View->cam_X());
+    Global::view_Y(f_View->cam_Y());
+    Global::view_Zoom(f_View->cam_Zoom());
+    delete f_View;
 }
+
+#pragma endregion
+
+#pragma region helper const
+
+const engine::helper::RRValue48p16 Simulation::f_BG_X = engine::helper::RRValue48p16(-512, 0);
+const engine::helper::RRValue48p16 Simulation::f_BG_Y = engine::helper::RRValue48p16(512, 0);
 
 #pragma endregion
 
@@ -137,34 +149,8 @@ u16* Simulation::bg_GFX() { return f_BG_GFX; }
 const u16* Simulation::bg_Map() const { return f_BG_Map; }
 u16* Simulation::bg_Map() { return f_BG_Map; }
 
-s32 Simulation::view_Zoom() const { return f_View_Zoom; }
-void Simulation::view_Zoom(s32 value)
-{
-    f_View_Zoom = value;
-    m_View_FixSize();
-}
-
-s32 Simulation::view_W() const { return f_View_W; }
-
-s32 Simulation::view_H() const { return f_View_H; }
-
-s32 Simulation::view_Max_X() const { return f_View_Max_X; }
-
-s32 Simulation::view_Max_Y() const { return f_View_Max_Y; }
-
-s32 Simulation::view_X() const  { return f_View_X; }
-void Simulation::view_X(s32 value)
-{
-    f_View_X = value;
-    m_View_FixPosition();
-}
-
-s32 Simulation::view_Y() const { return f_View_Y; }
-void Simulation::view_Y(s32 value)
-{
-    f_View_Y = value;
-    m_View_FixPosition();
-}
+const engine::view::View& Simulation::view() const { return *f_View; }
+engine::view::View& Simulation::view() { return *f_View; }
 
 u32 Simulation::speed() const { return f_Speed; }
 void Simulation::speed(u32 value)
@@ -180,47 +166,6 @@ void Simulation::speed(u32 value)
 u32 Simulation::sim_Live() const { return f_Sim_Live; }
 
 u32 Simulation::sim_Gen() const { return f_Sim_Gen; }
-
-#pragma endregion
-
-#pragma region helper functions
-
-void Simulation::m_View_FixSize()
-{
-    // Clamp zoom value
-    if (f_View_Zoom < VIEW_ZOOM_MIN)
-        f_View_Zoom = VIEW_ZOOM_MIN;
-    if (f_View_Zoom > VIEW_ZOOM_MAX)
-        f_View_Zoom = VIEW_ZOOM_MAX;
-    // Compute size
-    f_View_W = BG_WIDTH - f_View_Zoom;
-    f_View_H = (f_View_W * DS_SCREEN_HEIGHT + DS_SCREEN_WIDTH - 1) / DS_SCREEN_WIDTH;
-    // Compute min/max
-    f_View_Min_X = f_View_W / 2;
-    f_View_Min_Y = f_View_H / 2;
-    f_View_Max_X = BG_WIDTH - f_View_Min_X;
-    f_View_Max_Y = BG_HEIGHT - f_View_Min_Y;
-    // Update background
-    bgSetScale(f_BG, f_View_W, f_View_W); // f_View_W is the scale for both axes
-    // Fix position
-    m_View_FixPosition();
-}
-
-void Simulation::m_View_FixPosition()
-{
-    // Clamp X
-    if (f_View_X < f_View_Min_X)
-        f_View_X = f_View_Min_X;
-    if (f_View_X > f_View_Max_X)
-        f_View_X = f_View_Max_X;
-    // Clamp Y
-    if (f_View_Y < f_View_Min_Y)
-        f_View_Y = f_View_Min_Y;
-    if (f_View_Y > f_View_Max_Y)
-        f_View_Y = f_View_Max_Y;
-    // Update background
-    bgSetScroll(f_BG, f_View_X - f_View_W / 2, f_View_Y - f_View_H / 2);
-}
 
 #pragma endregion
 
@@ -337,6 +282,8 @@ void Simulation::update(u16 delta)
 
 void Simulation::vblank()
 {
+    // Always call view
+    f_View->vblank();
     // Update dirty
     if (!f_IsDirty) return;
     f_IsDirty = false;

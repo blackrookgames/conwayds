@@ -1,6 +1,7 @@
 #include <nds.h>
 
 #include "engine/helper/_macros.h"
+#include "engine/view/View.h"
 
 #ifndef GAME_SCNS_SIM_SIMULATION_H
 #define GAME_SCNS_SIM_SIMULATION_H
@@ -28,6 +29,13 @@ namespace game::scns::sim
 
         #pragma endregion
 
+        #pragma region helper const
+
+        static const engine::helper::RRValue48p16 f_BG_X;
+        static const engine::helper::RRValue48p16 f_BG_Y;
+
+        #pragma endregion
+
         #pragma region const
 
         public:
@@ -50,15 +58,7 @@ namespace game::scns::sim
         u16* f_BG_GFX;
         u16* f_BG_Map;
 
-        s32 f_View_Zoom;
-        s32 f_View_X;
-        s32 f_View_Y;
-        s32 f_View_W;
-        s32 f_View_H;
-        s32 f_View_Min_X;
-        s32 f_View_Min_Y;
-        s32 f_View_Max_X;
-        s32 f_View_Max_Y;
+        engine::view::View* f_View;
 
         u8* f_Map_Empty;
         u8* f_Map_A;
@@ -88,32 +88,10 @@ namespace game::scns::sim
         /// @brief Background tilemap
         u16* bg_Map();
 
-        /// @brief Zoom value of view
-        s32 view_Zoom() const;
-        /// @brief Zoom value of view
-        void view_Zoom(s32 value);
-
-        /// @brief X-coordinate of view
-        s32 view_X() const;
-        /// @brief X-coordinate of view
-        void view_X(s32 value);
-
-        /// @brief Y-coordinate of view
-        s32 view_Y() const;
-        /// @brief Y-coordinate of view
-        void view_Y(s32 value);
-
-        /// @brief View width
-        s32 view_W() const;
-
-        /// @brief View height
-        s32 view_H() const;
-
-        /// @brief Maximum X-coordinate of view
-        s32 view_Max_X() const;
-
-        /// @brief Maximum Y-coordinate of view
-        s32 view_Max_Y() const;
+        /// @brief View
+        const engine::view::View& view() const;
+        /// @brief View
+        engine::view::View& view();
 
         /// @brief Simulation speed (in generations per 4 seconds (roughly))
         u32 speed() const;

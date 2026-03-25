@@ -57,6 +57,16 @@ Scene::~Scene() { }
 
 #pragma endregion
 
+#pragma region helper const
+
+const engine::helper::RRValue48p16 Scene::f_0 = engine::helper::RRValue48p16(0, 0);
+const engine::helper::RRValue48p16 Scene::f_1 = engine::helper::RRValue48p16(1, 0);
+
+const engine::helper::RRValue48p16 Scene::f_Inc_Pos = engine::helper::RRValue48p16(4, 0);
+const engine::helper::RRValue48p16 Scene::f_Inc_Zoom = engine::helper::RRValue48p16(5, 0);
+
+#pragma endregion
+
 #pragma region helper functions
 
 void Scene::m_enter()
@@ -161,29 +171,28 @@ void Scene::m_update()
         // Zoom
         if (keysCurrent() & KEY_L)
         {
-            f_Simulation->view_Zoom(f_Simulation->view_Zoom() - 8);
+            f_Simulation->view().cam_Zoom(f_Simulation->view().cam_Zoom() - f_Inc_Zoom);
         }
         if (keysCurrent() & KEY_R)
         {
-            f_Simulation->view_Zoom(f_Simulation->view_Zoom() + 8);
+            f_Simulation->view().cam_Zoom(f_Simulation->view().cam_Zoom() + f_Inc_Zoom);
         }
         // Pan
-        s32 inc = 1024 / f_Simulation->view_W();
         if (keysCurrent() & KEY_LEFT)
         {
-            f_Simulation->view_X(f_Simulation->view_X() - inc);
+            f_Simulation->view().cam_X(f_Simulation->view().cam_X() - f_Inc_Pos);
         }
         if (keysCurrent() & KEY_RIGHT)
         {
-            f_Simulation->view_X(f_Simulation->view_X() + inc);
+            f_Simulation->view().cam_X(f_Simulation->view().cam_X() + f_Inc_Pos);
         }
         if (keysCurrent() & KEY_UP)
         {
-            f_Simulation->view_Y(f_Simulation->view_Y() - inc);
+            f_Simulation->view().cam_Y(f_Simulation->view().cam_Y() + f_Inc_Pos);
         }
         if (keysCurrent() & KEY_DOWN)
         {
-            f_Simulation->view_Y(f_Simulation->view_Y() + inc);
+            f_Simulation->view().cam_Y(f_Simulation->view().cam_Y() - f_Inc_Pos);
         }
         // Paused
         if (f_Paused)

@@ -53,10 +53,13 @@ Editor::Editor(int layer, int mapBase, int tileBase, unsigned int priority)
     bgSetPriority(f_BG, priority);
     // View
     f_View = new engine::view::View(f_BG, bound_X0, bound_Y1);
+    f_View->cam_Zoom(Global::view_Zoom()); // Set zoom first
+    f_View->cam_X(Global::view_X());
+    f_View->cam_Y(Global::view_Y());
     // Pattern
     game::Global::pattern_To(f_Pattern);
     // Grid
-    f_Grid = true;
+    f_Grid = game::Global::edit_Grid();
     // Post-init
     m_Refresh_Buffer_Ptr();
     m_Force_NumLive();
@@ -65,7 +68,12 @@ Editor::Editor(int layer, int mapBase, int tileBase, unsigned int priority)
 
 Editor::~Editor()
 {
+    // Grid
+    game::Global::edit_Grid(f_Grid);
     // View
+    Global::view_X(f_View->cam_X());
+    Global::view_Y(f_View->cam_Y());
+    Global::view_Zoom(f_View->cam_Zoom());
     delete f_View;
     // Background
     delete[] f_BG_Buffer_B;

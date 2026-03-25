@@ -9,6 +9,7 @@
 #include "engine/data/Pattern.h"
 #include "engine/data/RLE.h"
 #include "engine/helper/ArrayUtil.h"
+#include "game/Global.h"
 #include "game/assets/EditScreen.h"
 #include "game/assets/EditTileset.h"
 #include "game/assets/Palette.h"
@@ -109,7 +110,7 @@ void Scene::m_enter()
     // Initialize simulation
     f_Editor = new Editor(3, 9, 0, 2);
     // Tool
-    f_Tool = Tool::DRAW;
+    f_Tool = Global::edit_Tool();
     // Initialize main palette
     DC_FlushRange(assets::Palette::data, assets::Palette::size);
     dmaCopy(assets::Palette::data, BG_PALETTE, assets::Palette::size);
@@ -139,6 +140,8 @@ void Scene::m_exit()
 {
     // Stop timer
     timerStop(0);
+    // Save tool
+    Global::edit_Tool(f_Tool);
     // Delete
     DELETE_OBJECT(f_Editor)
     DELETE_OBJECT(f_TextStream)
