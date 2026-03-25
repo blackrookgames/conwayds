@@ -38,13 +38,9 @@ namespace engine::view
 
         static const engine::helper::RRValue48p16 f_Zoom_Min;
         static const engine::helper::RRValue48p16 f_Zoom_Max;
-        static const engine::helper::RRValue48p16 f_Bound_X0;
-        static const engine::helper::RRValue48p16 f_Bound_Y0;
-        static const engine::helper::RRValue48p16 f_Bound_X1;
-        static const engine::helper::RRValue48p16 f_Bound_Y1;
         static const engine::helper::RRValue48p16 f_DS_Width;
         static const engine::helper::RRValue48p16 f_DS_Height;
-        
+
         #pragma endregion
 
         #pragma region const
@@ -55,6 +51,15 @@ namespace engine::view
         static const engine::helper::RRValue48p16 hSpan_100;
         /// @brief Zoom value of 100%
         static const engine::helper::RRValue48p16 zoom_100;
+        
+        /// @brief X-coordinate of bottom-left corner
+        static const engine::helper::RRValue48p16 bound_X0;
+        /// @brief Y-coordinate of bottom-left corner
+        static const engine::helper::RRValue48p16 bound_Y0;
+        /// @brief X-coordinate of top-right corner
+        static const engine::helper::RRValue48p16 bound_X1;
+        /// @brief Y-coordinate of top-right corner
+        static const engine::helper::RRValue48p16 bound_Y1;
         
         #pragma endregion
 

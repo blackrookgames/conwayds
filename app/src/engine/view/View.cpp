@@ -34,10 +34,10 @@ const engine::helper::RRValue48p16 View::f_2 = engine::helper::RRValue48p16(2, 0
 
 const engine::helper::RRValue48p16 View::f_Zoom_Min = engine::helper::RRValue48p16(25, 0);
 const engine::helper::RRValue48p16 View::f_Zoom_Max = engine::helper::RRValue48p16(400, 0);
-const engine::helper::RRValue48p16 View::f_Bound_X0 = engine::helper::RRValue48p16(-512, 0);
-const engine::helper::RRValue48p16 View::f_Bound_Y0 = engine::helper::RRValue48p16(-512, 0);
-const engine::helper::RRValue48p16 View::f_Bound_X1 = engine::helper::RRValue48p16(512, 0);
-const engine::helper::RRValue48p16 View::f_Bound_Y1 = engine::helper::RRValue48p16(512, 0);
+const engine::helper::RRValue48p16 View::bound_X0 = engine::helper::RRValue48p16(-512, 0);
+const engine::helper::RRValue48p16 View::bound_Y0 = engine::helper::RRValue48p16(-512, 0);
+const engine::helper::RRValue48p16 View::bound_X1 = engine::helper::RRValue48p16(512, 0);
+const engine::helper::RRValue48p16 View::bound_Y1 = engine::helper::RRValue48p16(512, 0);
 const engine::helper::RRValue48p16 View::f_DS_Width = engine::helper::RRValue48p16(256, 0);
 const engine::helper::RRValue48p16 View::f_DS_Height = engine::helper::RRValue48p16(192, 0);
 
@@ -128,10 +128,10 @@ void View::m_Refresh_Size()
 void View::m_Refresh_Position()
 {
     // Fix position
-    if ((f_Cam_X - f_Cam_Ortho_Width) < f_Bound_X0) f_Cam_X = f_Bound_X0 + f_Cam_Ortho_Width;
-    if ((f_Cam_Y - f_Cam_Ortho_Height) < f_Bound_Y0) f_Cam_Y = f_Bound_Y0 + f_Cam_Ortho_Height;
-    if ((f_Cam_X + f_Cam_Ortho_Width) > f_Bound_X1) f_Cam_X = f_Bound_X1 - f_Cam_Ortho_Width;
-    if ((f_Cam_Y + f_Cam_Ortho_Height) > f_Bound_Y1) f_Cam_Y = f_Bound_Y1 - f_Cam_Ortho_Height;
+    if ((f_Cam_X - f_Cam_Ortho_Width) < bound_X0) f_Cam_X = bound_X0 + f_Cam_Ortho_Width;
+    if ((f_Cam_Y - f_Cam_Ortho_Height) < bound_Y0) f_Cam_Y = bound_Y0 + f_Cam_Ortho_Height;
+    if ((f_Cam_X + f_Cam_Ortho_Width) > bound_X1) f_Cam_X = bound_X1 - f_Cam_Ortho_Width;
+    if ((f_Cam_Y + f_Cam_Ortho_Height) > bound_Y1) f_Cam_Y = bound_Y1 - f_Cam_Ortho_Height;
     // Compute edges
     f_Cam_X0 = f_Cam_X - f_Cam_Ortho_Width;
     f_Cam_Y0 = f_Cam_Y - f_Cam_Ortho_Height;

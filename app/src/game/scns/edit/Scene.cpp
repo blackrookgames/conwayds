@@ -68,6 +68,24 @@ Scene::~Scene() { }
 
 #pragma endregion
 
+#pragma region helper const
+
+const engine::helper::RRValue48p16 Scene::f_0 = engine::helper::RRValue48p16(0, 0);
+const engine::helper::RRValue48p16 Scene::f_1 = engine::helper::RRValue48p16(1, 0);
+
+const engine::helper::RRValue48p16 Scene::f_Inc_Pos = engine::helper::RRValue48p16(4, 0);
+const engine::helper::RRValue48p16 Scene::f_Inc_Zoom = engine::helper::RRValue48p16(5, 0);
+
+const engine::helper::RRValue48p16 Scene::f_DS_Width = engine::helper::RRValue48p16(256, 0);
+const engine::helper::RRValue48p16 Scene::f_DS_Height = engine::helper::RRValue48p16(192, 0);
+
+const engine::helper::RRValue48p16 Scene::f_Pattern_Cols = engine::helper::RRValue48p16(254, 0);
+const engine::helper::RRValue48p16 Scene::f_Pattern_Rows = engine::helper::RRValue48p16(254, 0);
+const engine::helper::RRValue48p16 Scene::f_Pattern_Last_Col = f_Pattern_Cols - f_1;
+const engine::helper::RRValue48p16 Scene::f_Pattern_Last_Row = f_Pattern_Rows - f_1;
+
+#pragma endregion
+
 #pragma region helper functions
 
 void Scene::m_enter()
@@ -110,6 +128,9 @@ void Scene::m_enter()
     m_Refresh_ToolDisplay();
     // Start timer
     timerStart(0, ClockDivider_1024, 0, nullptr);
+    // Set backdrop colors
+    setBackdropColor(RGB15(0, 0, 0));
+    setBackdropColorSub(RGB15(0, 0, 16));
     // Turn on screen
     DS_SCREEN_ON
 }
@@ -153,42 +174,71 @@ void Scene::m_update()
             f_Tool = static_cast<Tool>((static_cast<u8>(f_Tool) + 1) % toolCount);
             m_Refresh_ToolDisplay();
         }
+        // Toggle grid
+        if (inputDown & KEY_Y)
+        {
+            f_Editor->grid(!f_Editor->grid());
+        }
         // Zoom
         if (keysCurrent() & KEY_L)
         {
-            f_Editor->view_Zoom(f_Editor->view_Zoom() - 8);
+            f_Editor->view_Zoom(f_Editor->view_Zoom() - f_Inc_Zoom);
         }
         if (keysCurrent() & KEY_R)
         {
-            f_Editor->view_Zoom(f_Editor->view_Zoom() + 8);
+            f_Editor->view_Zoom(f_Editor->view_Zoom() + f_Inc_Zoom);
         }
         // Pan
-        s32 inc = 1024 / f_Editor->view_W();
         if (keysCurrent() & KEY_LEFT)
         {
-            f_Editor->view_X(f_Editor->view_X() - inc);
+            f_Editor->view_X(f_Editor->view_X() - f_Inc_Pos);
         }
         if (keysCurrent() & KEY_RIGHT)
         {
-            f_Editor->view_X(f_Editor->view_X() + inc);
+            f_Editor->view_X(f_Editor->view_X() + f_Inc_Pos);
         }
         if (keysCurrent() & KEY_UP)
         {
-            f_Editor->view_Y(f_Editor->view_Y() - inc);
+            f_Editor->view_Y(f_Editor->view_Y() + f_Inc_Pos);
         }
         if (keysCurrent() & KEY_DOWN)
         {
-            f_Editor->view_Y(f_Editor->view_Y() + inc);
+            f_Editor->view_Y(f_Editor->view_Y() - f_Inc_Pos);
         }
         // Touch
         if (keysHeld() & KEY_TOUCH)
         {
-            s32 cell_x = MATH_SCALE2(0, 256, f_Editor->view_X1(), f_Editor->view_X2(), (s32)f_TouchPos.px) / 4;
-            s32 cell_y = MATH_SCALE2(0, 192, f_Editor->view_Y1(), f_Editor->view_Y2(), (s32)f_TouchPos.py) / 4;
+            engine::helper::RRValue48p16 tx((s64)f_TouchPos.px, 0);
+            engine::helper::RRValue48p16 ty((s64)f_TouchPos.py, 0);
+            // Determine X-coordinate of cell
+            engine::helper::RRValue48p16 cell_x = MATH_SCALE2(
+                f_0, f_DS_Width, 
+                f_Editor->view().cam_X0(), f_Editor->view().cam_X1(), 
+                tx);
+            cell_x = MATH_SCALE2(
+                Editor::bound_X0, Editor::bound_X1,
+                f_0, f_Pattern_Cols,
+                cell_x);
+            cell_x = MATH_CLAMP(f_0, f_Pattern_Last_Col, cell_x);
+            // Determine Y-coordinate of cell
+            engine::helper::RRValue48p16 cell_y = MATH_SCALE2(
+                f_DS_Height, f_0, 
+                f_Editor->view().cam_Y0(), f_Editor->view().cam_Y1(), 
+                ty);
+            cell_y = MATH_SCALE2(
+                Editor::bound_Y1, Editor::bound_Y0,
+                f_0, f_Pattern_Rows,
+                cell_y);
+            cell_y = MATH_CLAMP(f_0, f_Pattern_Last_Row, cell_y);
+            // Use tool
             switch (f_Tool)
             {
-                case Tool::DRAW: f_Editor->setcell((u16)cell_x, (u16)cell_y, true); break;
-                case Tool::ERASE: f_Editor->setcell((u16)cell_x, (u16)cell_y, false); break;
+                case Tool::DRAW:
+                    f_Editor->setcell((u16)cell_x.floorToWhole(), (u16)cell_y.floorToWhole(), true);
+                    break;
+                case Tool::ERASE:
+                    f_Editor->setcell((u16)cell_x.floorToWhole(), (u16)cell_y.floorToWhole(), false);
+                    break;
             }
         }
     }
@@ -198,10 +248,18 @@ void Scene::m_update()
         f_TextGFX->setCursor(ass::EditScreen::live_x, ass::EditScreen::live_y);
         *f_TextStream << STREAM_ALIGN_L(12) << f_Editor->numLive();
         f_TextStream->flush();
-        // Coords
-        STREAM_STRING(coords, f_Editor->view_X1() << "," << f_Editor->view_Y1() << " " << f_Editor->view_Zoom()) // TODO: Change
-        f_TextGFX->setCursor(ass::EditScreen::coord_x, ass::EditScreen::coord_y);
-        *f_TextStream << STREAM_ALIGN_L(ass::EditScreen::coord_len) << coords.str();
+        // X-coordinate
+        f_TextGFX->setCursor(ass::EditScreen::coordx_x, ass::EditScreen::coordx_y);
+        *f_TextStream << STREAM_ALIGN_L(12) << f_Editor->view_X().toStr(2);
+        f_TextStream->flush();
+        // X-coordinate
+        f_TextGFX->setCursor(ass::EditScreen::coordy_x, ass::EditScreen::coordy_y);
+        *f_TextStream << STREAM_ALIGN_L(12) << f_Editor->view_Y().toStr(2);
+        f_TextStream->flush();
+        // Zoom
+        STREAM_STRING(zoomStr, f_Editor->view_Zoom().toStr(1) << "%")
+        f_TextGFX->setCursor(ass::EditScreen::zoom_x, ass::EditScreen::zoom_y);
+        *f_TextStream << STREAM_ALIGN_L(12) << zoomStr.str();
         f_TextStream->flush();
         // Mark dirty
         f_TextGFX->markDirty();

@@ -2,6 +2,7 @@
 
 #include "engine/data/Pattern.h"
 #include "engine/helper/_macros.h"
+#include "engine/view/View.h"
 
 #ifndef GAME_SCNS_EDIT_EDITOR_H
 #define GAME_SCNS_EDIT_EDITOR_H
@@ -29,6 +30,25 @@ namespace game::scns::edit
 
         #pragma endregion
 
+        #pragma region helper const
+
+        static const engine::helper::RRValue48p16 f_Zoom_Grid;
+
+        #pragma endregion
+
+        #pragma region const
+        
+        /// @brief X-coordinate of bottom-left corner
+        static const engine::helper::RRValue48p16 bound_X0;
+        /// @brief Y-coordinate of bottom-left corner
+        static const engine::helper::RRValue48p16 bound_Y0;
+        /// @brief X-coordinate of top-right corner
+        static const engine::helper::RRValue48p16 bound_X1;
+        /// @brief Y-coordinate of top-right corner
+        static const engine::helper::RRValue48p16 bound_Y1;
+
+        #pragma endregion
+
         #pragma region fields
 
         private:
@@ -42,19 +62,7 @@ namespace game::scns::edit
         u8* f_BG_Buffer_B;
         u8* f_BG_Buffer_Ptr;
 
-        s32 f_View_Zoom;
-        s32 f_View_X;
-        s32 f_View_Y;
-        s32 f_View_W;
-        s32 f_View_H;
-        s32 f_View_X1;
-        s32 f_View_Y1;
-        s32 f_View_X2;
-        s32 f_View_Y2;
-        s32 f_View_Min_X;
-        s32 f_View_Min_Y;
-        s32 f_View_Max_X;
-        s32 f_View_Max_Y;
+        engine::view::View* f_View;
 
         engine::data::Pattern f_Pattern;
 
@@ -78,44 +86,25 @@ namespace game::scns::edit
         /// @brief Background tilemap
         u16* bg_Map();
 
+        /// @brief View
+        const engine::view::View& view() const;
+
         /// @brief Zoom value of view
-        s32 view_Zoom() const;
+        engine::helper::RRValue48p16 view_Zoom() const;
         /// @brief Zoom value of view
-        void view_Zoom(s32 value);
+        void view_Zoom(engine::helper::RRValue48p16 value);
 
         /// @brief X-coordinate of view
-        s32 view_X() const;
+        engine::helper::RRValue48p16 view_X() const;
         /// @brief X-coordinate of view
-        void view_X(s32 value);
+        void view_X(engine::helper::RRValue48p16 value);
 
         /// @brief Y-coordinate of view
-        s32 view_Y() const;
+        /// @note Y-coordinate increases upward
+        engine::helper::RRValue48p16 view_Y() const;
         /// @brief Y-coordinate of view
-        void view_Y(s32 value);
-
-        /// @brief View width
-        s32 view_W() const;
-
-        /// @brief View height
-        s32 view_H() const;
-
-        /// @brief X-coordinate of top-left corner of view
-        s32 view_X1() const;
-        
-        /// @brief Y-coordinate of top-left corner of view
-        s32 view_Y1() const;
-
-        /// @brief X-coordinate of bottom-right corner of view
-        s32 view_X2() const;
-        
-        /// @brief Y-coordinate of bottom-right corner of view
-        s32 view_Y2() const;
-
-        /// @brief Maximum X-coordinate of view
-        s32 view_Max_X() const;
-
-        /// @brief Maximum Y-coordinate of view
-        s32 view_Max_Y() const;
+        /// @note Y-coordinate increases upward
+        void view_Y(engine::helper::RRValue48p16 value);
 
         /// @brief Whether or not the grid is enabled
         bool grid() const;
@@ -130,8 +119,6 @@ namespace game::scns::edit
         #pragma region helper functions
 
         private:
-
-        void m_Refresh_View();
 
         void m_Refresh_Buffer_Ptr();
 

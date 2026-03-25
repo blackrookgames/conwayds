@@ -79,8 +79,9 @@ namespace engine::helper
         public:
 
         /// @brief Creates a string representation of the value
+        /// @param ndecs Number of decimals places
         /// @return Created string
-        std::string toStr() const
+        std::string toStr(s8 ndecs = -1) const
         {
             char* iptr;
             char* optr;
@@ -102,15 +103,16 @@ namespace engine::helper
             // Fractional number
             TRaw fract = abs & f_FractMask;
             u8 fract_Len = 0;
-            char fract_Chars[f_FractBufLen];
+            size_t fractBufLen = (ndecs < 0) ? f_FractBufLen : ndecs;
+            char fract_Chars[fractBufLen];
             optr = fract_Chars;
-            while (fract_Len < f_FractBufLen)
+            while (fract_Len < fractBufLen)
             {
                 fract *= 10;
                 *(optr++) = 0x30 + (char)(fract >> TFrac);
                 ++fract_Len;
                 fract &= f_FractMask;
-                if (fract == 0) break;
+                if (ndecs < 0 && fract == 0) break;
             }
             // Create final string
             char cstr[(isneg ? 1 : 0) + whole_Len + 1 + fract_Len + 1];

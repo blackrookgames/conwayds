@@ -26,6 +26,24 @@ namespace game::scns::edit
 
         #pragma endregion
 
+        #pragma region helper const
+
+        static const engine::helper::RRValue48p16 f_0;
+        static const engine::helper::RRValue48p16 f_1;
+
+        static const engine::helper::RRValue48p16 f_Inc_Pos;
+        static const engine::helper::RRValue48p16 f_Inc_Zoom;
+        
+        static const engine::helper::RRValue48p16 f_DS_Width;
+        static const engine::helper::RRValue48p16 f_DS_Height;
+        
+        static const engine::helper::RRValue48p16 f_Pattern_Cols;
+        static const engine::helper::RRValue48p16 f_Pattern_Rows;
+        static const engine::helper::RRValue48p16 f_Pattern_Last_Col;
+        static const engine::helper::RRValue48p16 f_Pattern_Last_Row;
+
+        #pragma endregion
+
         #pragma region fields
 
         private:
