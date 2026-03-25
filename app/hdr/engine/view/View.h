@@ -20,6 +20,7 @@ namespace engine::view
         /// @param bg Background
         /// @param bg_X X-coordinate of background offset (in world)
         /// @param bg_Y X-coordinate of background offset (in world)
+        /// @note Y-coordinates increase upward
         View(int bg, engine::helper::RRValue48p16 bg_X, engine::helper::RRValue48p16 bg_Y);
 
         /// @brief Destructor for View
@@ -37,6 +38,10 @@ namespace engine::view
 
         static const engine::helper::RRValue48p16 f_Zoom_Min;
         static const engine::helper::RRValue48p16 f_Zoom_Max;
+        static const engine::helper::RRValue48p16 f_Bound_X0;
+        static const engine::helper::RRValue48p16 f_Bound_Y0;
+        static const engine::helper::RRValue48p16 f_Bound_X1;
+        static const engine::helper::RRValue48p16 f_Bound_Y1;
         static const engine::helper::RRValue48p16 f_DS_Width;
         static const engine::helper::RRValue48p16 f_DS_Height;
         

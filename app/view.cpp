@@ -74,7 +74,7 @@ int main()
 
     setBackdropColor(RGB15(31, 0, 0));
 
-    engine::view::View view(bg, engine::helper::RRValue48p16(0, 0), engine::helper::RRValue48p16(0, 0));
+    engine::view::View view(bg, engine::helper::RRValue48p16(-512, 0), engine::helper::RRValue48p16(512, 0));
     
     while (pmMainLoop())
     {
@@ -91,11 +91,11 @@ int main()
         }
         if (keysCurrent() & KEY_UP)
         {
-            view.cam_Y(view.cam_Y() - inc);
+            view.cam_Y(view.cam_Y() + inc);
         }
         if (keysCurrent() & KEY_DOWN)
         {
-            view.cam_Y(view.cam_Y() + inc);
+            view.cam_Y(view.cam_Y() - inc);
         }
         if (keysCurrent() & KEY_L)
         {
