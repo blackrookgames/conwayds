@@ -1,0 +1,40 @@
+@var prefix game/assets/MenuTitle
+@var hdrpath ../../app/hdr/${prefix}.h
+@var srcpath ../../app/src/${prefix}.cpp
+
+@var hdrdef GAME_ASSETS_MENUTITLE_H
+
+@var namespace game::assets
+@var class MenuTitle
+
+@load list data ./MenuTitle.bin uint16 
+
+@open ${hdrpath}
+@line \#include <nds.h>
+@line 
+@line \#ifndef ${hdrdef}
+@line \#define ${hdrdef}
+@line 
+@line namespace ${namespace}
+@line {
+@line     class ${class}
+@line     {
+@line         public:
+@line         
+@line         static const size_t size;
+@line         static const u16 data[];
+@line     };
+@line }
+@line 
+@line \#endif
+@close
+
+@open ${srcpath}
+@line \#include "${prefix}.h"
+@line 
+@line using namespace ${namespace};
+@line 
+@line const size_t ${class}::size = $(len data);
+@line const u16 ${class}::data[] = 
+@line $(cppdata data);
+@close

@@ -40,6 +40,8 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/assets/EditScreen.cpp \
 	src/game/assets/EditTileset.cpp \
+	src/game/assets/MenuMain.cpp \
+	src/game/assets/MenuTitle.cpp \
 	src/game/assets/Palette.cpp \
 	src/game/assets/SimScreen.cpp \
 	src/game/assets/SimScreenPause.cpp \
@@ -53,6 +55,9 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/scns/edit/Editor.cpp \
 	src/game/scns/edit/Scene.cpp
+
+SCRNAMES += \
+	src/game/scns/menu/Scene.cpp
 
 SCRNAMES += \
 	src/game/scns/sim/Scene.cpp \

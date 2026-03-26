@@ -15,6 +15,7 @@
 #include "game/assets/Palette.h"
 #include "game/assets/TextTileset.h"
 
+#include "game/scns/menu/Scene.h"
 #include "game/scns/sim/Scene.h"
 
 using namespace game::scns::edit;
@@ -166,6 +167,15 @@ void Scene::m_update()
         f_Editor->savePattern();
         // Goto simulation scene
         game::scns::sim::Scene* scene = new game::scns::sim::Scene();
+        scene->deleteOnExit(true);
+        engine::scenes::gotoScene(scene);
+    }
+    else if (inputDown & KEY_SELECT)
+    {
+        // Save pattern
+        f_Editor->savePattern();
+        // Goto menu scene
+        game::scns::menu::Scene* scene = new game::scns::menu::Scene();
         scene->deleteOnExit(true);
         engine::scenes::gotoScene(scene);
     }
