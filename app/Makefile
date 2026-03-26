@@ -57,6 +57,8 @@ SCRNAMES += \
 	src/game/scns/edit/Scene.cpp
 
 SCRNAMES += \
+	src/game/scns/menu/Page.cpp \
+	src/game/scns/menu/PageMain.cpp \
 	src/game/scns/menu/Scene.cpp
 
 SCRNAMES += \
