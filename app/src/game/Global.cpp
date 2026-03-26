@@ -19,6 +19,9 @@ engine::helper::RRValue48p16 Global::f_View_Zoom = engine::helper::RRValue48p16(
 game::scns::edit::Tool Global::f_Edit_Tool = game::scns::edit::Tool::DRAW;
 bool Global::f_Edit_Grid = true;
 
+u16 Global::f_Menu_Main_Index = 0;
+u16 Global::f_Menu_Load_Index = 0;
+
 #pragma endregion
 
 #pragma region properties
@@ -39,6 +42,12 @@ void Global::edit_Tool(game::scns::edit::Tool value) { f_Edit_Tool = value; }
 
 bool Global::edit_Grid() { return f_Edit_Grid; }
 void Global::edit_Grid(bool value) { f_Edit_Grid = value; }
+
+u16 Global::menu_Main_Index() { return f_Menu_Main_Index; }
+void Global::menu_Main_Index(u16 value) { f_Menu_Main_Index = value; }
+
+u16 Global::menu_Load_Index() { return f_Menu_Load_Index; }
+void Global::menu_Load_Index(u16 value) { f_Menu_Load_Index = value; }
 
 #pragma endregion
 

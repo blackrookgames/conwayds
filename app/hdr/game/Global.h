@@ -25,6 +25,9 @@ namespace game
         static game::scns::edit::Tool f_Edit_Tool;
         static bool f_Edit_Grid;
 
+        static u16 f_Menu_Main_Index;
+        static u16 f_Menu_Load_Index;
+
         #pragma endregion
         
         #pragma region properties
@@ -58,6 +61,16 @@ namespace game
         static bool edit_Grid();
         /// @brief Whether or not grid is toggled in editor
         static void edit_Grid(bool value);
+
+        /// @brief Selected index in main menu
+        static u16 menu_Main_Index();
+        /// @brief Selected index in main menu
+        static void menu_Main_Index(u16 value);
+        
+        /// @brief Selected index in load menu
+        static u16 menu_Load_Index();
+        /// @brief Selected index in load menu
+        static void menu_Load_Index(u16 value);
 
         #pragma endregion
         

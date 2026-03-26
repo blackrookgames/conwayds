@@ -29,6 +29,9 @@
 #define DS_SCREEN_WIDTH 256
 #define DS_SCREEN_HEIGHT 192
 
+#define DS_SCREEN_COLS (DS_SCREEN_WIDTH / 8)
+#define DS_SCREEN_ROWS (DS_SCREEN_HEIGHT / 8)
+
 #define DS_SCREEN_OFF setBrightness(3, -16);
 #define DS_SCREEN_ON setBrightness(3, 0);
 

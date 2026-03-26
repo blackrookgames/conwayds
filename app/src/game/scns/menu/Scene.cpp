@@ -91,6 +91,8 @@ Scene::~Scene()
 
 u16 Scene::input_Down() const { return f_Input_Down; }
 
+u16 Scene::input_Up() const { return f_Input_Up; }
+
 u16 Scene::input_Held() const { return f_Input_Held; }
 
 bool Scene::input_Touch() const { return f_Input_Touch; }
@@ -174,6 +176,7 @@ void Scene::m_update()
     // Scan input
     scanKeys();
     f_Input_Down = keysDown();
+    f_Input_Up = keysUp();
     f_Input_Held = keysHeld();
     f_Input_Touch = touchRead(&f_Input_Touch_Pos);
     // Update page

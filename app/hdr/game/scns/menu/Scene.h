@@ -41,6 +41,7 @@ namespace game::scns::menu
         Page* f_NextPage;
 
         u16 f_Input_Down;
+        u16 f_Input_Up;
         u16 f_Input_Held;
         bool f_Input_Touch;
         touchPosition f_Input_Touch_Pos;
@@ -53,6 +54,9 @@ namespace game::scns::menu
 
         /// @brief Current keypad pressed state
         u16 input_Down() const;
+
+        /// @brief Current keypad released state 
+        u16 input_Up() const;
 
         /// @brief Current keypad held state
         u16 input_Held() const;

@@ -27,8 +27,12 @@ namespace game::scns::menu
 
         private:
 
-        u16* f_Screen_Main;
-        size_t f_Screen_Main_Len;
+        u16* f_Screen;
+        size_t f_Screen_Len;
+
+        u16 f_Sel_Index;
+        u16 f_Sel_Touch;
+        bool f_Sel_Touching;
 
         #pragma endregion
 
@@ -47,6 +51,14 @@ namespace game::scns::menu
 
         /// @brief Called during vblank
         virtual void m_vblank() override;
+
+        private:
+
+        void m_Close();
+
+        void m_Button_Action();
+
+        void m_Refresh_Buttons();
 
         #pragma endregion
     };
