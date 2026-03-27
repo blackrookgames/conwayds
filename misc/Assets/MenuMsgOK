@@ -27,12 +27,12 @@
 @line         static constexpr u16 msg_x = 2;
 @line         static constexpr u16 msg_y = 2;
 @line         static constexpr u16 msg_w = 28;
-@line         static constexpr u16 msg_h = 12;
+@line         static constexpr u16 msg_h = 14;
 @line         
 @line         static constexpr u16 button_x = 8;
-@line         static constexpr u16 button_y = 15;
+@line         static constexpr u16 button_y = 17;
 @line         static constexpr u16 button_w = 16;
-@line         static constexpr u16 button_h = 7;
+@line         static constexpr u16 button_h = 5;
 @line         static constexpr u16 buttons = 1;
 @line         static constexpr u16 columns = 1;
 @line     };

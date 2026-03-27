@@ -1,31 +1,44 @@
+#include <string>
+
 #include "./Page.h"
 
-#ifndef GAME_SCNS_MENU_PAGEMAIN_H
-#define GAME_SCNS_MENU_PAGEMAIN_H
+#ifndef GAME_SCNS_MENU_PAGEMSGOK_H
+#define GAME_SCNS_MENU_PAGEMSGOK_H
 
 namespace game::scns::menu
 {
-    /// @brief Represents a menu page
-    class PageMain : public Page
+    /// @brief Represents a message that prompts the user to press Yes or No
+    class PageMsgOK : public Page
     {
+        #pragma region nested
+
+        typedef void (*ButtonAction)(Scene&);
+
+        #pragma endregion
+
         #pragma region init
 
         public: 
 
-        /// @brief Constructor for PageMain
+        /// @brief Constructor for PageMsgOK
         /// @param scene Scene
-        PageMain(Scene& scene);
+        /// @param msg Message text
+        /// @param action Action performed when user presses OK
+        PageMsgOK(Scene& scene, std::string msg, ButtonAction action);
 
-        /// @brief Destructor for PageMain
-        virtual ~PageMain() override;
+        /// @brief Destructor for PageMsgOK
+        virtual ~PageMsgOK() override;
 
-        INIT_NODEFCOPYMOVE(PageMain)
+        INIT_NODEFCOPYMOVE(PageMsgOK)
 
         #pragma endregion
 
         #pragma region fields
 
         private:
+
+        std::string f_Msg;
+        ButtonAction f_Action;
 
         u16* f_Screen;
         size_t f_Screen_Len;
@@ -53,18 +66,12 @@ namespace game::scns::menu
         virtual void m_vblank() override;
 
         private:
+        
+        void m_Print_Text(u16& x, u16& y, const char* beg, const char* end, char endChar);
 
-        void m_Close();
-
-        void m_Button_Action();
+        void m_Refresh_Msg();
 
         void m_Refresh_Buttons();
-
-        static void m_Msg_No(Scene& scene);
-
-        static void m_Msg_Clear(Scene& scene);
-
-        static void m_Msg_About(Scene& scene);
 
         #pragma endregion
     };

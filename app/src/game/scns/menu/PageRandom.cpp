@@ -1,7 +1,10 @@
 #include "game/scns/menu/PageRandom.h"
 
 #include "game/Global.h"
+#include "game/ScreenUtil.h"
 #include "game/assets/MenuRandom.h"
+#include "game/scns/menu/PageMain.h"
+#include "game/scns/menu/PageMsgYN.h"
 #include "game/scns/menu/Scene.h"
 #include "engine/data/RLE.h"
 
@@ -12,40 +15,15 @@
 using namespace game::scns::menu;
 namespace ass = game::assets;
 
-#pragma region helper
-
-namespace game::scns::menu
-{
-    #pragma region functions
-
-    void loadScreenData4(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
-    {
-        static constexpr size_t offset = 1;
-        // Extract
-        u16* temp_data;
-        size_t temp_len;
-        engine::data::RLE::extract(in_data, in_len, temp_data, temp_len);
-        if (temp_len <= offset) { out_data = nullptr; out_len = 0; return; }
-        // Create final array
-        out_len = temp_len - offset;
-        out_data = new u16[out_len];
-        std::copy(temp_data + offset, temp_data + temp_len, out_data);
-        delete[] temp_data;
-    }
-
-    #pragma endregion
-}
-
-#pragma endregion
-
 #pragma region init
 
-PageRandom::PageRandom(Scene& scene, std::string msg, ButtonAction yes, ButtonAction no) : Page(scene)
+PageRandom::PageRandom(Scene& scene, u32 seed) : Page(scene)
 {
+    // Seed
+    f_Seed = seed;
+    f_Digits = m_Digits(f_Seed);
+    // Screen
     f_Screen = nullptr;
-    f_Msg = std::move(msg);
-    f_Yes = yes;
-    f_No = no;
 }
 
 PageRandom::~PageRandom()
@@ -55,21 +33,35 @@ PageRandom::~PageRandom()
 
 #pragma endregion
 
+#pragma region fields
+
+PageRandom::ButtonAction PageRandom::f_ButtonActions[] = 
+{
+    m_Action_0, m_Action_1, m_Action_2, m_Action_3, 
+    m_Action_4, m_Action_5, m_Action_6, m_Action_7, 
+    m_Action_8, m_Action_9, m_Action_A, m_Action_B, 
+    m_Action_C, m_Action_D, m_Action_E, m_Action_F, 
+    m_Action_Backspace, m_Action_OK, m_Action_Cancel,
+};
+
+u32 PageRandom::f_RandSeed = 0;
+
+#pragma endregion
+
 #pragma region helper functions
 
 void PageRandom::m_enter()
 {
     game::scns::menu::Page::m_enter();
     // Initialize screen data
-    loadScreenData4(ass::MenuRandom::data, ass::MenuRandom::size, f_Screen, f_Screen_Len);
+    ScreenUtil::load(ass::MenuRandom::data, ass::MenuRandom::size, f_Screen, f_Screen_Len);
     std::copy(f_Screen, f_Screen + f_Screen_Len, scene().textGFX().bg_Buffer());
     // Initialize index
-    f_Sel_Index = 1; // Select No by default
+    f_Sel_Index = 0x11; // Select OK by default
     f_Sel_Touch = 0xFFFF;
     f_Sel_Touching = false;
     // Post-init
-    m_Refresh_Msg();
-    m_Refresh_Buttons();
+    m_Refresh();
 }
 
 void PageRandom::m_exit()
@@ -84,10 +76,17 @@ void PageRandom::m_update()
     // Get touch
     if (scene().input_Touch())
     {
-        s16 touch_X = ((s16)(scene().input_Touch_Pos().px / 8) - (s16)ass::MenuRandom::button_x) / (s16)ass::MenuRandom::button_w;
-        s16 touch_Y = ((s16)(scene().input_Touch_Pos().py / 8) - (s16)ass::MenuRandom::button_y) / (s16)ass::MenuRandom::button_h;
-        f_Sel_Touch = (touch_X < 0 || touch_Y < 0 || touch_X >= ass::MenuRandom::columns) ? 
-            0xFFFF : (touch_X + touch_Y * ass::MenuRandom::columns);
+        f_Sel_Touch = 0xFFFF;
+        u16 touch_X = scene().input_Touch_Pos().px / 4;
+        u16 touch_Y = scene().input_Touch_Pos().py / 4;
+        for (u16 i = 0; i < ass::MenuRandom::buttons; ++i)
+        {
+            if (touch_X < ass::MenuRandom::buttons_x0[i]) continue;
+            if (touch_Y < ass::MenuRandom::buttons_y0[i]) continue;
+            if (touch_X >= ass::MenuRandom::buttons_x1[i]) continue;
+            if (touch_Y >= ass::MenuRandom::buttons_y1[i]) continue;
+            f_Sel_Touch = i; break;
+        }
     }
     // Get input
     if (scene().input_Down() & KEY_A)
@@ -96,42 +95,58 @@ void PageRandom::m_update()
     }
     else if (scene().input_Down() & KEY_B)
     {
-        f_No(scene());
+        m_Action_Cancel(*this);
     }
     else if (scene().input_Down() & KEY_LEFT)
     {
-        if (f_Sel_Index > 0)
+        if (f_Sel_Index < ass::MenuRandom::buttons)
         {
-            --f_Sel_Index;
-            f_Sel_Touching = false;
-            m_Refresh_Buttons();
+            u16 next = ass::MenuRandom::buttons_l[f_Sel_Index];
+            if (next < ass::MenuRandom::buttons)
+            {
+                f_Sel_Index = next;
+                f_Sel_Touching = false;
+                m_Refresh();
+            }
         }
     }
     else if (scene().input_Down() & KEY_RIGHT)
     {
-        if ((f_Sel_Index + 1) < ass::MenuRandom::buttons)
+        if (f_Sel_Index < ass::MenuRandom::buttons)
         {
-            ++f_Sel_Index;
-            f_Sel_Touching = false;
-            m_Refresh_Buttons();
+            u16 next = ass::MenuRandom::buttons_r[f_Sel_Index];
+            if (next < ass::MenuRandom::buttons)
+            {
+                f_Sel_Index = next;
+                f_Sel_Touching = false;
+                m_Refresh();
+            }
         }
     }
     else if (scene().input_Down() & KEY_UP)
     {
-        if (f_Sel_Index >= ass::MenuRandom::columns)
+        if (f_Sel_Index < ass::MenuRandom::buttons)
         {
-            f_Sel_Index -= ass::MenuRandom::columns;
-            f_Sel_Touching = false;
-            m_Refresh_Buttons();
+            u16 next = ass::MenuRandom::buttons_u[f_Sel_Index];
+            if (next < ass::MenuRandom::buttons)
+            {
+                f_Sel_Index = next;
+                f_Sel_Touching = false;
+                m_Refresh();
+            }
         }
     }
     else if (scene().input_Down() & KEY_DOWN)
     {
-        if ((f_Sel_Index + ass::MenuRandom::columns) < ass::MenuRandom::buttons)
+        if (f_Sel_Index < ass::MenuRandom::buttons)
         {
-            f_Sel_Index += ass::MenuRandom::columns;
-            f_Sel_Touching = false;
-            m_Refresh_Buttons();
+            u16 next = ass::MenuRandom::buttons_d[f_Sel_Index];
+            if (next < ass::MenuRandom::buttons)
+            {
+                f_Sel_Index = next;
+                f_Sel_Touching = false;
+                m_Refresh();
+            }
         }
     }
     else if (scene().input_Down() & KEY_TOUCH)
@@ -140,20 +155,14 @@ void PageRandom::m_update()
         {
             f_Sel_Index = f_Sel_Touch;
             f_Sel_Touching = true;
-            m_Refresh_Buttons();
+            m_Refresh();
         }
     }
     else if (scene().input_Up() & KEY_TOUCH)
     {
-        if (f_Sel_Touch == f_Sel_Index)
-        {
-            m_Button_Action();
-        }
-        else
-        {
-            f_Sel_Touching = false;
-            m_Refresh_Buttons();
-        }
+        if (f_Sel_Touch == f_Sel_Index) m_Button_Action();
+        f_Sel_Touching = false;
+        m_Refresh();
     }
 }
 
@@ -162,107 +171,214 @@ void PageRandom::m_vblank()
     Page::m_vblank();
 }
 
-void PageRandom::m_Print_Text(u16& x, u16& y, const char* beg, const char* end, char endChar)
-{
-    u16 len = end - beg;
-    end = beg + len; // Fix end in case an overflow occurs
-    // Newline needed?
-    if ((x + len) > ass::MenuRandom::msg_w) { x = 0; ++y; }
-    // Make sure there's room
-    u16 i = x + y * ass::MenuRandom::msg_w;
-    if (i >= (ass::MenuRandom::msg_w * ass::MenuRandom::msg_h)) return;
-    // Draw text
-    if (len <= ass::MenuRandom::msg_w)
-    {
-        u16* optr = scene().textGFX().bg_Buffer() + (ass::MenuRandom::msg_x + x) + (ass::MenuRandom::msg_y + y) * DS_SCREEN_COLS;
-        while (beg < end) { *(optr++) = *(beg++); ++x; }
-    }
-    else
-    {
-        u16* optr = scene().textGFX().bg_Buffer() + (ass::MenuRandom::msg_x + x) + (ass::MenuRandom::msg_y + y) * DS_SCREEN_COLS;
-        while (beg < end)
-        {
-            // Newline?
-            if (x >= ass::MenuRandom::msg_w)
-            {
-                x = 0; ++y;
-                optr = scene().textGFX().bg_Buffer() + (ass::MenuRandom::msg_x + x) + (ass::MenuRandom::msg_y + y) * DS_SCREEN_COLS;
-            }
-            // No more room?
-            if (y >= ass::MenuRandom::msg_h) return;
-            // Draw character
-            if ((x + 1) == ass::MenuRandom::msg_w && (beg + 1) != end)
-                *(optr++) = '-';
-            else
-                *(optr++) = *(beg++);
-            // Next
-            ++x;
-        }
-    }
-    // Draw end character
-    if (x < ass::MenuRandom::msg_w)
-    {
-        u16* optr = scene().textGFX().bg_Buffer() + (ass::MenuRandom::msg_x + x) + (ass::MenuRandom::msg_y + y) * DS_SCREEN_COLS;
-        if (endChar == '\n') { x = 0; ++y; }
-        else if (endChar >= 0x20) { *optr = endChar; ++x; }
-        else { *optr = 0x00; ++x; }
-    }
-}
-
 void PageRandom::m_Button_Action()
 {
-    switch (f_Sel_Index)
-    {
-        // Yes
-        case 0: f_Yes(scene()); break;
-        // No
-        case 1: f_No(scene()); break;
-    }
+    if (f_Sel_Index < ass::MenuRandom::buttons) f_ButtonActions[f_Sel_Index](*this);
 }
 
-void PageRandom::m_Refresh_Msg()
+void PageRandom::m_Refresh()
 {
-    // Reset button tiles
-    std::copy(f_Screen, f_Screen + ass::MenuRandom::button_y * DS_SCREEN_COLS, scene().textGFX().bg_Buffer());
-    // Print text
-    const char* beg = f_Msg.c_str();
-    const char* end = f_Msg.c_str() + f_Msg.length();
-    u16 x = 0;
-    u16 y = 0;
-    while (beg < end)
+    u16 off;
+    // Reset tiles
+    std::copy(f_Screen, f_Screen + f_Screen_Len, scene().textGFX().bg_Buffer());
+    // Print seed
+    off = ass::MenuRandom::seed_x + ass::MenuRandom::seed_y * DS_SCREEN_COLS;
     {
-        const char* ptr = beg;
-        while (ptr < end)
+        // Compute location
+        u16* beg = scene().textGFX().bg_Buffer() + off;
+        u16* end = beg + ass::MenuRandom::seed_len;
+        // Draw digits
+        for (u16 i = 0; i < f_Digits; ++i)
         {
-            if (*ptr <= 0x20) break;
-            ++ptr;
+            u16 digit = (f_Seed >> (4 * (f_Digits - 1 - i))) & 0xF;
+            if (digit < 10) *(beg++) = 0x30 + digit;
+            else *(beg++) = 0x41 + digit - 10;
         }
-        m_Print_Text(x, y, beg, ptr, (ptr >= end) ? 0x00 : *ptr);
-        beg = ptr + 1;
+        // Draw blanks
+        if (beg < end)
+        {
+            *(beg++) = 0x0F;
+            while (beg < end) *(beg++) = '_';
+        }
+    }
+    // Highlight selected
+    if (f_Sel_Index < ass::MenuRandom::buttons)
+    {
+        u16 button_x = ass::MenuRandom::buttons_x[f_Sel_Index];
+        u16 button_y = ass::MenuRandom::buttons_y[f_Sel_Index];
+        u16 button_w = ass::MenuRandom::buttons_w[f_Sel_Index];
+        u16 button_h = ass::MenuRandom::buttons_h[f_Sel_Index];
+        u16 highlight = (f_Sel_Touching ? 0x2 : 0x1) << 12;
+        off = button_x + button_y * DS_SCREEN_COLS;
+        for (u16 y = 0; y < button_h; ++y)
+        {
+            u16 i = off + y * DS_SCREEN_COLS;
+            for (u16 x = 0; x < button_w; ++x)
+                scene().textGFX().bg_Buffer()[i + x] |= highlight;
+        }
     }
     // Mark dirty
     scene().textGFX().markDirty();
 }
 
-void PageRandom::m_Refresh_Buttons()
+void PageRandom::m_InputDigit(u32 digit)
 {
-    // Reset button tiles
-    u16 offset = ass::MenuRandom::button_y * DS_SCREEN_COLS;
-    std::copy(f_Screen + offset, f_Screen + f_Screen_Len, scene().textGFX().bg_Buffer() + offset);
-    // Highlight selected
-    u16 index_x = f_Sel_Index % ass::MenuRandom::columns;
-    u16 index_y = f_Sel_Index / ass::MenuRandom::columns;
-    u16 off = ass::MenuRandom::button_x + ass::MenuRandom::button_w * index_x + 
-        (ass::MenuRandom::button_y + ass::MenuRandom::button_h * index_y) * DS_SCREEN_COLS;
-    u16 highlight = (f_Sel_Touching ? 0x2 : 0x1) << 12;
-    for (u16 y = 0; y < ass::MenuRandom::button_h; ++y)
+    if (f_Digits >= ass::MenuRandom::seed_len) return;
+    f_Seed <<= 4; f_Seed |= digit; ++f_Digits;
+    m_Refresh();
+}
+
+u16 PageRandom::m_Digits(u32 value)
+{
+    u16 digits = 1;
+    while (true)
     {
-        u16 i = off + y * DS_SCREEN_COLS;
-        for (u16 x = 0; x < ass::MenuRandom::button_w; ++x)
-            scene().textGFX().bg_Buffer()[i + x] |= highlight;
+        value >>= 4;
+        if (value == 0) break;
+        ++digits;
     }
-    // Mark dirty
-    scene().textGFX().markDirty();
+    return digits;
+}
+
+void PageRandom::m_Msg_No(Scene& scene)
+{
+    PageRandom* page = new PageRandom(scene, f_RandSeed);
+    page->deleteOnExit(true);
+    scene.gotoPage(page);
+}
+
+void PageRandom::m_Msg_Yes(Scene& scene)
+{
+    srand(f_RandSeed);
+    // Clear pattern
+    std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+    // Determine content area
+    static constexpr u16 dim_min = 16;
+    static constexpr u16 dim_max = 64;
+    u16 content_w = dim_min + rand() % (dim_max - dim_min);
+    u16 content_h = dim_min + rand() % (dim_max - dim_min);
+    u16 content_x = (PATTERN_WIDTH - content_w) / 2;
+    u16 content_y = (PATTERN_HEIGHT - content_h) / 2;
+    // Plot cells
+    static constexpr u16 chance_min = 2;
+    static constexpr u16 chance_max = 8;
+    u16 chance = chance_min + rand() % (chance_max - chance_min);
+    for (u16 y = 0; y < content_h; y++)
+    {
+        for (u16 x = 0; x < content_w; x++)
+        {
+            if ((rand() % chance) == 0)
+                Global::pattern()->setcell(content_x + x, content_y + y, true);
+        }
+    }
+    // Goto edit scene
+    game::scns::edit::Scene* editScene = new game::scns::edit::Scene();
+    editScene->deleteOnExit(true);
+    engine::scenes::gotoScene(editScene);
+}
+
+void PageRandom::m_Action_0(PageRandom& page)
+{
+    page.m_InputDigit(0);
+}
+
+void PageRandom::m_Action_1(PageRandom& page)
+{
+    page.m_InputDigit(1);
+}
+
+void PageRandom::m_Action_2(PageRandom& page)
+{
+    page.m_InputDigit(2);
+}
+
+void PageRandom::m_Action_3(PageRandom& page)
+{
+    page.m_InputDigit(3);
+}
+
+void PageRandom::m_Action_4(PageRandom& page)
+{
+    page.m_InputDigit(4);
+}
+
+void PageRandom::m_Action_5(PageRandom& page)
+{
+    page.m_InputDigit(5);
+}
+
+void PageRandom::m_Action_6(PageRandom& page)
+{
+    page.m_InputDigit(6);
+}
+
+void PageRandom::m_Action_7(PageRandom& page)
+{
+    page.m_InputDigit(7);
+}
+
+void PageRandom::m_Action_8(PageRandom& page)
+{
+    page.m_InputDigit(8);
+}
+
+void PageRandom::m_Action_9(PageRandom& page)
+{
+    page.m_InputDigit(9);
+}
+
+void PageRandom::m_Action_A(PageRandom& page)
+{
+    page.m_InputDigit(0xA);
+}
+
+void PageRandom::m_Action_B(PageRandom& page)
+{
+    page.m_InputDigit(0xB);
+}
+
+void PageRandom::m_Action_C(PageRandom& page)
+{
+    page.m_InputDigit(0xC);
+}
+
+void PageRandom::m_Action_D(PageRandom& page)
+{
+    page.m_InputDigit(0xD);
+}
+
+void PageRandom::m_Action_E(PageRandom& page)
+{
+    page.m_InputDigit(0xE);
+}
+
+void PageRandom::m_Action_F(PageRandom& page)
+{
+    page.m_InputDigit(0xF);
+}
+
+void PageRandom::m_Action_Backspace(PageRandom& page)
+{
+    if (page.f_Digits == 0) return;
+    page.f_Seed >>= 4; --page.f_Digits;
+    page.m_Refresh();
+}
+
+void PageRandom::m_Action_OK(PageRandom& page)
+{
+    f_RandSeed = page.f_Seed;
+    PageMsgYN* nextpage = new PageMsgYN(page.scene(),
+        "The current pattern will be cleared. Is this OK?",
+        m_Msg_Yes, m_Msg_No);
+    nextpage->deleteOnExit(true);
+    page.scene().gotoPage(nextpage);
+}
+
+void PageRandom::m_Action_Cancel(PageRandom& page)
+{
+    PageMain* nextpage = new PageMain(page.scene());
+    nextpage->deleteOnExit(true);
+    page.scene().gotoPage(nextpage);
 }
 
 #pragma endregion

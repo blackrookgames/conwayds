@@ -9,6 +9,7 @@
 #include "engine/data/Pattern.h"
 #include "engine/data/RLE.h"
 #include "engine/helper/ArrayUtil.h"
+#include "game/ScreenUtil.h"
 #include "game/assets/Palette.h"
 #include "game/assets/SimScreen.h"
 #include "game/assets/SimScreenPause.h"
@@ -19,28 +20,6 @@
 
 using namespace game::scns::sim;
 namespace ass = game::assets;
-
-#pragma region helper functions
-
-namespace game::scns::sim
-{
-    void loadScreenData(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
-    {
-        static constexpr size_t offset = 1;
-        // Extract
-        u16* temp_data;
-        size_t temp_len;
-        engine::data::RLE::extract(in_data, in_len, temp_data, temp_len);
-        if (temp_len <= offset) { out_data = nullptr; out_len = 0; return; }
-        // Create final array
-        out_len = temp_len - offset;
-        out_data = new u16[out_len];
-        std::copy(temp_data + offset, temp_data + temp_len, out_data);
-        delete[] temp_data;
-    }
-}
-
-#pragma endregion
 
 #pragma region init
 
@@ -82,10 +61,10 @@ void Scene::m_enter()
     videoSetModeSub(MODE_0_2D);
     vramSetBankC(VRAM_C_SUB_BG_0x06200000);
     // Initialize screen data
-    loadScreenData(\
+    ScreenUtil::load(\
         ass::SimScreen::data, ass::SimScreen::size,\
         f_Screen_Main, f_Screen_Main_Len);
-    loadScreenData(\
+    ScreenUtil::load(\
         ass::SimScreenPause::data, ass::SimScreenPause::size,\
         f_Screen_Pause, f_Screen_Pause_Len);
     // Initialize text graphics
@@ -94,7 +73,7 @@ void Scene::m_enter()
     {
         u16* screen;
         size_t screen_len;
-        loadScreenData(\
+        ScreenUtil::load(\
             ass::SimScreenStart::data, ass::SimScreenStart::size,\
             screen, screen_len);
         std::copy(screen, screen + screen_len, f_TextGFX->bg_Buffer());

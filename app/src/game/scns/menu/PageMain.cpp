@@ -1,41 +1,20 @@
 #include "game/scns/menu/PageMain.h"
 
+#include <ctime>
+
 #include "game/Global.h"
+#include "game/ScreenUtil.h"
 #include "game/assets/MenuMain.h"
 #include "game/scns/menu/Scene.h"
+#include "game/scns/menu/PageMsgOK.h"
 #include "game/scns/menu/PageMsgYN.h"
+#include "game/scns/menu/PageRandom.h"
 #include "engine/data/RLE.h"
 
 #include "game/scns/edit/Scene.h"
 
 using namespace game::scns::menu;
 namespace ass = game::assets;
-
-#pragma region helper
-
-namespace game::scns::menu
-{
-    #pragma region functions
-
-    void loadScreenData2(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
-    {
-        static constexpr size_t offset = 1;
-        // Extract
-        u16* temp_data;
-        size_t temp_len;
-        engine::data::RLE::extract(in_data, in_len, temp_data, temp_len);
-        if (temp_len <= offset) { out_data = nullptr; out_len = 0; return; }
-        // Create final array
-        out_len = temp_len - offset;
-        out_data = new u16[out_len];
-        std::copy(temp_data + offset, temp_data + temp_len, out_data);
-        delete[] temp_data;
-    }
-
-    #pragma endregion
-}
-
-#pragma endregion
 
 #pragma region init
 
@@ -57,7 +36,7 @@ void PageMain::m_enter()
 {
     game::scns::menu::Page::m_enter();
     // Initialize screen data
-    loadScreenData2(ass::MenuMain::data, ass::MenuMain::size, f_Screen, f_Screen_Len);
+    ScreenUtil::load(ass::MenuMain::data, ass::MenuMain::size, f_Screen, f_Screen_Len);
     std::copy(f_Screen, f_Screen + f_Screen_Len, scene().textGFX().bg_Buffer());
     // Initialize index
     f_Sel_Index = Global::menu_Main_Index();
@@ -164,8 +143,6 @@ void PageMain::m_vblank()
 
 void PageMain::m_Close()
 {
-    // Reset selected index
-    f_Sel_Index = 0;
     // Goto edit scene
     game::scns::edit::Scene* scene = new game::scns::edit::Scene();
     scene->deleteOnExit(true);
@@ -196,11 +173,21 @@ void PageMain::m_Button_Action()
             break;
         // Random
         case 3:
-            m_Close(); // TODO: Change
+            {
+                PageRandom* page = new PageRandom(scene(), time(nullptr));
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
             break;
         // About
         case 4:
-            m_Close(); // TODO: Change
+            {
+                PageMsgOK* page = new PageMsgOK(scene(),
+                    "Created by Black Rook Games", // TODO: Add more content
+                    m_Msg_About);
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
             break;
         // Close
         case 5:
@@ -240,12 +227,17 @@ void PageMain::m_Msg_Clear(Scene& scene)
 {
     // Clear pattern
     std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
-    // Reset selected index
-    Global::menu_Main_Index(0);
     // Goto edit scene
     game::scns::edit::Scene* editScene = new game::scns::edit::Scene();
     editScene->deleteOnExit(true);
     engine::scenes::gotoScene(editScene);
+}
+
+void PageMain::m_Msg_About(Scene& scene)
+{
+    PageMain* page = new PageMain(scene);
+    page->deleteOnExit(true);
+    scene.gotoPage(page);
 }
 
 #pragma endregion

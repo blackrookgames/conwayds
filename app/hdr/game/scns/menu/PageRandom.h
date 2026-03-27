@@ -12,7 +12,7 @@ namespace game::scns::menu
     {
         #pragma region nested
 
-        typedef void (*ButtonAction)(Scene&);
+        typedef void (*ButtonAction)(PageRandom&);
 
         #pragma endregion
 
@@ -22,10 +22,8 @@ namespace game::scns::menu
 
         /// @brief Constructor for PageRandom
         /// @param scene Scene
-        /// @param msg Message text
-        /// @param yes Action performed when user presses the Yes button
-        /// @param no Action performed when user presses the No button
-        PageRandom(Scene& scene, std::string msg, ButtonAction yes, ButtonAction no);
+        /// @param seed Seed
+        PageRandom(Scene& scene, u32 seed);
 
         /// @brief Destructor for PageRandom
         virtual ~PageRandom() override;
@@ -38,9 +36,8 @@ namespace game::scns::menu
 
         private:
 
-        std::string f_Msg;
-        ButtonAction f_Yes;
-        ButtonAction f_No;
+        u32 f_Seed;
+        u16 f_Digits;
 
         u16* f_Screen;
         size_t f_Screen_Len;
@@ -48,6 +45,10 @@ namespace game::scns::menu
         u16 f_Sel_Index;
         u16 f_Sel_Touch;
         bool f_Sel_Touching;
+
+        static ButtonAction f_ButtonActions[];
+
+        static u32 f_RandSeed;
 
         #pragma endregion
 
@@ -68,14 +69,56 @@ namespace game::scns::menu
         virtual void m_vblank() override;
 
         private:
-        
-        void m_Print_Text(u16& x, u16& y, const char* beg, const char* end, char endChar);
 
         void m_Button_Action();
 
-        void m_Refresh_Msg();
+        void m_Refresh();
 
-        void m_Refresh_Buttons();
+        void m_InputDigit(u32 digit);
+
+        static u16 m_Digits(u32 value);
+
+        static void m_Msg_No(Scene& scene);
+
+        static void m_Msg_Yes(Scene& scene);
+
+        static void m_Action_0(PageRandom& page);
+
+        static void m_Action_1(PageRandom& page);
+
+        static void m_Action_2(PageRandom& page);
+
+        static void m_Action_3(PageRandom& page);
+
+        static void m_Action_4(PageRandom& page);
+
+        static void m_Action_5(PageRandom& page);
+
+        static void m_Action_6(PageRandom& page);
+
+        static void m_Action_7(PageRandom& page);
+
+        static void m_Action_8(PageRandom& page);
+
+        static void m_Action_9(PageRandom& page);
+
+        static void m_Action_A(PageRandom& page);
+
+        static void m_Action_B(PageRandom& page);
+
+        static void m_Action_C(PageRandom& page);
+
+        static void m_Action_D(PageRandom& page);
+
+        static void m_Action_E(PageRandom& page);
+
+        static void m_Action_F(PageRandom& page);
+
+        static void m_Action_Backspace(PageRandom& page);
+
+        static void m_Action_OK(PageRandom& page);
+
+        static void m_Action_Cancel(PageRandom& page);
 
         #pragma endregion
     };

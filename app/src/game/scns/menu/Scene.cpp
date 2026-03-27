@@ -10,6 +10,7 @@
 #include "engine/data/RLE.h"
 #include "engine/helper/ArrayUtil.h"
 #include "game/Global.h"
+#include "game/ScreenUtil.h"
 #include "game/assets/MenuTitle.h"
 #include "game/assets/Palette.h"
 #include "game/assets/TextTileset.h"
@@ -37,32 +38,6 @@ namespace ass = game::assets;
     if (f_ActivePage->deleteOnExit()) delete f_ActivePage; \
     /* Reset pointer for active page */ \
     f_ActivePage = nullptr;
-
-#pragma endregion
-
-#pragma region helper
-
-namespace game::scns::menu
-{
-    #pragma region functions
-
-    void loadScreenData(const u16* in_data, size_t in_len, u16*& out_data, size_t& out_len)
-    {
-        static constexpr size_t offset = 1;
-        // Extract
-        u16* temp_data;
-        size_t temp_len;
-        engine::data::RLE::extract(in_data, in_len, temp_data, temp_len);
-        if (temp_len <= offset) { out_data = nullptr; out_len = 0; return; }
-        // Create final array
-        out_len = temp_len - offset;
-        out_data = new u16[out_len];
-        std::copy(temp_data + offset, temp_data + temp_len, out_data);
-        delete[] temp_data;
-    }
-
-    #pragma endregion
-}
 
 #pragma endregion
 
@@ -120,7 +95,7 @@ void Scene::m_enter()
     videoSetModeSub(MODE_0_2D);
     vramSetBankC(VRAM_C_SUB_BG_0x06200000);
     // Initialize screen data
-    loadScreenData(ass::MenuTitle::data, ass::MenuTitle::size, f_Screen_Title, f_Screen_Title_Len);
+    ScreenUtil::load(ass::MenuTitle::data, ass::MenuTitle::size, f_Screen_Title, f_Screen_Title_Len);
     // Initialize top screen
     f_TScr = bgInit(0, BgType_Text4bpp, BgSize_T_256x256, 8, 0);
     f_TScr_Map = bgGetMapPtr(f_TScr);
@@ -148,6 +123,7 @@ void Scene::m_enter()
     // Page
     f_NextPage = new PageMain(*this);
     f_NextPage->deleteOnExit(true);
+    Global::menu_Main_Index(0);
     // Turn on screen
     DS_SCREEN_ON
 }

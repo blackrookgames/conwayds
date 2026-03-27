@@ -53,7 +53,8 @@ SCRNAMES += \
 	src/game/assets/TextTileset.cpp
 
 SCRNAMES += \
-	src/game/Global.cpp
+	src/game/Global.cpp\
+	src/game/ScreenUtil.cpp
 
 SCRNAMES += \
 	src/game/scns/edit/Editor.cpp \
@@ -62,6 +63,7 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/scns/menu/Page.cpp \
 	src/game/scns/menu/PageMain.cpp \
+	src/game/scns/menu/PageMsgOK.cpp \
 	src/game/scns/menu/PageMsgYN.cpp \
 	src/game/scns/menu/PageRandom.cpp \
 	src/game/scns/menu/Scene.cpp
