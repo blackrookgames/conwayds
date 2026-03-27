@@ -41,6 +41,9 @@ SCRNAMES += \
 	src/game/assets/EditScreen.cpp \
 	src/game/assets/EditTileset.cpp \
 	src/game/assets/MenuMain.cpp \
+	src/game/assets/MenuMsgOK.cpp \
+	src/game/assets/MenuMsgYN.cpp \
+	src/game/assets/MenuRandom.cpp \
 	src/game/assets/MenuTitle.cpp \
 	src/game/assets/Palette.cpp \
 	src/game/assets/SimScreen.cpp \
@@ -59,6 +62,8 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/scns/menu/Page.cpp \
 	src/game/scns/menu/PageMain.cpp \
+	src/game/scns/menu/PageMsgYN.cpp \
+	src/game/scns/menu/PageRandom.cpp \
 	src/game/scns/menu/Scene.cpp
 
 SCRNAMES += \

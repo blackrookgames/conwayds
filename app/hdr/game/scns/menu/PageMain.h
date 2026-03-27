@@ -60,6 +60,10 @@ namespace game::scns::menu
 
         void m_Refresh_Buttons();
 
+        static void m_Msg_No(Scene& scene);
+
+        static void m_Msg_Clear(Scene& scene);
+
         #pragma endregion
     };
 }

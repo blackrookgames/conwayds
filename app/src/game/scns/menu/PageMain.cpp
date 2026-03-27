@@ -3,6 +3,7 @@
 #include "game/Global.h"
 #include "game/assets/MenuMain.h"
 #include "game/scns/menu/Scene.h"
+#include "game/scns/menu/PageMsgYN.h"
 #include "engine/data/RLE.h"
 
 #include "game/scns/edit/Scene.h"
@@ -165,7 +166,7 @@ void PageMain::m_Close()
 {
     // Reset selected index
     f_Sel_Index = 0;
-    // Goto simulation scene
+    // Goto edit scene
     game::scns::edit::Scene* scene = new game::scns::edit::Scene();
     scene->deleteOnExit(true);
     engine::scenes::gotoScene(scene);
@@ -185,7 +186,13 @@ void PageMain::m_Button_Action()
             break;
         // Clear
         case 2:
-            m_Close(); // TODO: Change
+            {
+                PageMsgYN* page = new PageMsgYN(scene(),
+                    "The current pattern will be cleared. Is this OK?",
+                    m_Msg_Clear, m_Msg_No);
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
             break;
         // Random
         case 3:
@@ -220,6 +227,25 @@ void PageMain::m_Refresh_Buttons()
     }
     // Mark dirty
     scene().textGFX().markDirty();
+}
+
+void PageMain::m_Msg_No(Scene& scene)
+{
+    PageMain* page = new PageMain(scene);
+    page->deleteOnExit(true);
+    scene.gotoPage(page);
+}
+
+void PageMain::m_Msg_Clear(Scene& scene)
+{
+    // Clear pattern
+    std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+    // Reset selected index
+    Global::menu_Main_Index(0);
+    // Goto edit scene
+    game::scns::edit::Scene* editScene = new game::scns::edit::Scene();
+    editScene->deleteOnExit(true);
+    engine::scenes::gotoScene(editScene);
 }
 
 #pragma endregion

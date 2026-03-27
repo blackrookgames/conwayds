@@ -93,6 +93,8 @@ namespace game::scns::menu
 
         #pragma region functions
 
+        public:
+
         /// @brief Enters the specified page on the next update
         /// @param page Page to enter
         void gotoPage(Page* page);
