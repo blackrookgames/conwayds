@@ -11,6 +11,7 @@ using namespace game;
 #pragma region fields
 
 engine::data::Pattern Global::f_Pattern;
+engine::io::Path Global::f_Pattern_Path = engine::io::Path();
 
 engine::helper::RRValue48p16 Global::f_View_X = engine::helper::RRValue48p16(0, 0);
 engine::helper::RRValue48p16 Global::f_View_Y = engine::helper::RRValue48p16(0, 0);
@@ -27,6 +28,10 @@ u16 Global::f_Menu_Load_Index = 0;
 #pragma region properties
 
 engine::data::Pattern* Global::pattern() { return &f_Pattern; }
+
+const engine::io::Path& Global::pattern_Path() { return f_Pattern_Path; }
+void Global::pattern_Path(const engine::io::Path& value) { f_Pattern_Path = value; }
+void Global::pattern_Path(engine::io::Path&& value) { f_Pattern_Path = std::move(value); }
 
 engine::helper::RRValue48p16 Global::view_X() { return f_View_X; }
 void Global::view_X(engine::helper::RRValue48p16 value) { f_View_X = value; }

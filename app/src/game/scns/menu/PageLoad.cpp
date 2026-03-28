@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "game/FileUtil.h"
 #include "game/Global.h"
 #include "game/ScreenUtil.h"
 #include "game/assets/MenuLoad.h"
@@ -10,7 +11,7 @@
 #include "game/scns/menu/PageMsgYN.h"
 #include "game/scns/menu/Scene.h"
 #include "engine/data/RLE.h"
-#include "engine/helper/DirUtil.h"
+#include "engine/helper/StrUtil.h"
 
 #include "game/scns/edit/Scene.h"
 
@@ -22,12 +23,12 @@ namespace ass = game::assets;
 PageLoad::PageLoad(Scene& scene) : Page(scene)
 {
     f_Screen = nullptr;
-    f_List_Names = nullptr;
+    f_List = nullptr;
 }
 
 PageLoad::~PageLoad()
 {
-    DELETE_ARRAY(f_List_Names)
+    DELETE_ARRAY(f_List)
     DELETE_ARRAY(f_Screen)
 }
 
@@ -35,8 +36,7 @@ PageLoad::~PageLoad()
 
 #pragma region fields
 
-std::string PageLoad::f_Chosen_Name = "";
-std::string PageLoad::f_Chosen_Path = "";
+engine::io::Path PageLoad::f_Chosen = engine::io::Path();
 
 #pragma endregion
 
@@ -54,9 +54,17 @@ void PageLoad::m_enter()
     f_But_Touch_Down = 0xFFFF;
     f_But_Touching = false;
     // Initialize list
-    m_GetFileList(f_List_Names, f_List_Paths, f_List_Count);
+    FileUtil::getPatterns(f_List, f_List_Count);
     f_List_Index = (f_List_Count > 0) ? 0 : 0xFFFF;
     f_List_Offset = 0;
+    // Find item to select
+    for (u16 i = 0; i < f_List_Count; ++i)
+    {
+        if (f_List[i].fullPath() != Global::pattern_Path().fullPath())
+            continue;
+        f_List_Index = i;
+        break;
+    }
     // Post-init
     m_Refresh_List();
     m_Refresh_Buttons();
@@ -166,40 +174,6 @@ void PageLoad::m_vblank()
     Page::m_vblank();
 }
 
-void PageLoad::m_GetFileList(std::string*& names, std::string*& paths, u16& count)
-{
-    // Get samples
-    std::string* samps; u16 samps_Count;
-    engine::helper::DirUtil::getPaths("nitro:/samples", samps, samps_Count, true, true, false);
-    // Create final array
-    count = samps_Count;
-    if (count > 0)
-    {
-        std::string* iptr;
-        // Create array
-        names = new std::string[count];
-        paths = new std::string[count];
-        std::string* nptr = names;
-        std::string* pptr = paths;
-        // Add samples
-        iptr = samps;
-        for (u16 i = 0; i < samps_Count; ++i)
-        {
-            // Find last slash
-            size_t index = -1;
-            for (u16 j = 0; j < iptr->length(); ++j) { if ((*iptr)[j] == '/') index = j; }
-            // Add
-            *nptr = "SAMP:" + iptr->substr(index + 1);
-            *pptr = *iptr;
-            // Next
-            ++iptr; ++nptr; ++pptr;
-        }
-    }
-    else { names = nullptr; paths = nullptr; }
-    // Delete
-    DELETE_ARRAY(samps)
-}
-
 void PageLoad::m_Button_Action(u16 index)
 {
     switch (index)
@@ -234,11 +208,11 @@ void PageLoad::m_Refresh_List()
         // Item
         if (index < f_List_Count)
         {
-            std::string item = f_List_Names[index];
+            const engine::io::Path& item = f_List[index];
             while (x < ass::MenuLoad::list_w)
             {
-                if (x >= item.length()) break;
-                *row = color | item[x];
+                if (x >= item.displayName().length()) break;
+                *row = color | item.displayName()[x];
                 ++row; ++x;
             }
         }
@@ -292,8 +266,7 @@ void PageLoad::m_OK()
 {
     if (f_List_Index < f_List_Count)
     {
-        f_Chosen_Name = f_List_Names[f_List_Index];
-        f_Chosen_Path = f_List_Paths[f_List_Index];
+        f_Chosen = f_List[f_List_Index];
         // Warning message
         PageMsgYN* nextpage = new PageMsgYN(scene(),
             "The current pattern will be cleared. Is this OK?",
@@ -334,11 +307,19 @@ void PageLoad::m_Msg_No(Scene& scene)
 void PageLoad::m_Msg_Yes(Scene& scene)
 {
     // Load pattern
-    bool result = Global::pattern()->load_file(f_Chosen_Path.c_str());
-    if (!result) std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+    bool result = Global::pattern()->load_file(f_Chosen.fullPath().c_str());
+    if (result)
+    {
+        Global::pattern_Path(f_Chosen);
+    }
+    else
+    {
+        std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+        Global::pattern_Path(engine::io::Path());
+    }
     // Confirm message
     std::ostringstream msg;
-    msg << (result ? "Successfully loaded " : "Failed to load \"") << f_Chosen_Name << "\"";
+    msg << (result ? "Successfully loaded \"" : "Failed to load \"") << f_Chosen.displayName() << "\"";
     PageMsgOK* nextpage = new PageMsgOK(scene, msg.str(), m_Msg_OK);
     nextpage->deleteOnExit(true);
     scene.gotoPage(nextpage);

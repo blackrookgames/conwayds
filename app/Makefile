@@ -31,9 +31,11 @@ SCRNAMES += \
 	src/engine/data/Pattern.cpp\
 	src/engine/data/Serial.cpp \
 	src/engine/gfx/TextGFX.cpp \
-	src/engine/helper/DirUtil.cpp \
 	src/engine/helper/RRValue24p8.cpp \
 	src/engine/helper/RRValue48p16.cpp \
+	src/engine/helper/StrUtil.cpp \
+	src/engine/io/DirUtil.cpp \
+	src/engine/io/Path.cpp \
 	src/engine/scenes/__.cpp \
 	src/engine/scenes/Scene.cpp \
 	src/engine/view/View.cpp
@@ -55,6 +57,7 @@ SCRNAMES += \
 	src/game/assets/TextTileset.cpp
 
 SCRNAMES += \
+	src/game/FileUtil.cpp\
 	src/game/Global.cpp\
 	src/game/ScreenUtil.cpp
 

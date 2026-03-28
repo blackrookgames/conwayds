@@ -232,6 +232,7 @@ void PageMain::m_Msg_Clear(Scene& scene)
 {
     // Clear pattern
     std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+    Global::pattern_Path(engine::io::Path());
     // Goto edit scene
     game::scns::edit::Scene* editScene = new game::scns::edit::Scene();
     editScene->deleteOnExit(true);

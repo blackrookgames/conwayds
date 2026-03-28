@@ -252,6 +252,7 @@ void PageRandom::m_Msg_Yes(Scene& scene)
     srand(f_RandSeed);
     // Clear pattern
     std::fill(Global::pattern()->cells(), Global::pattern()->cells() + PATTERN_AREA, false);
+    Global::pattern_Path(engine::io::Path());
     // Determine content area
     static constexpr u16 dim_min = 16;
     static constexpr u16 dim_max = 64;

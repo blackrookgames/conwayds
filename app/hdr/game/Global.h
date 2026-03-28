@@ -2,6 +2,7 @@
 
 #include "engine/data/Pattern.h"
 #include "engine/helper/RRValue48p16.h"
+#include "engine/io/Path.h"
 #include "game/scns/edit/Tool.h"
 
 #ifndef GAME_GLOBAL_H
@@ -17,6 +18,7 @@ namespace game
         private:
 
         static engine::data::Pattern f_Pattern;
+        static engine::io::Path f_Pattern_Path;
 
         static engine::helper::RRValue48p16 f_View_X;
         static engine::helper::RRValue48p16 f_View_Y;
@@ -43,6 +45,13 @@ namespace game
 
         /// @brief Pattern
         static engine::data::Pattern* pattern();
+
+        /// @brief Filepath of pattern
+        static const engine::io::Path& pattern_Path();
+        /// @brief Filepath of pattern
+        static void pattern_Path(const engine::io::Path& value);
+        /// @brief Filepath of pattern
+        static void pattern_Path(engine::io::Path&& value);
 
         /// @brief X-coordinate of view
         static engine::helper::RRValue48p16 view_X();

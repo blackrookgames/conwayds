@@ -1,0 +1,27 @@
+#include <nds.h>
+#include <string>
+#include <vector>
+
+#include "./Path.h"
+
+#ifndef ENGINE_IO_DIRUTIL_H
+#define ENGINE_IO_DIRUTIL_H
+
+namespace engine::io
+{
+    /// @brief Utility for operations related to file directories
+    class DirUtil
+    {
+        public:
+
+        /// @brief Retrieves the specified items within the directory at the specified path
+        /// @param path Full path of directory
+        /// @param getFiles Whether or not to retrieve files
+        /// @param getDirs Whether or not to retrieve directories
+        /// @return List of retrieved items
+        /// @note The search is non-recursive
+        static std::vector<Path> getPaths(const std::string& path, bool getFiles = true, bool getDirs = true);
+    };
+}
+
+#endif

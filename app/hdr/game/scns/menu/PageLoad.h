@@ -1,5 +1,4 @@
-#include <string>
-
+#include "engine/io/Path.h"
 #include "./Page.h"
 
 #ifndef GAME_SCNS_MENU_PAGELOAD_H
@@ -43,14 +42,12 @@ namespace game::scns::menu
         u16 f_But_Touch_Down;
         bool f_But_Touching;
         
-        std::string* f_List_Names;
-        std::string* f_List_Paths;
+        engine::io::Path* f_List;
         u16 f_List_Count;
         u16 f_List_Index;
         u16 f_List_Offset;
 
-        static std::string f_Chosen_Name;
-        static std::string f_Chosen_Path;
+        static engine::io::Path f_Chosen;
 
         #pragma endregion
 
@@ -72,8 +69,6 @@ namespace game::scns::menu
 
         private:
 
-        static void m_GetFileList(std::string*& names, std::string*& paths, u16& count);
-        
         void m_Button_Action(u16 index);
 
         void m_Refresh_List();
