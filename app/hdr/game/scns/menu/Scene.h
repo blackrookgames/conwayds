@@ -43,6 +43,7 @@ namespace game::scns::menu
         u16 f_Input_Down;
         u16 f_Input_Up;
         u16 f_Input_Held;
+        u16 f_Input_Repeat;
         bool f_Input_Touch;
         touchPosition f_Input_Touch_Pos;
 
@@ -60,6 +61,9 @@ namespace game::scns::menu
 
         /// @brief Current keypad held state
         u16 input_Held() const;
+
+        /// @brief Current keypad repeat state
+        u16 input_Repeat() const;
 
         /// @brief Whether or not the touch screen is currently being touched
         bool input_Touch() const;

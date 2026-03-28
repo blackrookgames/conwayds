@@ -30,6 +30,13 @@ namespace game
 
         #pragma endregion
         
+        #pragma region const
+
+        /// @brief Maximum number of files
+        static constexpr u16 maxFileCount = 0xFFFF;
+
+        #pragma endregion
+        
         #pragma region properties
 
         public:

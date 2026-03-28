@@ -6,6 +6,7 @@
 #include "game/ScreenUtil.h"
 #include "game/assets/MenuMain.h"
 #include "game/scns/menu/Scene.h"
+#include "game/scns/menu/PageLoad.h"
 #include "game/scns/menu/PageMsgOK.h"
 #include "game/scns/menu/PageMsgYN.h"
 #include "game/scns/menu/PageRandom.h"
@@ -155,7 +156,11 @@ void PageMain::m_Button_Action()
     {
         // Load
         case 0:
-            m_Close(); // TODO: Change
+            {
+                PageLoad* page = new PageLoad(scene());
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
             break;
         // Save
         case 1:

@@ -31,6 +31,7 @@ SCRNAMES += \
 	src/engine/data/Pattern.cpp\
 	src/engine/data/Serial.cpp \
 	src/engine/gfx/TextGFX.cpp \
+	src/engine/helper/DirUtil.cpp \
 	src/engine/helper/RRValue24p8.cpp \
 	src/engine/helper/RRValue48p16.cpp \
 	src/engine/scenes/__.cpp \
@@ -40,6 +41,7 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/assets/EditScreen.cpp \
 	src/game/assets/EditTileset.cpp \
+	src/game/assets/MenuLoad.cpp \
 	src/game/assets/MenuMain.cpp \
 	src/game/assets/MenuMsgOK.cpp \
 	src/game/assets/MenuMsgYN.cpp \
@@ -62,6 +64,7 @@ SCRNAMES += \
 
 SCRNAMES += \
 	src/game/scns/menu/Page.cpp \
+	src/game/scns/menu/PageLoad.cpp \
 	src/game/scns/menu/PageMain.cpp \
 	src/game/scns/menu/PageMsgOK.cpp \
 	src/game/scns/menu/PageMsgYN.cpp \

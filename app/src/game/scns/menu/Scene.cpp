@@ -70,6 +70,8 @@ u16 Scene::input_Up() const { return f_Input_Up; }
 
 u16 Scene::input_Held() const { return f_Input_Held; }
 
+u16 Scene::input_Repeat() const { return f_Input_Repeat; }
+
 bool Scene::input_Touch() const { return f_Input_Touch; }
 
 touchPosition Scene::input_Touch_Pos() const { return f_Input_Touch_Pos; }
@@ -124,6 +126,8 @@ void Scene::m_enter()
     f_NextPage = new PageMain(*this);
     f_NextPage->deleteOnExit(true);
     Global::menu_Main_Index(0);
+    // Input
+    keysSetRepeat(30, 5);
     // Turn on screen
     DS_SCREEN_ON
 }
@@ -154,6 +158,7 @@ void Scene::m_update()
     f_Input_Down = keysDown();
     f_Input_Up = keysUp();
     f_Input_Held = keysHeld();
+    f_Input_Repeat = keysDownRepeat();
     f_Input_Touch = touchRead(&f_Input_Touch_Pos);
     // Update page
     if (f_ActivePage) f_ActivePage->m__update();
