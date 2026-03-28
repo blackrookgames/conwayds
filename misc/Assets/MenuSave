@@ -1,0 +1,62 @@
+@var prefix game/assets/MenuSave
+@var hdrpath ../../app/hdr/${prefix}.h
+@var srcpath ../../app/src/${prefix}.cpp
+
+@var hdrdef GAME_ASSETS_MENUSAVE_H
+
+@var namespace game::assets
+@var class MenuSave
+
+@load list data ./MenuSave.bin uint16 
+
+@open ${hdrpath}
+@line \#include <nds.h>
+@line 
+@line \#ifndef ${hdrdef}
+@line \#define ${hdrdef}
+@line 
+@line namespace ${namespace}
+@line {
+@line     class ${class}
+@line     {
+@line         public:
+@line         
+@line         static const size_t size;
+@line         static const u16 data[];
+@line         
+@line         static constexpr u16 field_x = 3;
+@line         static constexpr u16 field_y = 3;
+@line         static constexpr u16 field_len = 26;
+@line         static constexpr u16 caps_x = 2;
+@line         static constexpr u16 caps_y = 5;
+@line         
+@line         static constexpr u16 button_w = 14;
+@line         static constexpr u16 button_h = 5;
+@line         static constexpr u16 button_ok_x = 2;
+@line         static constexpr u16 button_ok_y = 17;
+@line         static constexpr u16 button_cancel_x = 16;
+@line         static constexpr u16 button_cancel_y = 17;
+@line         static constexpr u16 keyboard_x = 2;
+@line         static constexpr u16 keyboard_y = 6;
+@line         static constexpr u16 keyboard_w = 27;
+@line         static constexpr u16 keyboard_h = 11;
+@line         static constexpr u16 keyboard_x0 = 2 * 8 + 4;
+@line         static constexpr u16 keyboard_y0 = 6 * 8 + 4;
+@line         static constexpr u16 keyboard_x1 = 29 * 8 - 4;
+@line         static constexpr u16 keyboard_y1 = 17 * 8 - 4;
+@line     };
+@line }
+@line 
+@line \#endif
+@close
+
+@open ${srcpath}
+@line \#include "${prefix}.h"
+@line 
+@line using namespace ${namespace};
+@line 
+@line const size_t ${class}::size = $(len data);
+@line const u16 ${class}::data[] = 
+@line $(cppdata data);
+@line 
+@close

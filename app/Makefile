@@ -48,6 +48,7 @@ SCRNAMES += \
 	src/game/assets/MenuMsgOK.cpp \
 	src/game/assets/MenuMsgYN.cpp \
 	src/game/assets/MenuRandom.cpp \
+	src/game/assets/MenuSave.cpp \
 	src/game/assets/MenuTitle.cpp \
 	src/game/assets/Palette.cpp \
 	src/game/assets/SimScreen.cpp \
