@@ -165,8 +165,17 @@ void PageMain::m_Button_Action()
             break;
         // Save
         case 1:
+            if (Global::saveEnabled())
             {
                 PageSave* page = new PageSave(scene());
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
+            else
+            {
+                PageMsgOK* page = new PageMsgOK(scene(),
+                    "FAT failed to initialize.",
+                    m_Msg_No);
                 page->deleteOnExit(true);
                 scene().gotoPage(page);
             }
@@ -194,7 +203,7 @@ void PageMain::m_Button_Action()
             {
                 PageMsgOK* page = new PageMsgOK(scene(),
                     "Created by Black Rook Games", // TODO: Add more content
-                    m_Msg_About);
+                    m_Msg_No);
                 page->deleteOnExit(true);
                 scene().gotoPage(page);
             }
@@ -242,13 +251,6 @@ void PageMain::m_Msg_Clear(Scene& scene)
     game::scns::edit::Scene* editScene = new game::scns::edit::Scene();
     editScene->deleteOnExit(true);
     engine::scenes::gotoScene(editScene);
-}
-
-void PageMain::m_Msg_About(Scene& scene)
-{
-    PageMain* page = new PageMain(scene);
-    page->deleteOnExit(true);
-    scene.gotoPage(page);
 }
 
 #pragma endregion

@@ -1,9 +1,27 @@
 #include "engine/io/DirUtil.h"
 
 #include <dirent.h>
+#include <errno.h>
 #include <sstream>
+#include <sys/stat.h>
 
 using namespace engine::io;
+
+#pragma region functions
+
+bool DirUtil::m_MakeDir(const std::string& path)
+{
+    // Make directory
+    if (mkdir(path.c_str(), 0777) == 0) return true;
+    // Check if directory already existed
+    if (EEXIST) return true;
+    // Fail
+    return false;
+}
+
+#pragma endregion
+
+#pragma region functions
 
 std::vector<Path> DirUtil::getPaths(const std::string& path, bool getFiles, bool getDirs)
 {
@@ -28,3 +46,15 @@ std::vector<Path> DirUtil::getPaths(const std::string& path, bool getFiles, bool
     }
     return paths;
 }
+
+bool DirUtil::create(const std::string& path)
+{
+    for (size_t i = 0; i < path.length(); ++i)
+    {
+        if (path[i] != '/') continue;
+        if (!m_MakeDir(path.substr(0, i))) return false;
+    }
+    return m_MakeDir(path);
+}
+
+#pragma endregion

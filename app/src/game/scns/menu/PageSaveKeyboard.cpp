@@ -9,9 +9,12 @@ namespace ass = game::assets;
 
 #pragma region macros
 
+#define BADCHAR 0x99
+
 #define NOKEY \
     { \
         .cap = false, \
+        .lo = 0x00, \
     }
 
 #define KEY(v_lo, v_up, v_x, v_y) \
@@ -41,11 +44,11 @@ PageSaveKeyboard::PageSaveKeyboard(Scene& scene, PageSave& page, Input input) : 
     f_Input = input;
     f_Widget_L = nullptr;
     f_Widget_R = nullptr;
-    f_Widget_U = nullptr;
-    f_Widget_D = nullptr;
     f_CapsLock = false;
     f_Shift = false;
-    f_SelectedIndex = 0xFFFF;
+    f_Sel_X = 0xFFFF;
+    f_Sel_Y = 0xFFFF;
+    f_Sel_Key = nullptr;
 }
 
 PageSaveKeyboard::~PageSaveKeyboard() { }
@@ -137,14 +140,6 @@ const PageSaveWidget* PageSaveKeyboard::widget_R() const { return f_Widget_R; }
 PageSaveWidget* PageSaveKeyboard::widget_R() { return f_Widget_R; }
 void PageSaveKeyboard::widget_R(PageSaveWidget* value) { f_Widget_R = value; }
 
-const PageSaveWidget* PageSaveKeyboard::widget_U() const { return f_Widget_U; }
-PageSaveWidget* PageSaveKeyboard::widget_U() { return f_Widget_U; }
-void PageSaveKeyboard::widget_U(PageSaveWidget* value) { f_Widget_U = value; }
-
-const PageSaveWidget* PageSaveKeyboard::widget_D() const { return f_Widget_D; }
-PageSaveWidget* PageSaveKeyboard::widget_D() { return f_Widget_D; }
-void PageSaveKeyboard::widget_D(PageSaveWidget* value) { f_Widget_D = value; }
-
 u16 PageSaveKeyboard::x() const { return ass::MenuSave::keyboard_x; }
 
 u16 PageSaveKeyboard::y() const { return ass::MenuSave::keyboard_y; }
@@ -177,7 +172,11 @@ void PageSaveKeyboard::m_Refresh()
         const Key* ptr = f_Keys;
         for (u16 i = 0; i < f_Keys_Count; ++i)
         {
-            if (ptr->cap) p_Scene().textGFX().bg_Buffer()[ptr->off] = (f_CapsLock != f_Shift) ? ptr->up : ptr->lo;
+            if (ptr->cap)
+            {
+                u8 chr = m_GetChar(*ptr);
+                p_Scene().textGFX().bg_Buffer()[ptr->off] = (chr != 0x00) ? chr : BADCHAR;
+            }
             ++ptr;
         }
     }
@@ -186,21 +185,28 @@ void PageSaveKeyboard::m_Refresh()
 void PageSaveKeyboard::m_Highlight(bool touching)
 {
     PageSaveWidget::m_Highlight(touching);
-    /*
-    u16 color = (touching ? 0x02 : 0x01) << 12;
-    u16* row = p_Scene().textGFX().bg_Buffer() + f_X + f_Y * DS_SCREEN_COLS;
-    for (u16 y = 0; y < f_H; ++y)
+    // Highlight key
+    if (f_Sel_Key)
     {
-        u16* optr = row;
-        for (u16 x = 0; x < f_W; ++x) *(optr++) |= color;
-        row += DS_SCREEN_COLS;
+        u16 color = (touching ? 0x02 : 0x01) << 12;
+        u16* optr = p_Scene().textGFX().bg_Buffer() + f_Sel_Key->off;
+        for (u16 i = 0; i < f_Sel_Key->len; ++i) *(optr++) |= color;
     }
-    */
 }
 
 void PageSaveKeyboard::m_Enter(PageSaveWidget* prev)
 {
     PageSaveWidget::m_Enter(prev);
+    // Set selection
+    u16 x;
+    if (prev)
+    {
+        x = prev->x() + prev->w() / 2;
+        x = ((x < ass::MenuSave::keyboard_x) ? 0 : (x - ass::MenuSave::keyboard_x)) / ass::MenuSave::keyboard_cell_tile_w;
+        x = (x < ass::MenuSave::keygrid_split) ? 0 : (ass::MenuSave::keygrid_cols - 1);
+    }
+    else x = 0;
+    m_Set_Selection(x, ass::MenuSave::keygrid_rows - 1);
 }
 
 void PageSaveKeyboard::m_Exit(PageSaveWidget* next)
@@ -211,35 +217,114 @@ void PageSaveKeyboard::m_Exit(PageSaveWidget* next)
 void PageSaveKeyboard::m_Touch(u16 touch_X, u16 touch_Y)
 {
     PageSaveWidget::m_Touch(touch_X, touch_Y);
+    // Determine key
+    u16 x = ((touch_X < ass::MenuSave::keyboard_x0) ? 0 : (touch_X - ass::MenuSave::keyboard_x0)) / ass::MenuSave::keyboard_cell_w;
+    if (x >= ass::MenuSave::keygrid_cols) x = ass::MenuSave::keygrid_cols - 1;
+    u16 y = ((touch_Y < ass::MenuSave::keyboard_y0) ? 0 : (touch_Y - ass::MenuSave::keyboard_y0)) / ass::MenuSave::keyboard_cell_h;
+    if (y >= ass::MenuSave::keygrid_rows) y = ass::MenuSave::keygrid_rows - 1;
+    m_Set_Selection(x, y);
+    // Input
+    m_Input();
 }
 
 void PageSaveKeyboard::m_Input_A()
 {
     PageSaveWidget::m_Input_A();
+    m_Input();
 }
 
 void PageSaveKeyboard::m_Input_Left()
 {
     PageSaveWidget::m_Input_Left();
-    if (f_Widget_L) p_Page().focus(f_Widget_L);
+    m_Inc_Selection(ass::MenuSave::keygrid_cols - 1);
 }
 
 void PageSaveKeyboard::m_Input_Right()
 {
     PageSaveWidget::m_Input_Right();
-    if (f_Widget_R) p_Page().focus(f_Widget_R);
+    m_Inc_Selection(1);
 }
 
 void PageSaveKeyboard::m_Input_Up()
 {
     PageSaveWidget::m_Input_Up();
-    if (f_Widget_U) p_Page().focus(f_Widget_U);
+    if (f_Sel_Y > 0) m_Set_Selection(f_Sel_X, f_Sel_Y - 1);
 }
 
 void PageSaveKeyboard::m_Input_Down()
 {
     PageSaveWidget::m_Input_Down();
-    if (f_Widget_D) p_Page().focus(f_Widget_D);
+    if ((f_Sel_Y + 1) < ass::MenuSave::keygrid_rows)
+    {
+        m_Set_Selection(f_Sel_X, f_Sel_Y + 1);
+    }
+    else
+    {
+        if (f_Sel_X < ass::MenuSave::keygrid_split)
+        {
+            if (f_Widget_L) p_Page().focus(f_Widget_L);
+        }
+        else
+        {
+            if (f_Widget_R) p_Page().focus(f_Widget_R);
+        }
+    }
+}
+
+u8 PageSaveKeyboard::m_GetChar(const Key& key)
+{
+    if (key.up >= 'A' && key.up <= 'Z')
+        return (f_Shift != f_CapsLock) ? key.up : key.lo;
+    return (key.cap && f_Shift) ? key.up : key.lo;
+}
+
+void PageSaveKeyboard::m_Set_Selection(u16 x, u16 y)
+{
+    // Position
+    f_Sel_X = x;
+    f_Sel_Y = y;
+    // Key
+    f_Sel_Key = nullptr;
+    if (f_Sel_X < ass::MenuSave::keygrid_cols && f_Sel_Y < ass::MenuSave::keygrid_rows)
+    {
+        u8 key = ass::MenuSave::keygrid[f_Sel_X + f_Sel_Y * ass::MenuSave::keygrid_cols];
+        if (key < f_Keys_Count) f_Sel_Key = (f_Keys + key);
+    }
+}
+
+void PageSaveKeyboard::m_Inc_Selection(u16 x)
+{
+    // Don't increment unless a key is currently selected
+    if (!f_Sel_Key) return;
+    // Goto next key
+    const Key* prev = f_Sel_Key;
+    u8 i = 0; // Fail safe (for spacebar)
+    while (f_Sel_Key == prev && i < ass::MenuSave::keygrid_cols)
+    {
+        m_Set_Selection((f_Sel_X + x) % ass::MenuSave::keygrid_cols, f_Sel_Y);
+        ++i;
+    }
+}
+
+void PageSaveKeyboard::m_Input()
+{
+    if (!f_Sel_Key) return;
+    // Get character
+    u8 chr = m_GetChar(*f_Sel_Key);
+    switch (chr)
+    {
+        // Nothing (ignore?
+        case 0x00: break;
+        // Shift?
+        case 0x10: f_Shift = !f_Shift; break;
+        // Caps lock?
+        case 0x14: f_CapsLock = !f_CapsLock; break;
+        // Everything else (including backspace)?
+        default:
+            f_Input(*this, p_Scene(), p_Page(), chr);
+            f_Shift = false; // Reset shift
+            break;
+    }
 }
 
 #pragma endregion

@@ -42,13 +42,13 @@ namespace game::scns::menu
 
         PageSaveWidget* f_Widget_L;
         PageSaveWidget* f_Widget_R;
-        PageSaveWidget* f_Widget_U;
-        PageSaveWidget* f_Widget_D;
 
         bool f_CapsLock;
         bool f_Shift;
 
-        u16 f_SelectedIndex;
+        u16 f_Sel_X;
+        u16 f_Sel_Y;
+        const Key* f_Sel_Key;
 
         static constexpr u16 f_Keys_Count = 0x61;
         static const Key f_Keys[];
@@ -77,33 +77,19 @@ namespace game::scns::menu
 
         public:
 
-        /// @brief Widget to give focus to when the left direction keyboard is pressed
+        /// @brief Widget below the left half of the keyboard
         const PageSaveWidget* widget_L() const;
-        /// @brief Widget to give focus to when the left direction keyboard is pressed
+        /// @brief Widget below the left half of the keyboard
         PageSaveWidget* widget_L();
-        /// @brief Widget to give focus to when the left direction keyboard is pressed
+        /// @brief Widget below the left half of the keyboard
         void widget_L(PageSaveWidget* value);
 
-        /// @brief Widget to give focus to when the right direction keyboard is pressed
+        /// @brief Widget below the right half of the keyboard
         const PageSaveWidget* widget_R() const;
-        /// @brief Widget to give focus to when the right direction keyboard is pressed
+        /// @brief Widget below the right half of the keyboard
         PageSaveWidget* widget_R();
-        /// @brief Widget to give focus to when the right direction keyboard is pressed
+        /// @brief Widget below the right half of the keyboard
         void widget_R(PageSaveWidget* value);
-
-        /// @brief Widget to give focus to when the up direction keyboard is pressed
-        const PageSaveWidget* widget_U() const;
-        /// @brief Widget to give focus to when the up direction keyboard is pressed
-        PageSaveWidget* widget_U();
-        /// @brief Widget to give focus to when the up direction keyboard is pressed
-        void widget_U(PageSaveWidget* value);
-
-        /// @brief Widget to give focus to when the down direction keyboard is pressed
-        const PageSaveWidget* widget_D() const;
-        /// @brief Widget to give focus to when the down direction keyboard is pressed
-        PageSaveWidget* widget_D();
-        /// @brief Widget to give focus to when the down direction keyboard is pressed
-        void widget_D(PageSaveWidget* value);
 
         /// @brief X-coordinate of top-left tile
         virtual u16 x() const override;
@@ -152,6 +138,16 @@ namespace game::scns::menu
 
         /// @brief Also accessed by PageSave
         virtual void m_Input_Down() override;
+
+        private:
+
+        u8 m_GetChar(const Key& key);
+
+        void m_Set_Selection(u16 x, u16 y);
+
+        void m_Inc_Selection(u16 x);
+
+        void m_Input();
 
         #pragma endregion
     };

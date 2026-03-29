@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <sstream>
+#include <vector>
 
 #include "__.h"
 
@@ -128,11 +129,10 @@ bool Pattern::save(char*& data, size_t& size) const
     data = nullptr;
     size = 0;
     // Gather cell data
-    u8 celldata[(PATTERN_AREA + 6) / 7];
-    size_t cellsize;
+    std::vector<u8> celldata;
+    celldata.reserve((PATTERN_AREA + 6) / 7);
     {
         bool* iptr = f_cells;
-        u8* optr = celldata;
         bool* iend = iptr + PATTERN_AREA;
         while (iptr < iend)
         {
@@ -167,12 +167,11 @@ bool Pattern::save(char*& data, size_t& size) const
                 byte = ((byte & 0b00000010) | 0b00000001) | (count << 2);
             }
             // Add byte
-            *(optr++) = byte;
+            celldata.push_back(byte);
         }
-        cellsize = iptr - f_cells;
     }
     // Create data
-    size = 8 + cellsize;
+    size = 8 + celldata.size();
     data = new char[size];
     {
         char* optr = data;
@@ -193,9 +192,8 @@ bool Pattern::save(char*& data, size_t& size) const
         }
         // Write cell data
         {
-            u8* iptr = celldata;
-            u8* iend = celldata + cellsize;
-            while (iptr < iend) *(optr++) = *(iptr++);
+            for (auto iptr = celldata.begin(); iptr != celldata.end(); ++iptr)
+                *(optr++) = *iptr;
         }
     }
     // Success!!!

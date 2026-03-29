@@ -33,6 +33,12 @@ namespace engine::helper
         /// @param substr Substring
         /// @return Whether or not the string ends with the specified substring
         static bool endsWith(const std::string& str, const std::string& substr);
+
+        /// @brief Performs a case-insensitive equality check between two strings
+        /// @param s0 String 0
+        /// @param s1 String 1
+        /// @return Whether or not the case-insensitively equal
+        static bool noCaseEqu(const std::string& s0, const std::string& s1);
     };
 }
 

@@ -27,6 +27,11 @@ namespace engine::data
         /// @param path Path of file to load from
         /// @return Whether or not successful
         bool load_file(const char* path);
+
+        /// @brief Attempts to save to a file
+        /// @param path Path of file to save to
+        /// @return Whether or not successful
+        bool save_file(const char* path);
     };
 }
 

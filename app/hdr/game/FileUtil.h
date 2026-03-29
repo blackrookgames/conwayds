@@ -15,6 +15,9 @@ namespace game
         
         public:
 
+        /// @brief Maximum capacity
+        static constexpr u16 capacity = 0xFFFF;
+
         /// @brief File extension for patterns
         static const std::string extension;
 
@@ -25,7 +28,7 @@ namespace game
         static const std::string sample_Dir;
         
         /// @brief Display prefix for user patterns
-        static const std::string user_prefix;
+        static const std::string user_Prefix;
 
         /// @brief Directory for user patterns
         static const std::string user_Dir;

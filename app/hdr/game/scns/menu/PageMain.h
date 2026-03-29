@@ -64,8 +64,6 @@ namespace game::scns::menu
 
         static void m_Msg_Clear(Scene& scene);
 
-        static void m_Msg_About(Scene& scene);
-
         #pragma endregion
     };
 }

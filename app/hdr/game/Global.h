@@ -24,6 +24,8 @@ namespace game
         static engine::helper::RRValue48p16 f_View_Y;
         static engine::helper::RRValue48p16 f_View_Zoom;
 
+        static bool f_SaveEnabled;
+
         static game::scns::edit::Tool f_Edit_Tool;
         static bool f_Edit_Grid;
 
@@ -67,6 +69,11 @@ namespace game
         static engine::helper::RRValue48p16 view_Zoom();
         /// @brief Zoom percentage of view
         static void view_Zoom(engine::helper::RRValue48p16 value);
+
+        /// @brief Whether or not saving is enabled
+        static bool saveEnabled();
+        /// @brief Whether or not saving is enabled
+        static void saveEnabled(bool value);
         
         /// @brief Tool being used in editor
         static game::scns::edit::Tool edit_Tool();

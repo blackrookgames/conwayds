@@ -1,5 +1,6 @@
 #include <string>
 
+#include "engine/io/Path.h"
 #include "./Page.h"
 #include "./PageSaveButton.h"
 #include "./PageSaveKeyboard.h"
@@ -19,7 +20,8 @@ namespace game::scns::menu
 
         /// @brief Constructor for PageSave
         /// @param scene Scene
-        PageSave(Scene& scene);
+        /// @param initialName Initial name
+        PageSave(Scene& scene, const std::string* initialName = nullptr);
 
         /// @brief Destructor for PageSave
         virtual ~PageSave() override;
@@ -31,6 +33,8 @@ namespace game::scns::menu
         #pragma region fields
 
         private:
+
+        const std::string* f_InitialName;
 
         u16* f_Screen;
         size_t f_Screen_Len;
@@ -45,6 +49,14 @@ namespace game::scns::menu
         PageSaveWidget* f_Widget_Focus;
         PageSaveWidget* f_Widget_Touch;
         bool f_Touching;
+
+        std::string f_Name;
+
+        static std::string f_Chosen;
+        static engine::io::Path f_Chosen_Path;
+
+        static constexpr u8 f_BadNames_Count = 22;
+        static const std::string f_BadNames[];
 
         #pragma endregion
 
@@ -84,6 +96,10 @@ namespace game::scns::menu
         static void m_Input(PageSaveKeyboard& keyboard, Scene& scene, PageSave& page, char chr);
 
         static void m_Msg_OK(Scene& scene);
+
+        static void m_Msg_Save(Scene& scene);
+
+        static void m_Msg_No(Scene& scene);
 
         #pragma endregion
 

@@ -51,3 +51,18 @@ bool StrUtil::endsWith(const std::string& str, const std::string& substr)
     // Success!!!
     return true;
 }
+
+bool StrUtil::noCaseEqu(const std::string& s0, const std::string& s1)
+{
+    // Check lengths
+    if (s0.length() != s1.length()) return false;
+    // Check characters
+    for (size_t i = 0; i < s0.length(); ++i)
+    {
+        char c0 = s0[i]; if (c0 >= 'a' && c0 <= 'z') c0 -= 'a' - 'A';
+        char c1 = s1[i]; if (c1 >= 'a' && c1 <= 'z') c1 -= 'a' - 'A';
+        if (c0 != c1) return false;
+    }
+    // Equal!!!
+    return true;
+}

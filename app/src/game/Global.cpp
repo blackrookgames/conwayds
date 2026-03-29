@@ -17,6 +17,8 @@ engine::helper::RRValue48p16 Global::f_View_X = engine::helper::RRValue48p16(0, 
 engine::helper::RRValue48p16 Global::f_View_Y = engine::helper::RRValue48p16(0, 0);
 engine::helper::RRValue48p16 Global::f_View_Zoom = engine::helper::RRValue48p16(100, 0);
 
+bool Global::f_SaveEnabled = false;
+
 game::scns::edit::Tool Global::f_Edit_Tool = game::scns::edit::Tool::DRAW;
 bool Global::f_Edit_Grid = true;
 
@@ -41,6 +43,9 @@ void Global::view_Y(engine::helper::RRValue48p16 value) { f_View_Y = value; }
 
 engine::helper::RRValue48p16 Global::view_Zoom() { return f_View_Zoom; }
 void Global::view_Zoom(engine::helper::RRValue48p16 value) { f_View_Zoom = value; }
+
+bool Global::saveEnabled() { return f_SaveEnabled; }
+void Global::saveEnabled(bool value) { f_SaveEnabled = value; }
 
 game::scns::edit::Tool Global::edit_Tool() { return f_Edit_Tool; }
 void Global::edit_Tool(game::scns::edit::Tool value) { f_Edit_Tool = value; }
