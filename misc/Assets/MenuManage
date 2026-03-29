@@ -1,0 +1,64 @@
+@var prefix game/assets/MenuManage
+@var hdrpath ../../app/hdr/${prefix}.h
+@var srcpath ../../app/src/${prefix}.cpp
+
+@var hdrdef GAME_ASSETS_MENUMANAGE_H
+
+@var namespace game::assets
+@var class MenuManage
+
+@load list data ./MenuManage.bin uint16 
+
+@open ${hdrpath}
+@line \#include <nds.h>
+@line 
+@line \#ifndef ${hdrdef}
+@line \#define ${hdrdef}
+@line 
+@line namespace ${namespace}
+@line {
+@line     class ${class}
+@line     {
+@line         public:
+@line         
+@line         struct Region { u16 x; u16 y; u16 w; u16 h; u16 x0; u16 y0; u16 x1; u16 y1; };
+@line         
+@line         static const size_t size;
+@line         static const u16 data[];
+@line         
+@line         static constexpr u16 list_x = 3;
+@line         static constexpr u16 list_y = 3;
+@line         static constexpr u16 list_w = 23;
+@line         static constexpr u16 list_h = 13;
+@line         static constexpr u16 list_u_x = 26;
+@line         static constexpr u16 list_u_y = 3;
+@line         static constexpr u16 list_d_x = 26;
+@line         static constexpr u16 list_d_y = 15;
+@line         
+@line         static constexpr u16 buttons_count = 4;
+@line         static constexpr u16 buttons_touch = 2;
+@line         static const Region buttons[];
+@line     };
+@line }
+@line 
+@line \#endif
+@close
+
+@open ${srcpath}
+@line \#include "${prefix}.h"
+@line 
+@line using namespace ${namespace};
+@line 
+@line const size_t ${class}::size = $(len data);
+@line const u16 ${class}::data[] = 
+@line $(cppdata data);
+@line 
+@line const ${class}::Region ${class}::buttons[] =
+@line {
+@line     { .x = 2, .y = 17, .w = 14, .h = 5, .x0 = 2 * 8, .y0 = 17 * 8, .x1 = (2 + 14) * 8, .y1 = (17 + 5) * 8, },
+@line     { .x = 16, .y = 17, .w = 14, .h = 5, .x0 = 16 * 8, .y0 = 17 * 8, .x1 = (16 + 14) * 8, .y1 = (17 + 5) * 8, },
+@line     { .x = 28, .y = 3, .w = 1, .h = 6, .x0 = 27 * 8 + 4, .y0 = 2 * 8 + 4, .x1 = 29 * 8 + 4, .y1 = 9 * 8 + 4, },
+@line     { .x = 28, .y = 10, .w = 1, .h = 6, .x0 = 27 * 8 + 4, .y0 = 9 * 8 + 4, .x1 = 29 * 8 + 4, .y1 = 16 * 8 + 4, },
+@line };
+@line 
+@close

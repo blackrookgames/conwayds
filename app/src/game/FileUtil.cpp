@@ -35,10 +35,11 @@ void FileUtil::m_FilterPaths(std::vector<engine::io::Path>& paths)
 
 #pragma region functions
 
-void FileUtil::getPatterns(engine::io::Path*& paths, u16& count)
+void FileUtil::getPatterns(engine::io::Path*& paths, u16& count, bool sample)
 {
     // Get samples
-    auto samps = engine::io::DirUtil::getPaths(sample_Dir, true, false);
+    std::vector<engine::io::Path> samps;
+    if (sample) samps = engine::io::DirUtil::getPaths(sample_Dir, true, false);
     m_FilterPaths(samps);
     // Get user
     auto users = engine::io::DirUtil::getPaths(user_Dir, true, false);

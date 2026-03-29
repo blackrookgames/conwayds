@@ -7,9 +7,9 @@
 #include "game/assets/MenuMain.h"
 #include "game/scns/menu/Scene.h"
 #include "game/scns/menu/PageLoad.h"
+#include "game/scns/menu/PageManage.h"
 #include "game/scns/menu/PageMsgOK.h"
 #include "game/scns/menu/PageMsgYN.h"
-#include "game/scns/menu/PageRandom.h"
 #include "game/scns/menu/PageSave.h"
 #include "engine/data/RLE.h"
 
@@ -190,10 +190,19 @@ void PageMain::m_Button_Action()
                 scene().gotoPage(page);
             }
             break;
-        // Random
+        // Manager
         case 3:
+            if (Global::saveEnabled())
             {
-                PageRandom* page = new PageRandom(scene(), time(nullptr));
+                PageManage* page = new PageManage(scene());
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
+            else
+            {
+                PageMsgOK* page = new PageMsgOK(scene(),
+                    "FAT failed to initialize.",
+                    m_Msg_No);
                 page->deleteOnExit(true);
                 scene().gotoPage(page);
             }

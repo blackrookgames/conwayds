@@ -50,7 +50,8 @@ namespace game
         /// @brief Retrieves the paths of all pattern files
         /// @param paths Retrieved paths
         /// @param count Number of retrieved paths
-        static void getPatterns(engine::io::Path*& paths, u16& count);
+        /// @param samples Whether or not to retrieve sample files as well
+        static void getPatterns(engine::io::Path*& paths, u16& count, bool sample = true);
 
         #pragma endregion
     };
