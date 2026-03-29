@@ -6,7 +6,7 @@
 
 namespace game::scns::menu
 {
-    /// @brief Represents a message that prompts the user to press Yes or No
+    /// @brief Represents a page for loading a pattern
     class PageLoad : public Page
     {
         #pragma region nested
@@ -21,7 +21,8 @@ namespace game::scns::menu
 
         /// @brief Constructor for PageLoad
         /// @param scene Scene
-        PageLoad(Scene& scene);
+        /// @param initialPath Initial path
+        PageLoad(Scene& scene, engine::io::Path* initialPath = nullptr);
 
         /// @brief Destructor for PageLoad
         virtual ~PageLoad() override;
@@ -33,6 +34,8 @@ namespace game::scns::menu
         #pragma region fields
 
         private:
+
+        engine::io::Path* f_InitialPath;
 
         u16* f_Screen;
         size_t f_Screen_Len;

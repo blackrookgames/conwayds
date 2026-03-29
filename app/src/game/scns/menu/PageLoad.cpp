@@ -20,8 +20,9 @@ namespace ass = game::assets;
 
 #pragma region init
 
-PageLoad::PageLoad(Scene& scene) : Page(scene)
+PageLoad::PageLoad(Scene& scene, engine::io::Path* initialPath) : Page(scene)
 {
+    f_InitialPath = initialPath;
     f_Screen = nullptr;
     f_List = nullptr;
 }
@@ -58,9 +59,10 @@ void PageLoad::m_enter()
     f_List_Index = (f_List_Count > 0) ? 0 : 0xFFFF;
     f_List_Offset = 0;
     // Find item to select
+    engine::io::Path initialPath = (f_InitialPath) ? (*f_InitialPath) : Global::pattern_Path();
     for (u16 i = 0; i < f_List_Count; ++i)
     {
-        if (f_List[i].fullPath() != Global::pattern_Path().fullPath())
+        if (f_List[i].fullPath() != initialPath.fullPath())
             continue;
         f_List_Index = i;
         break;
@@ -299,7 +301,7 @@ void PageLoad::m_Nav_Down()
 
 void PageLoad::m_Msg_No(Scene& scene)
 {
-    PageLoad* page = new PageLoad(scene);
+    PageLoad* page = new PageLoad(scene, &f_Chosen);
     page->deleteOnExit(true);
     scene.gotoPage(page);
 }

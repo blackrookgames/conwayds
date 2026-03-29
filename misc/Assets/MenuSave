@@ -26,9 +26,12 @@
 @line         
 @line         static constexpr u16 field_x = 3;
 @line         static constexpr u16 field_y = 3;
-@line         static constexpr u16 field_len = 26;
 @line         static constexpr u16 caps_x = 2;
 @line         static constexpr u16 caps_y = 5;
+@line         static constexpr u16 caps_len = 4;
+@line         static constexpr u16 shift_x = 25;
+@line         static constexpr u16 shift_y = 5;
+@line         static constexpr u16 shift_len = 5;
 @line         
 @line         static constexpr u16 button_w = 14;
 @line         static constexpr u16 button_h = 5;
@@ -44,6 +47,13 @@
 @line         static constexpr u16 keyboard_y0 = 6 * 8 + 4;
 @line         static constexpr u16 keyboard_x1 = 29 * 8 - 4;
 @line         static constexpr u16 keyboard_y1 = 17 * 8 - 4;
+@line 
+@line         static const u8 keygrid[];
+@line         static constexpr u16 keygrid_x = 3;
+@line         static constexpr u16 keygrid_y = 7;
+@line         static constexpr u16 keygrid_cols = 13;
+@line         static constexpr u16 keygrid_rows = 5;
+@line         static constexpr u16 keygrid_size = keygrid_cols * keygrid_rows;
 @line     };
 @line }
 @line 
@@ -58,5 +68,14 @@
 @line const size_t ${class}::size = $(len data);
 @line const u16 ${class}::data[] = 
 @line $(cppdata data);
+@line 
+@line const u8 ${class}::keygrid[] =
+@line {
+@line     '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0x08, 0x08,
+@line     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '-',
+@line     0x14, 0x14, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', '!', '=',
+@line     0x10, 0x10, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '(', ')',
+@line     ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+@line };
 @line 
 @close

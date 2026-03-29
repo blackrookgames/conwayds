@@ -10,6 +10,7 @@
 #include "game/scns/menu/PageMsgOK.h"
 #include "game/scns/menu/PageMsgYN.h"
 #include "game/scns/menu/PageRandom.h"
+#include "game/scns/menu/PageSave.h"
 #include "engine/data/RLE.h"
 
 #include "game/scns/edit/Scene.h"
@@ -164,7 +165,11 @@ void PageMain::m_Button_Action()
             break;
         // Save
         case 1:
-            m_Close(); // TODO: Change
+            {
+                PageSave* page = new PageSave(scene());
+                page->deleteOnExit(true);
+                scene().gotoPage(page);
+            }
             break;
         // Clear
         case 2:

@@ -7,7 +7,7 @@
 
 namespace game::scns::menu
 {
-    /// @brief Represents a message that prompts the user to press Yes or No
+    /// @brief Represents a page for a random seed
     class PageRandom : public Page
     {
         #pragma region nested

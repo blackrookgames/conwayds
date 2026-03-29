@@ -73,6 +73,10 @@ SCRNAMES += \
 	src/game/scns/menu/PageMsgOK.cpp \
 	src/game/scns/menu/PageMsgYN.cpp \
 	src/game/scns/menu/PageRandom.cpp \
+	src/game/scns/menu/PageSave.cpp \
+	src/game/scns/menu/PageSaveButton.cpp \
+	src/game/scns/menu/PageSaveKeyboard.cpp \
+	src/game/scns/menu/PageSaveWidget.cpp \
 	src/game/scns/menu/Scene.cpp
 
 SCRNAMES += \
