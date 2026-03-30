@@ -1,0 +1,4 @@
+"About" "about.txt"
+"Patterns" "patterns.txt"
+"Log" "log.txt"
+"Font License" "font.txt"

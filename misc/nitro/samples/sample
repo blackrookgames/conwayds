@@ -1,62 +1,68 @@
 @var savedir ../../../app/nitro/samples
 
-@var name sample0
+@var name 00_GosperGun
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample1
+@var name 01_TwoBlockers
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample2
+@var name 02_56P27
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample3
+@var name 03_JasonsP33
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample4
+@var name 04_P18HoneyFarm
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample5
+@var name 05_P32Blinker2
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample6
+@var name 06_Hivenudger2
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample7
+@var name 07_BeehiveFuse
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample8
+@var name 08_GliderEmulator
 @load string input ./${name}.rle
 @lifepattern pattern input rle
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
-@var name sample9
+@var name 09_Sparky
 @load string input ./${name}.rle
 @lifepattern pattern input rle
+@databuffer output pattern
+@save output ${savedir}/${name}.bin
+
+@var name rook
+@load imgimage input ./${name}.png
+@lifepattern pattern input
 @databuffer output pattern
 @save output ${savedir}/${name}.bin
 
