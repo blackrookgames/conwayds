@@ -33,6 +33,12 @@ namespace game
         /// @brief Directory for user patterns
         static const std::string user_Dir;
 
+        /// @brief Directory of about files
+        static const std::string about_Dir;
+
+        /// @brief Path of file containing about info
+        static const std::string about_Path;
+
         #pragma endregion
 
         #pragma region helper functions

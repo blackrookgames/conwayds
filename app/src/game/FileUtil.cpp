@@ -17,6 +17,10 @@ const std::string FileUtil::user_Prefix = "USER:";
 
 const std::string FileUtil::user_Dir = "fat:/conwayds/patterns";
 
+const std::string FileUtil::about_Dir = "nitro:/about";
+
+const std::string FileUtil::about_Path = "nitro:/about/__.txt";
+
 #pragma endregion
 
 #pragma region helper functions

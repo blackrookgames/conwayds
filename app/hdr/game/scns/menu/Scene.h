@@ -28,11 +28,8 @@ namespace game::scns::menu
 
         private:
 
-        u16* f_Screen_Title;
-        size_t f_Screen_Title_Len;
-
-        int f_TScr;
-        u16* f_TScr_Map;
+        engine::gfx::TextGFX* f_TitleGFX;
+        std::ostream* f_TitleStream;
 
         engine::gfx::TextGFX* f_TextGFX;
         std::ostream* f_TextStream;
@@ -70,6 +67,16 @@ namespace game::scns::menu
 
         /// @brief Current touch position
         touchPosition input_Touch_Pos() const;
+
+        /// @brief Title graphics handler
+        const engine::gfx::TextGFX& titleGFX() const;
+        /// @brief Title graphics handler
+        engine::gfx::TextGFX& titleGFX();
+
+        /// @brief Output title stream
+        const std::ostream& titleStream() const;
+        /// @brief Output title stream
+        std::ostream& titleStream();
 
         /// @brief Text graphics handler
         const engine::gfx::TextGFX& textGFX() const;

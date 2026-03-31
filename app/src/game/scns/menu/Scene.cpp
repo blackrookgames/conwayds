@@ -45,6 +45,9 @@ namespace ass = game::assets;
 
 Scene::Scene()
 {
+    // Title
+    f_TitleGFX = nullptr;
+    f_TitleStream = nullptr;
     // Text
     f_TextGFX = nullptr;
     f_TextStream = nullptr;
@@ -58,6 +61,9 @@ Scene::~Scene()
     // Text
     DELETE_OBJECT(f_TextGFX)
     DELETE_OBJECT(f_TextStream)
+    // Title
+    DELETE_OBJECT(f_TitleGFX)
+    DELETE_OBJECT(f_TitleStream)
 }
 
 #pragma endregion
@@ -82,6 +88,12 @@ engine::gfx::TextGFX& Scene::textGFX() { return *f_TextGFX; }
 const std::ostream& Scene::textStream() const { return *f_TextStream; }
 std::ostream& Scene::textStream() { return *f_TextStream; }
 
+const engine::gfx::TextGFX& Scene::titleGFX() const { return *f_TitleGFX; }
+engine::gfx::TextGFX& Scene::titleGFX() { return *f_TitleGFX; }
+
+const std::ostream& Scene::titleStream() const { return *f_TitleStream; }
+std::ostream& Scene::titleStream() { return *f_TitleStream; }
+
 #pragma endregion
 
 #pragma region helper functions
@@ -96,19 +108,16 @@ void Scene::m_enter()
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
     videoSetModeSub(MODE_0_2D);
     vramSetBankC(VRAM_C_SUB_BG_0x06200000);
-    // Initialize screen data
-    ScreenUtil::load(ass::MenuTitle::data, ass::MenuTitle::size, f_Screen_Title, f_Screen_Title_Len);
     // Initialize top screen
-    f_TScr = bgInit(0, BgType_Text4bpp, BgSize_T_256x256, 8, 0);
-    f_TScr_Map = bgGetMapPtr(f_TScr);
-    std::copy(f_Screen_Title, f_Screen_Title + f_Screen_Title_Len, f_TScr_Map);
+    f_TitleGFX = new engine::gfx::TextGFX(false, 0, 8, 0, 0);
+    f_TitleStream = new std::ostream(f_TitleGFX);
     // Initialize top screen palette
     DC_FlushRange(assets::Palette::data, assets::Palette::size);
     dmaCopy(assets::Palette::data, BG_PALETTE, assets::Palette::size);
     *BG_PALETTE = 0;
     // Initialize top screen tileset
 	DC_FlushRange(assets::TextTileset::data, assets::TextTileset::size);
-    dmaCopy(assets::TextTileset::data, bgGetGfxPtr(f_TScr), assets::TextTileset::size);
+    dmaCopy(assets::TextTileset::data, f_TitleGFX->bg_GFX(), assets::TextTileset::size);
     // Initialize bottom screen
     f_TextGFX = new engine::gfx::TextGFX(true, 0, 8, 0, 0);
     f_TextStream = new std::ostream(f_TextGFX);
@@ -136,8 +145,6 @@ void Scene::m_exit()
 {
     // Exit active page
     if (f_ActivePage) { PAGE_EXIT }
-    // Delete
-    DELETE_ARRAY(f_Screen_Title)
     // Base
     engine::scenes::Scene::m_exit();
 }
@@ -165,6 +172,7 @@ void Scene::m_update()
     // VBlank
     swiWaitForVBlank();
     if (f_ActivePage) f_ActivePage->m__vblank();
+    f_TitleGFX->vblank();
     f_TextGFX->vblank();
     // Update backgrounds
     bgUpdate();

@@ -5,7 +5,9 @@
 #include "game/Global.h"
 #include "game/ScreenUtil.h"
 #include "game/assets/MenuMain.h"
+#include "game/assets/MenuTitle.h"
 #include "game/scns/menu/Scene.h"
+#include "game/scns/menu/PageAbout.h"
 #include "game/scns/menu/PageLoad.h"
 #include "game/scns/menu/PageManage.h"
 #include "game/scns/menu/PageMsgOK.h"
@@ -22,12 +24,14 @@ namespace ass = game::assets;
 
 PageMain::PageMain(Scene& scene) : Page(scene)
 {
+    f_Title = nullptr;
     f_Screen = nullptr;
 }
 
 PageMain::~PageMain()
 {
     DELETE_ARRAY(f_Screen)
+    DELETE_ARRAY(f_Title)
 }
 
 #pragma endregion
@@ -44,6 +48,10 @@ void PageMain::m_enter()
     f_Sel_Index = Global::menu_Main_Index();
     f_Sel_Touch = 0xFFFF;
     f_Sel_Touching = false;
+    // Initialize screen data
+    ScreenUtil::load(ass::MenuTitle::data, ass::MenuTitle::size, f_Title, f_Title_Len);
+    std::copy(f_Title, f_Title + f_Title_Len, scene().titleGFX().bg_Buffer());
+    scene().titleGFX().markDirty();
     // Post-init
     m_Refresh_Buttons();
 }
@@ -210,9 +218,7 @@ void PageMain::m_Button_Action()
         // About
         case 4:
             {
-                PageMsgOK* page = new PageMsgOK(scene(),
-                    "Created by Black Rook Games", // TODO: Add more content
-                    m_Msg_No);
+                PageAbout* page = new PageAbout(scene());
                 page->deleteOnExit(true);
                 scene().gotoPage(page);
             }

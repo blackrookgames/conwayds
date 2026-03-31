@@ -1,0 +1,67 @@
+@var prefix game/assets/MenuAboutB
+@var hdrpath ../../app/hdr/${prefix}.h
+@var srcpath ../../app/src/${prefix}.cpp
+
+@var hdrdef GAME_ASSETS_MENUABOUTB_H
+
+@var namespace game::assets
+@var class MenuAboutB
+
+@load list data ./MenuAboutB.bin uint16 
+
+@open ${hdrpath}
+@line \#include <nds.h>
+@line 
+@line \#ifndef ${hdrdef}
+@line \#define ${hdrdef}
+@line 
+@line namespace ${namespace}
+@line {
+@line     class ${class}
+@line     {
+@line         public:
+@line         
+@line         static const size_t size;
+@line         static const u16 data[];
+@line         
+@line         static constexpr u16 msg_end = 16;
+@line         
+@line         static constexpr u16 tchbtns_w = 16;
+@line         static constexpr u16 tchbtns_h = 3;
+@line         static constexpr u16 tchbtns_text_x = 1;
+@line         static constexpr u16 tchbtns_text_y = 1;
+@line         static constexpr u16 tchbtns_text_len = 14;
+@line         static constexpr u8 tchbtns_count = 2;
+@line         static const u16 tchbtns_x[];
+@line         static const u16 tchbtns_y[];
+@line         
+@line         static constexpr u16 buttons_w = 16;
+@line         static constexpr u16 buttons_h = 5;
+@line         static constexpr u16 buttons_text_x = 1;
+@line         static constexpr u16 buttons_text_y = 2;
+@line         static constexpr u16 buttons_text_len = 14;
+@line         static constexpr u8 buttons_count = 2;
+@line         static const u16 buttons_x[];
+@line         static const u16 buttons_y[];
+@line     };
+@line }
+@line 
+@line \#endif
+@close
+
+@open ${srcpath}
+@line \#include "${prefix}.h"
+@line 
+@line using namespace ${namespace};
+@line 
+@line const size_t ${class}::size = $(len data);
+@line const u16 ${class}::data[] = 
+@line $(cppdata data);
+@line 
+@line const u16 ${class}::tchbtns_x[] = { 0x00, 0x10, };
+@line const u16 ${class}::tchbtns_y[] = { 0x10, 0x10, };
+@line 
+@line const u16 ${class}::buttons_x[] = { 0x00, 0x10, };
+@line const u16 ${class}::buttons_y[] = { 0x13, 0x13, };
+@line 
+@close

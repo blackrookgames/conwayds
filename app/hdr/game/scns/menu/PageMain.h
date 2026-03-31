@@ -27,6 +27,8 @@ namespace game::scns::menu
 
         private:
 
+        u16* f_Title;
+        size_t f_Title_Len;
         u16* f_Screen;
         size_t f_Screen_Len;
 

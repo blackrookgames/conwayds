@@ -1,0 +1,77 @@
+
+
+"Gosper Glider Gun"
+by Bill Gosper
+conwaylife.com/wiki
+/Gosper_glider_gun
+
+
+
+"Two blockers hassling R-pentomino"
+by Robert Wainwright
+conwaylife.com/wiki
+/Two_blockers_hassling_R-
+pentomino
+
+
+
+"56P27"
+by Nicolay Beluchenko
+conwaylife.com/wiki
+/56P27
+
+
+
+"Jason's p33"
+by Jason Summers
+conwaylife.com/wiki
+/Jason%27s_p33
+
+
+
+"p18 honey farm hassler"
+by Nora Brown
+conwaylife.com/wiki
+/P18_honey_farm_hassler
+
+
+
+"p32 blinker hassler 2"
+by Noam Elkies
+conwaylife.com/wiki
+/P32_blinker_hassler_2
+
+
+
+"Hivenudger 2"
+by Hartmut Holzwart
+conwaylife.com/wiki
+/Hivenudger_2
+
+
+
+07_BeehiveFuse
+conwaylife.com/wiki
+/Beehive_fuse
+
+
+
+"Glider emulator"
+by Gabriel Nivasch
+conwaylife.com/wiki
+/Glider_emulator
+
+
+
+"Sparky"
+by Hartmut Holzwart
+conwaylife.com/wiki
+/Sparky
+
+
+
+"Public Pixel Font"
+by GGBotNet
+ggbot.itch.io
+/public-pixel-font
+

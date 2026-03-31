@@ -1,3 +1,13 @@
+
+
 Conway's Game of Life DS
 1.0.0.0
 Black Rook Games
+blackrookgames.itch.io
+github.com/blackrookgames
+
+
+
+Programmer:
+Zach Combs
+

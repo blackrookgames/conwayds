@@ -35,6 +35,7 @@ SCRNAMES += \
 	src/engine/helper/RRValue48p16.cpp \
 	src/engine/helper/StrUtil.cpp \
 	src/engine/io/DirUtil.cpp \
+	src/engine/io/IOUtil.cpp \
 	src/engine/io/Path.cpp \
 	src/engine/scenes/__.cpp \
 	src/engine/scenes/Scene.cpp \
@@ -43,6 +44,8 @@ SCRNAMES += \
 SCRNAMES += \
 	src/game/assets/EditScreen.cpp \
 	src/game/assets/EditTileset.cpp \
+	src/game/assets/MenuAboutB.cpp \
+	src/game/assets/MenuAboutT.cpp \
 	src/game/assets/MenuLoad.cpp \
 	src/game/assets/MenuMain.cpp \
 	src/game/assets/MenuManage.cpp \
@@ -68,6 +71,7 @@ SCRNAMES += \
 
 SCRNAMES += \
 	src/game/scns/menu/Page.cpp \
+	src/game/scns/menu/PageAbout.cpp \
 	src/game/scns/menu/PageLoad.cpp \
 	src/game/scns/menu/PageMain.cpp \
 	src/game/scns/menu/PageManage.cpp \
