@@ -63,7 +63,7 @@ void PageAbout::m_enter()
     // Initialize texts
     m_GetTexts(f_Texts_Count, f_Texts_Title, f_Texts_Content);
     // Initialize input
-    f_But_Index = 0x00;
+    f_But_Index = 0x01; // Make "Next" the first selected button
     f_But_Touch = 0xFF;
     f_Tch_Index = 0xFF;
     f_Tch_Touch = 0xFF;

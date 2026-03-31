@@ -6,8 +6,6 @@ Black Rook Games
 blackrookgames.itch.io
 github.com/blackrookgames
 
-
-
 Programmer:
 Zach Combs
 
